@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controller/dashboard_Mobile_controller.dart';
+import 'package:tugas_akhir/controller/dashboard_Mobile_controller.dart';
 import 'product_card.dart';
 
 class ProductList extends StatelessWidget {
@@ -10,34 +10,36 @@ class ProductList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ambil controller yang sudah di-inject
     final DashboardController controller = Get.find<DashboardController>();
 
     return Obx(() {
       if (controller.isLoading.value) {
         return const SizedBox(
           height: 200,
-          child: Center(
-            child: CircularProgressIndicator(color: Colors.brown),
-          ),
+          child: Center(child: CircularProgressIndicator(color: Colors.brown)),
         );
       }
 
-      if (controller.productList.isEmpty) {
+      // 1. GUNAKAN filteredList UNTUK CEK KOSONG
+      if (controller.filteredList.isEmpty) {
         return const SizedBox(
           height: 200,
-          child: Center(child: Text("Produk sedang kosong")),
+          child: Center(child: Text("Produk tidak ditemukan")),
         );
       }
 
       return SizedBox(
-        height: 260, // Sesuaikan dengan tinggi ProductCard kamu
+        height: 260,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: controller.productList.length,
-          clipBehavior: Clip.none, // Agar shadow kartu tidak terpotong
+          // 2. GUNAKAN filteredList UNTUK ITEM COUNT
+          itemCount: controller.filteredList.length,
+          clipBehavior: Clip.none,
           itemBuilder: (context, index) {
             return ProductCard(
-              product: controller.productList[index],
+              // 3. GUNAKAN filteredList UNTUK DATA PRODUK
+              product: controller.filteredList[index],
               tag: tagBuilder(index),
             );
           },

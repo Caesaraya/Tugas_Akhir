@@ -51,8 +51,8 @@ class DashboardMobilePage extends StatelessWidget {
                 // 3. Search Bar Widget
                 MySearchBar(
                   onChanged: (value) {
-                    // Logika filter bisa ditaruh di controller
-                    print("Mencari: $value");
+                    // Panggil fungsi filter setiap kali pengguna mengetik
+                    controller.filterProducts(value);
                   },
                 ),
 
