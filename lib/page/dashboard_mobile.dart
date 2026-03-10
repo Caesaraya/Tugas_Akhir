@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controller/dashboard_Mobile_controller.dart';
-import '../widget/product_card.dart';
 import '../widget/search_bar.dart';
+import '../widget/section_header.dart';
+import '../widget/product_list.dart';
 
 class DashboardMobilePage extends StatelessWidget {
-  // Gunakan Get.find jika controller sudah di-put di level main/binding, 
+  // Gunakan Get.find jika controller sudah di-put di level main/binding,
   // atau Get.put jika ini entry point pertama.
   final DashboardController controller = Get.put(DashboardController());
 
@@ -58,68 +59,25 @@ class DashboardMobilePage extends StatelessWidget {
                 const SizedBox(height: 30),
 
                 // 4. Section Header
-                _sectionHeader("Rekomendasi Terlaris"),
+                SectionHeader(title: "Rekomendasi Terlaris"),
 
                 // 5. Product List (Horizontal)
-                Obx(() {
-                  if (controller.isLoading.value) {
-                    return const SizedBox(
-                      height: 200,
-                      child: Center(child: CircularProgressIndicator(color: Colors.brown)),
-                    );
-                  }
+                ProductList(
+                  tagBuilder: (index) => index == 0 ? "Hot Item" : "New",
+                ),
 
-                  if (controller.productList.isEmpty) {
-                    return const SizedBox(
-                      height: 200,
-                      child: Center(child: Text("Produk sedang kosong")),
-                    );
-                  }
+                const SizedBox(height: 30),
 
-                  return SizedBox(
-                    height: 260, // Sesuaikan dengan tinggi ProductCard kamu
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: controller.productList.length,
-                      clipBehavior: Clip.none, // Agar shadow kartu tidak terpotong
-                      itemBuilder: (context, index) {
-                        return ProductCard(
-                          product: controller.productList[index],
-                          tag: index == 0 ? "Hot Item" : "New",
-                        );
-                      },
-                    ),
-                  );
-                }),
-                
+                SectionHeader(title: "Produk Terbaru"),
+
+                ProductList(tagBuilder: (index) => "New"),
+
                 // Tambahkan SizedBox di paling bawah agar tidak terlalu mepet dengan Navbar
                 const SizedBox(height: 20),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _sectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2D1B1B)),
-          ),
-          TextButton(
-            onPressed: () {},
-            child: Text(
-              "Lihat Semua",
-              style: TextStyle(color: Colors.brown[600], fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
       ),
     );
   }
