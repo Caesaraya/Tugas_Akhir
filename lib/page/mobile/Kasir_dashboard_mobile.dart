@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controller/dashboard_Mobile_controller.dart';
-import '../widget/search_bar.dart';
-import '../widget/section_header.dart';
-import '../widget/product_list.dart';
+import '../../controller/dashboard_Mobile_controller.dart';
+import '../../widget/search_bar.dart';
+import '../../widget/section_header.dart';
+import '../../widget/product_list.dart';
 
-class DashboardMobilePage extends StatelessWidget {
+class KasirDashboardMobile extends StatelessWidget {
   // Gunakan Get.find jika controller sudah di-put di level main/binding,
   // atau Get.put jika ini entry point pertama.
+
+  KasirDashboardMobile({super.key});
   final DashboardController controller = Get.put(DashboardController());
 
   @override

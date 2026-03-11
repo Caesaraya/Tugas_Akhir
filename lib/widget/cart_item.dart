@@ -25,7 +25,7 @@ class CartTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black26,
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -33,7 +33,7 @@ class CartTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Placeholder Gambar (karena model CartItem kamu belum ada image, 
+          // Placeholder Gambar (karena model CartItem kamu belum ada image,
           // sementara pakai icon atau tambahkan field image nanti)
           Container(
             width: 70,
@@ -45,7 +45,7 @@ class CartTile extends StatelessWidget {
             child: const Icon(Icons.bakery_dining, color: Colors.brown),
           ),
           const SizedBox(width: 12),
-          
+
           // Info Produk
           Expanded(
             child: Column(
@@ -53,7 +53,10 @@ class CartTile extends StatelessWidget {
               children: [
                 Text(
                   item.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 Text(
                   "Rp ${item.price.toStringAsFixed(0)}",
@@ -62,7 +65,11 @@ class CartTile extends StatelessWidget {
                 if (item.discount > 0)
                   Text(
                     "Hemat Rp ${item.discount.toStringAsFixed(0)}",
-                    style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
               ],
             ),
@@ -74,7 +81,11 @@ class CartTile extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.red,
+                  size: 20,
+                ),
                 constraints: const BoxConstraints(),
                 padding: EdgeInsets.zero,
               ),

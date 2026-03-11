@@ -3,7 +3,6 @@ import 'package:get/get_navigation/get_navigation.dart';
 import 'package:tugas_akhir/routes/pages.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 
-
 void main() {
   runApp(const MyApp());
 }
@@ -19,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      initialRoute: AppRoutes.navbar,
+      initialRoute: AppRoutes.kasirboarddesk,
       getPages: AppPages.pages,
     );
   }
