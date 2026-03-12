@@ -11,7 +11,9 @@ class ProductList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Ambil controller yang sudah di-inject
-    final DashboardController controller = Get.find<DashboardController>();
+    final DashboardController controller = Get.put<DashboardController>(
+      DashboardController(),
+    );
 
     return Obx(() {
       if (controller.isLoading.value) {

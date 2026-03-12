@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controller/dashboard_Mobile_controller.dart';
-import '../widget/search_bar.dart';
-import '../widget/section_header.dart';
-import '../widget/product_list.dart';
+import '../../controller/dashboard_Mobile_controller.dart';
+import '../../widget/search_bar.dart';
+import '../../widget/section_header.dart';
+import '../../widget/product_list.dart';
 
 class DashboardMobilePage extends StatelessWidget {
   // Gunakan Get.find jika controller sudah di-put di level main/binding,
   // atau Get.put jika ini entry point pertama.
+
+  DashboardMobilePage({super.key});
   final DashboardController controller = Get.put(DashboardController());
 
   @override
@@ -38,7 +40,7 @@ class DashboardMobilePage extends StatelessWidget {
 
                 // 2. Greeting Section
                 const Text(
-                  "Halo, Amba!",
+                  "Halo, Someone!",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const Text(
@@ -70,7 +72,9 @@ class DashboardMobilePage extends StatelessWidget {
 
                 SectionHeader(title: "Produk Terbaru"),
 
-                ProductList(tagBuilder: (index) => "New"),
+                ProductList(
+                  tagBuilder: (index) => "New",
+                ),
 
                 // Tambahkan SizedBox di paling bawah agar tidak terlalu mepet dengan Navbar
                 const SizedBox(height: 20),
