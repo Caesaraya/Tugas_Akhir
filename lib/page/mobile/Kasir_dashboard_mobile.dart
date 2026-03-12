@@ -40,7 +40,7 @@ class KasirDashboardMobile extends StatelessWidget {
 
                 // 2. Greeting Section
                 const Text(
-                  "Halo, Amba!",
+                  "Halo, Someone!",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const Text(
