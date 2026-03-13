@@ -19,6 +19,9 @@ class CartController extends GetxController {
           name: product.name,
           price: product.price,
           discount: product.discount,
+          qty: 1,
+          
+          
         ),
       );
     }
@@ -42,18 +45,28 @@ class CartController extends GetxController {
     var item = cartItems.firstWhereOrNull(
       (item) => item.productId == productId,
     );
-    if (item != null) {
-      if (item.qty > 1) {
-        item.qty--;
-      } else {
-        removeFromCart(productId);
-      }
+    if (item != null && item.qty > 1) {
+      item.qty--;
       cartItems.refresh();
     }
   }
 
+  // 1. Menghitung Harga Total Akhir (Sudah termasuk potongan diskon)
   double get totalPrice {
-    return cartItems.fold(0, (sum, item) => sum + item.total);
+    return cartItems.fold(0, (sum, item) {
+      double hargaSetelahDiskon = item.price - item.discount;
+      return sum + (hargaSetelahDiskon * item.qty);
+    });
+  }
+
+  // 2. Menghitung Subtotal (Harga Asli tanpa diskon)
+  double get subtotal {
+    return cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
+  }
+
+  // 3. Menghitung Total Nominal Diskon (Tanda penghematan)
+  double get totalDiscount {
+    return cartItems.fold(0, (sum, item) => sum + (item.discount * item.qty));
   }
 
   int get itemCount {
