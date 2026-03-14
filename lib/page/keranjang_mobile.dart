@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/widget/payment_method.dart';
+import 'package:tugas_akhir/page/sukses_mobile_page.dart';
 
 class KeranjangMobilePage extends StatelessWidget {
   // Gunakan find agar data tetap konsisten dari halaman sebelumnya
@@ -11,15 +13,13 @@ class KeranjangMobilePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        
         title: const Text("Keranjang", 
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () => Get.back(),
-        ),
+      
       ),
       body: Obx(() {
         if (cartController.cartItems.isEmpty) {
@@ -118,6 +118,11 @@ class KeranjangMobilePage extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Rincian Subtotal
+                    PaymentMethodSection(), 
+    
+    const SizedBox(height: 16),
+    const Divider(thickness: 1),
+    const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -169,6 +174,8 @@ class KeranjangMobilePage extends StatelessWidget {
                           elevation: 0,
                         ),
                         onPressed: () {
+                       
+                        Get.to( () => SuksesMobilePage());
                         
                         },
                         child: const Text("Bayar Sekarang", 

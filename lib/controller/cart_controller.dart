@@ -4,7 +4,7 @@ import 'package:tugas_akhir/models/product.dart';
 
 class CartController extends GetxController {
   var cartItems = <CartItem>[].obs;
-
+var selectedPayment = 'cash'.obs; 
   void addToCart(Product product) {
     var existingItem = cartItems.firstWhereOrNull(
       (item) => item.productId == product.id,
@@ -49,6 +49,10 @@ class CartController extends GetxController {
       item.qty--;
       cartItems.refresh();
     }
+  }
+  void clearCart() {
+    cartItems.clear(); 
+    selectedPayment.value = 'cash'; 
   }
 
   // 1. Menghitung Harga Total Akhir (Sudah termasuk potongan diskon)
