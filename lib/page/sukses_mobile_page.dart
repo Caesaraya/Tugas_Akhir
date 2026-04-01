@@ -10,10 +10,16 @@ class SuksesMobilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Logika penentuan label tetap di sini (sebagai pengelola data)
+    // 1. Tentukan label metode pembayaran
     String methodLabel = cartController.selectedPayment.value == "va" 
         ? "Virtual Account" 
         : (cartController.selectedPayment.value == "qris" ? "QRIS" : "Tunai / Cash");
+
+    // 2. Tentukan nilai yang ditampilkan untuk baris metode pembayaran
+    // Jika Cash, tampilkan inputUang. Jika VA/QRIS, tampilkan totalPrice (karena uang pas)
+    String paymentValue = cartController.selectedPayment.value == "cash"
+        ? "Rp ${cartController.inputUang.value.toInt()}"
+        : "Rp ${cartController.totalPrice.toInt()}";
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -22,27 +28,34 @@ class SuksesMobilePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SuccessHeader(), // Widget Header
+            SuccessHeader(), 
             const SizedBox(height: 40),
 
-            // Rincian Pembayaran menggunakan widget InfoRow
+            // Menampilkan Total Tagihan (Harga asli)
             InfoRow(label: "Total Tagihan", value: "Rp ${cartController.totalPrice.toInt()}"),
-            InfoRow(label: methodLabel, value: "Rp ${cartController.totalPrice.toInt()}"),
+            
+            // Menampilkan Nominal yang Dibayarkan (Tunai/VA/QRIS)
+            InfoRow(label: methodLabel, value: paymentValue),
             
             const Divider(thickness: 1.5, height: 30),
             
-            InfoRow(label: "Kembalian", value: "Rp 0", isBold: true),
+            // Menampilkan Kembalian secara dinamis dari controller
+            InfoRow(
+              label: "Kembalian", 
+              value: "Rp ${cartController.kembalian.toInt()}", 
+              isBold: true
+            ),
+            
             const SizedBox(height: 50),
 
-            // Widget Tombol Aksi
             SuccessActions(
               onPrint: () => print("Proses Print..."),
               onFinish: () {
                 cartController.clearCart();
-              Get.to(() => NavbarPage());
+                Get.offAll(() => NavbarPage());
               },
             ),
-          ],
+          ],  
         ),
       ),
     );

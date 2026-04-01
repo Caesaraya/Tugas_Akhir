@@ -5,6 +5,7 @@ import 'package:tugas_akhir/models/product.dart';
 class CartController extends GetxController {
   var cartItems = <CartItem>[].obs;
 var selectedPayment = 'cash'.obs; 
+var inputUang = 0.0.obs;
   void addToCart(Product product) {
     var existingItem = cartItems.firstWhereOrNull(
       (item) => item.productId == product.id,
@@ -50,9 +51,18 @@ var selectedPayment = 'cash'.obs;
       cartItems.refresh();
     }
   }
+ void setInputUang(String value) {
+    if (value.isEmpty) {
+      inputUang.value = 0;
+    } else {
+      // Menghapus karakter non-numeric jika ada, lalu parse
+      inputUang.value = double.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    }
+  }
   void clearCart() {
     cartItems.clear(); 
-    selectedPayment.value = 'cash'; 
+    selectedPayment.value = 'cash';
+    inputUang.value = 0.0; 
   }
 
   // 1. Menghitung Harga Total Akhir (Sudah termasuk potongan diskon)
@@ -67,6 +77,13 @@ var selectedPayment = 'cash'.obs;
   double get subtotal {
     return cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
   }
+  double get kembalian {
+    if (inputUang.value > totalPrice) {
+      return inputUang.value - totalPrice;
+    }
+    return 0.0;
+  }
+  bool get isUangCukup => inputUang.value >= totalPrice && totalPrice > 0;
 
   // 3. Menghitung Total Nominal Diskon (Tanda penghematan)
   double get totalDiscount {

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/widget/payment_method.dart';
 import 'package:tugas_akhir/page/sukses_mobile_page.dart';
+import 'package:tugas_akhir/page/kalkulator_mobile.dart';
 
 class KeranjangMobilePage extends StatelessWidget {
   // Gunakan find agar data tetap konsisten dari halaman sebelumnya
@@ -164,24 +165,32 @@ class KeranjangMobilePage extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Tombol Bayar
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange.shade900,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                          elevation: 0,
-                        ),
-                        onPressed: () {
-                       
-                        Get.to( () => SuksesMobilePage());
-                        
-                        },
-                        child: const Text("Bayar Sekarang", 
-                          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                      ),
-                    )
+                  // Tombol Bayar
+SizedBox(
+  width: double.infinity,
+  height: 55,
+  child: ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.orange.shade900,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 0,
+    ),
+    onPressed: () {
+      // LOGIKA PERCABANGAN DISINI
+      if (cartController.selectedPayment.value == 'cash') {
+        // Jika pilih Cash, arahkan ke Kalkulator
+        Get.to(() => KalkulatorCashPage());
+      } else {
+        // Jika pilih selain Cash (QRIS/VA), langsung ke halaman sukses
+        Get.offAll(() => SuksesMobilePage());
+      }
+    },
+    child: const Text(
+      "Bayar Sekarang", 
+      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)
+    ),
+  ),
+)
                   ],
                 ),
               ),
