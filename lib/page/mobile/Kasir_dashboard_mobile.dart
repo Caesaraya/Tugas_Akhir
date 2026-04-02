@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controller/dashboard_Mobile_controller.dart';
-import '../../widget/search_bar.dart';
-import '../../widget/section_header.dart';
-import '../../widget/product_list.dart';
+import '../../widget/widget mobile/search_bar.dart';
+import '../../widget/widget mobile/section_header.dart';
+import '../../widget/widget mobile/product_list.dart';
 
 class KasirDashboardMobile extends StatelessWidget {
   // Gunakan Get.find jika controller sudah di-put di level main/binding,

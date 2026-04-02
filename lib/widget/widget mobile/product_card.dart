@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Tambahkan ini
-import 'package:tugas_akhir/controller/cart_controller.dart'; // Sesuaikan path ini
-import '../models/product.dart';
+import 'package:tugas_akhir/controller/cart_controller.dart'; // Tambahkan ini
+import 'package:tugas_akhir/models/product.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -11,18 +11,17 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Panggil CartController agar bisa digunakan
+    // Mencari CartController yang sudah di-inject
     final CartController cartController = Get.find<CartController>();
 
     double cardWidth = MediaQuery.of(context).size.width * 0.44;
 
-    // 2. Bungkus seluruh kartu dengan GestureDetector
     return GestureDetector(
       onTap: () {
-        // 3. Eksekusi fungsi tambah ke keranjang
+        // AKSI SAAT DIKLIK:
         cartController.addToCart(product);
 
-        // 4. Berikan feedback visual (Snackbar)
+        // Opsional: Beri feedback snackbar
       },
       child: Container(
         width: cardWidth,
@@ -32,7 +31,7 @@ class ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1), // Dibuat lebih soft
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -68,7 +67,7 @@ class ProductCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black54,
+                      color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(

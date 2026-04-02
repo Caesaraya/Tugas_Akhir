@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/cart_item.dart'; // Sesuaikan path model CartItem kamu
+import 'package:tugas_akhir/models/cart_item.dart';
 
 class CartTile extends StatelessWidget {
   final CartItem item;
@@ -123,4 +123,5 @@ class CartTile extends StatelessWidget {
       ),
     );
   }
+  
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controller/cart_controller.dart';
-import '../cart_item.dart';
+import '../widget mobile/cart_item.dart';
 
 class CartPanelDesktop extends StatelessWidget {
   const CartPanelDesktop({super.key});
