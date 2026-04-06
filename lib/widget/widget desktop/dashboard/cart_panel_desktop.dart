@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controller/cart_controller.dart';
-import '../widget mobile/cart_item.dart';
+import '../../../controller/cart_controller.dart';
+import '../../widget mobile/cart_item.dart';
 
 class CartPanelDesktop extends StatelessWidget {
   const CartPanelDesktop({super.key});
@@ -75,7 +75,19 @@ class CartPanelDesktop extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("${cartController.itemCount} | Bayar"),
+                  InkWell(
+                    onTap: cartController.cartItems.isNotEmpty
+                        ? () => Get.toNamed('/KasirBayar')
+                        : null,
+                    child: Text(
+                      "${cartController.itemCount} | Bayar",
+                      style: TextStyle(
+                        color: cartController.cartItems.isNotEmpty
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
                   Text("Rp ${cartController.totalPrice.toStringAsFixed(0)}"),
                 ],
               ),

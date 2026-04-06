@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controller/dashboard_Mobile_controller.dart';
 import '../../controller/cart_controller.dart';
-import '../../widget/widget desktop/product_list_desktop.dart';
-import '../../widget/widget desktop/app_bar_desktop.dart';
-import '../../widget/widget desktop/cart_panel_desktop.dart';
+import '../../widget/widget desktop/dashboard/product_list_desktop.dart';
+import '../../widget/widget desktop/dashboard/app_bar_desktop.dart';
+import '../../widget/widget desktop/dashboard/cart_panel_desktop.dart';
 
 class KasirDashboardDesktop extends StatelessWidget {
   KasirDashboardDesktop({super.key});

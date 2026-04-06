@@ -4,4 +4,6 @@ class AppRoutes {
   static const String navbar = '/navbar';
   //desktop
   static const String kasirboarddesk = '/KasirBoardDesk';
+  static const String kasirbayar = '/KasirBayar';
+  static const String kasirprint = '/KasirSelesai';
 }

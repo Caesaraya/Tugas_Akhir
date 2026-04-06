@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      initialRoute: AppRoutes.navbar,
+      initialRoute: AppRoutes.kasirboarddesk,
       getPages: AppPages.pages,
     );
   }
