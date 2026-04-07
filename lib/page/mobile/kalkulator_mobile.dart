@@ -13,8 +13,10 @@ class KalkulatorCashPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Pembayaran Tunai", 
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Pembayaran Tunai",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -41,45 +43,62 @@ class KalkulatorCashPage extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        const Text("Total Tagihan", 
-                          style: TextStyle(color: Colors.orange, fontWeight: FontWeight.w600)),
+                        const Text(
+                          "Total Tagihan",
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           "Rp ${cartController.totalPrice.toInt()}",
-                          style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 40),
-                  const Text("Masukkan Uang Diterima", 
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    "Masukkan Uang Diterima",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   const SizedBox(height: 12),
 
                   // --- Input Lapangan (Hanya TextField Manual) ---
-                // --- Input Lapangan (Sekarang tinggal panggil) ---
-KalkulatorInput(
-  controller: cartController.textController,
-  onChanged: (value) => cartController.setInputUang(value),
-),
+                  // --- Input Lapangan (Sekarang tinggal panggil) ---
+                  KalkulatorInput(
+                    controller: cartController.textController,
+                    onChanged: (value) => cartController.setInputUang(value),
+                  ),
 
                   const SizedBox(height: 60),
-                  
+
                   // --- Tampilan Kembalian ---
                   Center(
                     child: Column(
                       children: [
-                        const Text("Kembalian", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                        const Text(
+                          "Kembalian",
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
                         const SizedBox(height: 8),
-                        Obx(() => Text(
-                          "Rp ${cartController.kembalian.toInt()}",
-                          style: TextStyle(
-                            fontSize: 48, 
-                            fontWeight: FontWeight.bold, 
-                            color: cartController.isUangCukup ? Colors.green : Colors.red[300]
+                        Obx(
+                          () => Text(
+                            "Rp ${cartController.kembalian.toInt()}",
+                            style: TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                              color: cartController.isUangCukup
+                                  ? Colors.green
+                                  : Colors.red[300],
+                            ),
                           ),
-                        )),
+                        ),
                       ],
                     ),
                   ),
@@ -94,20 +113,30 @@ KalkulatorInput(
             child: SizedBox(
               width: double.infinity,
               height: 60,
-              child: Obx(() => ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange.shade900,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  elevation: 0,
-                  disabledBackgroundColor: Colors.grey[300],
+              child: Obx(
+                () => ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange.shade900,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    elevation: 0,
+                    disabledBackgroundColor: Colors.grey[300],
+                  ),
+                  // Navigasi menggunakan Get.offAll agar arrow back hilang di halaman sukses
+                  onPressed: cartController.isUangCukup
+                      ? () => Get.offAll(() => SuksesMobilePage())
+                      : null,
+                  child: const Text(
+                    "Konfirmasi & Bayar",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-                // Navigasi menggunakan Get.offAll agar arrow back hilang di halaman sukses
-                onPressed: cartController.isUangCukup 
-                  ? () => Get.offAll(() => SuksesMobilePage())
-                  : null,
-                child: const Text("Konfirmasi & Bayar", 
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-              )),
+              ),
             ),
           ),
         ],

@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controller/dashboard_Mobile_controller.dart';
-import '../../widget/widget mobile/search_bar.dart';
-import '../../widget/widget mobile/section_header.dart';
-import '../../widget/widget mobile/product_list.dart';
+import 'package:tugas_akhir/controller/dashboard_Mobile_controller.dart';
+import 'package:tugas_akhir/widget/widget mobile/search_bar.dart';
+import 'package:tugas_akhir/widget/widget mobile/section_header.dart';
+import 'package:tugas_akhir/widget/widget mobile/product_list.dart';
 
 class KasirDashboardMobile extends StatelessWidget {
-  // Gunakan Get.find jika controller sudah di-put di level main/binding,
-  // atau Get.put jika ini entry point pertama.
-
   KasirDashboardMobile({super.key});
   final DashboardController controller = Get.put(DashboardController());
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDFBFA),
-      // Body tidak lagi menggunakan Stack/NavbarPage di dalamnya
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async => controller.fetchProducts(),
