@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
+import 'package:tugas_akhir/widget/widget mobile/kalkulator_input.dart';
 
 class KalkulatorCashPage extends StatelessWidget {
   final CartController cartController = Get.find();
@@ -57,27 +58,11 @@ class KalkulatorCashPage extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // --- Input Lapangan (Hanya TextField Manual) ---
-                  TextField(
-                    controller: textController,
-                    onChanged: (value) => cartController.setInputUang(value),
-                    keyboardType: TextInputType.number,
-                    autofocus: true,
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                      prefixText: "Rp ",
-                      hintText: "0",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15), 
-                        borderSide: BorderSide(color: Colors.grey.shade300)
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15), 
-                        borderSide: BorderSide(color: Colors.orange.shade400, width: 2)
-                      ),
-                    ),
-                  ),
+                // --- Input Lapangan (Sekarang tinggal panggil) ---
+KalkulatorInput(
+  controller: cartController.textController,
+  onChanged: (value) => cartController.setInputUang(value),
+),
 
                   const SizedBox(height: 60),
                   

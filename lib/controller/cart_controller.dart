@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/product.dart';
+import 'package:flutter/material.dart';
 
 class CartController extends GetxController {
-  var cartItems = <CartItem>[].obs;
+  final textController = TextEditingController();
+var cartItems = <CartItem>[].obs;
 var selectedPayment = 'cash'.obs; 
 var inputUang = 0.0.obs;
 
@@ -39,6 +41,12 @@ var inputUang = 0.0.obs;
       item.qty++;
       cartItems.refresh();
     }
+  }
+    @override
+  void onClose() {
+    // 2. Penting untuk menghapus controller dari memori
+    textController.dispose();
+    super.onClose();
   }
 
   void decreaseQty(int productId) {
@@ -95,4 +103,24 @@ var inputUang = 0.0.obs;
   int get itemCount {
     return cartItems.length;
   }
+  String get paymentMethodLabel {
+  switch (selectedPayment.value) {
+    case 'va': return "Virtual Account";
+    case 'qris': return "QRIS";
+    default: return "Tunai / Cash";
+  }
+}
+
+String get paymentDisplayValue {
+  double value = selectedPayment.value == "cash" 
+      ? inputUang.value 
+      : totalPrice;
+  return "Rp ${value.toInt()}";
+}
+
+String get kembalianDisplay {
+  return selectedPayment.value == "cash" 
+      ? "Rp ${kembalian.toInt()}" 
+      : "Rp 0";
+}
 }
