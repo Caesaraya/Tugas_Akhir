@@ -4,7 +4,6 @@ import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/payment_method.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
-import 'package:tugas_akhir/widget/widget%20mobile/delete_validation.dart';
 
 class KeranjangMobilePage extends StatelessWidget {
   final CartController cartController = Get.put(CartController());
@@ -34,7 +33,10 @@ class KeranjangMobilePage extends StatelessWidget {
             // Ini akan mengambil sisa ruang yang ada di atas
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 itemCount: cartController.cartItems.length,
                 itemBuilder: (context, index) {
                   var item = cartController.cartItems[index];
@@ -43,7 +45,10 @@ class KeranjangMobilePage extends StatelessWidget {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      border: Border.all(color: Colors.blue.shade400, width: 1.5),
+                      border: Border.all(
+                        color: Colors.blue.shade400,
+                        width: 1.5,
+                      ),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -52,9 +57,18 @@ class KeranjangMobilePage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(item.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              Text(
+                                item.name,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               const SizedBox(height: 4),
-                              Text("${item.qty} X  |  Rp ${(item.price - item.discount).toInt()}", style: const TextStyle(fontSize: 14)),
+                              Text(
+                                "${item.qty} X  |  Rp ${(item.price - item.discount).toInt()}",
+                                style: const TextStyle(fontSize: 14),
+                              ),
                             ],
                           ),
                         ),
@@ -62,41 +76,61 @@ class KeranjangMobilePage extends StatelessWidget {
                         Row(
                           children: [
                             IconButton(
-                              onPressed: item.qty > 1 ? () => cartController.decreaseQty(item.productId) : null,
-                              icon: Icon(Icons.remove_circle_outline, color: item.qty > 1 ? Colors.orange : Colors.grey.shade400),
+                              onPressed: item.qty > 1
+                                  ? () => cartController.decreaseQty(
+                                      item.productId,
+                                    )
+                                  : null,
+                              icon: Icon(
+                                Icons.remove_circle_outline,
+                                color: item.qty > 1
+                                    ? Colors.orange
+                                    : Colors.grey.shade400,
+                              ),
                             ),
-                            Text("${item.qty}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              "${item.qty}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             IconButton(
-                              onPressed: () => cartController.increaseQty(item.productId),
-                              icon: const Icon(Icons.add_circle_outline, color: Colors.orange),
+                              onPressed: () =>
+                                  cartController.increaseQty(item.productId),
+                              icon: const Icon(
+                                Icons.add_circle_outline,
+                                color: Colors.orange,
+                              ),
                             ),
-                          IconButton(
-  onPressed: () {
-    // Panggil widget dialog yang baru dibuat
-    DeleteValidation.show(
-      productName: item.name,
-      onConfirm: () {
-        cartController.removeFromCart(item.productId);
-        Get.back(); // Tutup dialog
-        
-        // Notifikasi sukses hapus
-        Get.snackbar(
-          "Berhasil", 
-          "${item.name} dihapus",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.black87,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(15),
-        );
-      },
-    );
-  },
-  icon: const Icon(
-    Icons.delete_outline,
-    color: Colors.brown,
-    size: 28,
-  ),
-),
+                            IconButton(
+                              onPressed: () {
+                                // Panggil widget dialog yang baru dibuat
+                                DeleteValidation.show(
+                                  productName: item.name,
+                                  onConfirm: () {
+                                    cartController.removeFromCart(
+                                      item.productId,
+                                    );
+                                    Get.back(); // Tutup dialog
+
+                                    // Notifikasi sukses hapus
+                                    Get.snackbar(
+                                      "Berhasil",
+                                      "${item.name} dihapus",
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.black87,
+                                      colorText: Colors.white,
+                                      margin: const EdgeInsets.all(15),
+                                    );
+                                  },
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.brown,
+                                size: 28,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -112,7 +146,9 @@ class KeranjangMobilePage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(30), // Diperkecil sedikit agar tidak terlalu makan tempat
+                  topLeft: Radius.circular(
+                    30,
+                  ), // Diperkecil sedikit agar tidak terlalu makan tempat
                   topRight: Radius.circular(30),
                 ),
                 boxShadow: [
@@ -123,7 +159,8 @@ class KeranjangMobilePage extends StatelessWidget {
                   ),
                 ],
               ),
-              child: SingleChildScrollView( // Tambahkan ini agar aman jika keyboard muncul atau layar sangat pendek
+              child: SingleChildScrollView(
+                // Tambahkan ini agar aman jika keyboard muncul atau layar sangat pendek
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -132,23 +169,42 @@ class KeranjangMobilePage extends StatelessWidget {
 
                     const SizedBox(height: 12),
                     const Divider(thickness: 1),
-                    
+
                     // Rincian Subtotal
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Subtotal", style: TextStyle(color: Colors.grey, fontSize: 14)),
-                        Text("Rp ${cartController.subtotal.toInt()}", style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                        const Text(
+                          "Subtotal",
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                        ),
+                        Text(
+                          "Rp ${cartController.subtotal.toInt()}",
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
-                    
+
                     if (cartController.totalDiscount > 0) ...[
                       const SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("Potongan Diskon", style: TextStyle(color: Colors.red, fontSize: 14)),
-                          Text("- Rp ${cartController.totalDiscount.toInt()}", style: const TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.bold)),
+                          const Text(
+                            "Potongan Diskon",
+                            style: TextStyle(color: Colors.red, fontSize: 14),
+                          ),
+                          Text(
+                            "- Rp ${cartController.totalDiscount.toInt()}",
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -162,10 +218,19 @@ class KeranjangMobilePage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Total Pesanan:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const Text(
+                          "Total Pesanan:",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         Text(
                           "Rp ${cartController.totalPrice.toInt()}",
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
@@ -179,7 +244,9 @@ class KeranjangMobilePage extends StatelessWidget {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange.shade900,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           elevation: 0,
                         ),
                         onPressed: () {
@@ -189,7 +256,14 @@ class KeranjangMobilePage extends StatelessWidget {
                             Get.offAll(() => SuksesMobilePage());
                           }
                         },
-                        child: const Text("Bayar Sekarang", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          "Bayar Sekarang",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
