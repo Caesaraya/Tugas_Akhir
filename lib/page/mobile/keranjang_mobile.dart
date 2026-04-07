@@ -4,6 +4,7 @@ import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/payment_method.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
+import 'package:tugas_akhir/widget/widget mobile/delete_validation.dart';
 
 class KeranjangMobilePage extends StatelessWidget {
   final CartController cartController = Get.put(CartController());
