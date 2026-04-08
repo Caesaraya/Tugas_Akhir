@@ -22,16 +22,12 @@ class KeranjangMobilePage extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
       ),
-      // GANTI STACK MENJADI COLUMN
       body: Obx(() {
         if (cartController.cartItems.isEmpty) {
           return const Center(child: Text("Belum ada roti di keranjang"));
         }
-
         return Column(
           children: [
-            // 1. LIST ITEM (DIBUNGKUS EXPANDED)
-            // Ini akan mengambil sisa ruang yang ada di atas
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(
@@ -73,7 +69,6 @@ class KeranjangMobilePage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        // Bagian tombol plus minus tetap sama seperti kode anda
                         Row(
                           children: [
                             IconButton(
@@ -112,9 +107,7 @@ class KeranjangMobilePage extends StatelessWidget {
                                     cartController.removeFromCart(
                                       item.productId,
                                     );
-                                    Get.back(); // Tutup dialog
-
-                                    // Notifikasi sukses hapus
+                                    Get.back(); 
                                     Get.snackbar(
                                       "Berhasil",
                                       "${item.name} dihapus",
@@ -140,8 +133,6 @@ class KeranjangMobilePage extends StatelessWidget {
                 },
               ),
             ),
-
-            // 2. PANEL PEMBAYARAN (TANPA ALIGN, OTOMATIS DI BAWAH COLUMN)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
@@ -149,7 +140,7 @@ class KeranjangMobilePage extends StatelessWidget {
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(
                     30,
-                  ), // Diperkecil sedikit agar tidak terlalu makan tempat
+                  ), 
                   topRight: Radius.circular(30),
                 ),
                 boxShadow: [
@@ -161,17 +152,12 @@ class KeranjangMobilePage extends StatelessWidget {
                 ],
               ),
               child: SingleChildScrollView(
-                // Tambahkan ini agar aman jika keyboard muncul atau layar sangat pendek
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Metode Pembayaran
                     PaymentMethodSection(),
-
                     const SizedBox(height: 12),
                     const Divider(thickness: 1),
-
-                    // Rincian Subtotal
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -188,7 +174,6 @@ class KeranjangMobilePage extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     if (cartController.totalDiscount > 0) ...[
                       const SizedBox(height: 4),
                       Row(
@@ -209,13 +194,10 @@ class KeranjangMobilePage extends StatelessWidget {
                         ],
                       ),
                     ],
-
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Divider(thickness: 1),
                     ),
-
-                    // Total
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -235,10 +217,7 @@ class KeranjangMobilePage extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 16),
-
-                    // Tombol Bayar
                     SizedBox(
                       width: double.infinity,
                       height: 50,

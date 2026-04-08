@@ -32,7 +32,6 @@ class KalkulatorCashPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- Card Total Tagihan ---
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
@@ -61,24 +60,17 @@ class KalkulatorCashPage extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 40),
                   const Text(
                     "Masukkan Uang Diterima",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 12),
-
-                  // --- Input Lapangan (Hanya TextField Manual) ---
-                  // --- Input Lapangan (Sekarang tinggal panggil) ---
                   KalkulatorInput(
                     controller: cartController.textController,
                     onChanged: (value) => cartController.setInputUang(value),
                   ),
-
                   const SizedBox(height: 60),
-
-                  // --- Tampilan Kembalian ---
                   Center(
                     child: Column(
                       children: [
@@ -106,8 +98,6 @@ class KalkulatorCashPage extends StatelessWidget {
               ),
             ),
           ),
-
-          // --- Tombol Konfirmasi ---
           Padding(
             padding: const EdgeInsets.all(24),
             child: SizedBox(
@@ -123,7 +113,6 @@ class KalkulatorCashPage extends StatelessWidget {
                     elevation: 0,
                     disabledBackgroundColor: Colors.grey[300],
                   ),
-                  // Navigasi menggunakan Get.offAll agar arrow back hilang di halaman sukses
                   onPressed: cartController.isUangCukup
                       ? () => Get.offAll(() => SuksesMobilePage())
                       : null,

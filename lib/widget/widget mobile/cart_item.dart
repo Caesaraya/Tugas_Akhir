@@ -33,17 +33,7 @@ class CartTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Placeholder Gambar (karena model CartItem kamu belum ada image,
-          // sementara pakai icon atau tambahkan field image nanti)
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.bakery_dining, color: Colors.brown),
-          ),
+  
           const SizedBox(width: 12),
 
           // Info Produk

@@ -1,12 +1,12 @@
 import 'package:get/get.dart';
 import 'package:tugas_akhir/api%20service/api_service.dart';
 import 'package:tugas_akhir/models/product.dart';
+import 'package:flutter/material.dart';
 
 
 class DashboardController extends GetxController {
   var isLoading = true.obs;
   var productList = <Product>[].obs;
-  var selectedIndex = 0.obs;
   var filteredList = <Product>[].obs;
 
   @override
@@ -27,9 +27,10 @@ class DashboardController extends GetxController {
       isLoading(false);
     }
   }
+
   void filterProducts(String query) {
     if (query.isEmpty) {
-      filteredList.assignAll(productList); // Jika kosong, tampilkan semua
+      filteredList.assignAll(productList);
     } else {
       var result = productList.where((product) {
         return product.name.toLowerCase().contains(query.toLowerCase());

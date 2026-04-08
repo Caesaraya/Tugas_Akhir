@@ -17,11 +17,10 @@ class KasirDashboardMobile extends StatelessWidget {
           onRefresh: () async => controller.fetchProducts(),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. Logo Header
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 20, bottom: 10),
@@ -32,8 +31,6 @@ class KasirDashboardMobile extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // 2. Greeting Section
                 const Text(
                   "Halo, Someone!",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -42,34 +39,23 @@ class KasirDashboardMobile extends StatelessWidget {
                   "Mau pesan roti apa hari ini?",
                   style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
-
                 const SizedBox(height: 20),
-
-                // 3. Search Bar Widget
                 MySearchBar(
                   onChanged: (value) {
                     // Panggil fungsi filter setiap kali pengguna mengetik
                     controller.filterProducts(value);
                   },
                 ),
-
                 const SizedBox(height: 30),
-
-                // 4. Section Header
                 SectionHeader(title: "Rekomendasi Terlaris"),
-
                 // 5. Product List (Horizontal)
                 ProductList(
+                  limit: 5,
                   tagBuilder: (index) => index == 0 ? "Hot Item" : "New",
                 ),
-
                 const SizedBox(height: 30),
-
                 SectionHeader(title: "Produk Terbaru"),
-
                 ProductList(tagBuilder: (index) => "New"),
-
-                // Tambahkan SizedBox di paling bawah agar tidak terlalu mepet dengan Navbar
                 const SizedBox(height: 20),
               ],
             ),
