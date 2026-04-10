@@ -36,7 +36,6 @@ class SuksesMobilePage extends StatelessWidget {
             SuccessActions(
               onPrint: () => print("Proses Print..."),
               onFinish: () {
-                controller.clearCart();
                 Get.offAll(() => NavbarPage());
               },
             ),

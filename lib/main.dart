@@ -3,7 +3,9 @@ import 'package:get/get_navigation/get_navigation.dart';
 import 'package:tugas_akhir/routes/pages.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 
+
 void main() {
+
   runApp(const MyApp());
 }
 

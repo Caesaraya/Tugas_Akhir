@@ -16,10 +16,8 @@ class NavbarPage extends StatelessWidget {
           onTap: (index) => navbarController.changePage(index),
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart),
-              label: "Keranjang",
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Keranjang"),
+            BottomNavigationBarItem(icon: Icon(Icons.history), label: "Riwayat"),
           ],
         ),
       ),

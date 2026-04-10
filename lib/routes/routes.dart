@@ -5,6 +5,7 @@ class AppRoutes {
   static const String kalkulator = '/kalkulator';
   static const String keranjang = '/keranjang';
   static const String sukses = '/sukses';
+  static const String riwayat = '/riwayat';
   //desktop
   static const String kasirboarddesk = '/KasirBoardDesk';
   static const String kasirbayar = '/KasirBayar';

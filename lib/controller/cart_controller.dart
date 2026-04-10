@@ -2,9 +2,11 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
+import 'package:tugas_akhir/controller/riwayat_controller.dart';
 
 class CartController extends GetxController {
   final textController = TextEditingController();
+
 var cartItems = <CartItem>[].obs;
 var selectedPayment = 'cash'.obs; 
 var inputUang = 0.0.obs;
@@ -75,6 +77,7 @@ var inputUang = 0.0.obs;
     selectedPayment.value = 'cash';
     inputUang.value = 0.0; 
   }
+
 
  double get totalPrice {
     return cartItems.fold(0, (sum, item) {
