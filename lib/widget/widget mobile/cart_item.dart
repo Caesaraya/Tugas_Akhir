@@ -64,8 +64,6 @@ class CartTile extends StatelessWidget {
               ],
             ),
           ),
-
-          // Kontrol Jumlah (Qty)
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -82,7 +80,7 @@ class CartTile extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  _qtyButton(Icons.remove, onRemove),
+                  Button(Icons.remove, onRemove),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
@@ -90,7 +88,7 @@ class CartTile extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                  _qtyButton(Icons.add, onAdd),
+                  Button(Icons.add, onAdd),
                 ],
               ),
             ],
@@ -99,8 +97,7 @@ class CartTile extends StatelessWidget {
       ),
     );
   }
-
-  Widget _qtyButton(IconData icon, VoidCallback action) {
+  Widget Button(IconData icon, VoidCallback action) {
     return GestureDetector(
       onTap: action,
       child: Container(
