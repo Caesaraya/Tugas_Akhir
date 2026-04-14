@@ -7,11 +7,12 @@ class ProductCard extends StatelessWidget {
   final Product product;
   final String tag;
 
-  const ProductCard({super.key, required this.product, this.tag = "Roti"});
+   ProductCard({super.key, required this.product, this.tag = "Roti"});
+   final CartController cartController = Get.find<CartController>();
 
   @override
   Widget build(BuildContext context) {
-    final CartController cartController = Get.find<CartController>();
+   
 
     return GestureDetector(
       onTap: () => cartController.addToCart(product),

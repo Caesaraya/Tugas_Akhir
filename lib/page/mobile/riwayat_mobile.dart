@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/riwayat_controller.dart';
-
-import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
+import 'package:tugas_akhir/routes/routes.dart';
 
 class RiwayatMobile extends StatelessWidget {
   final RiwayatController riwayatController = Get.put(RiwayatController());
@@ -14,6 +13,7 @@ class RiwayatMobile extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5F2), // Warna background krem bakery
       appBar: AppBar(
+        
         title: const Text(
           "Riwayat Transaksi",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -55,19 +55,13 @@ class RiwayatMobile extends StatelessWidget {
             ),
           );
         }
-
-        // List Riwayat
-      // ... (bagian atas tetap sama)
-
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: riwayatController.transactions.length,
           itemBuilder: (context, index) {
             final trx = riwayatController.transactions[index];
-
             DateTime dt = DateTime.parse(trx['tanggal']);
             String formattedDate = DateFormat('dd MMM yyyy, HH:mm').format(dt);
-
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
@@ -82,10 +76,9 @@ class RiwayatMobile extends StatelessWidget {
                 ],
               ),
               child: ListTile(
-                // --- TAMBAHKAN ONTAP DI SINI ---
                 onTap: () {
-                  Get.to(
-                    () => SuksesMobilePage(), 
+                  Get.toNamed(
+                    AppRoutes.sukses,
                     arguments: {
                       'total': trx['total_harga'],
                       'bayar': trx['jumlah_bayar'],
@@ -95,7 +88,6 @@ class RiwayatMobile extends StatelessWidget {
                     },
                   );
                 },
-                // ------------------------------
                 leading: CircleAvatar(
                   backgroundColor: const Color(0xFFE89336).withOpacity(0.1),
                   child: const Icon(Icons.receipt, color: Color(0xFFE89336)),
@@ -127,8 +119,6 @@ class RiwayatMobile extends StatelessWidget {
             );
           },
         );
-
-// ... (sisanya tetap sama)
       }),
     );
   }

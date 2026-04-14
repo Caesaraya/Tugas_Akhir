@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/riwayat_controller.dart';
 import 'package:tugas_akhir/api%20service/api_service.dart';
 
+
 class CartController extends GetxController {
   final textController = TextEditingController();
 
@@ -78,12 +79,6 @@ class CartController extends GetxController {
     inputUang.value = 0.0;
   }
 
-  // ==========================================
-  // LOGIKA HALAMAN SUKSES (PINDAHAN DARI UI)
-  // ==========================================
-
-  /// Fungsi untuk menyiapkan data yang akan ditampilkan di UI Sukses
-  /// Menangani data dari transaksi baru maupun dari Riwayat (arguments)
   Map<String, String> getSuksesData(dynamic args) {
     if (args != null) {
       // Jika data berasal dari Riwayat (Arguments)
@@ -137,11 +132,7 @@ class CartController extends GetxController {
       }
     }
   }
-
-  // ==========================================
-  // GETTERS
-  // ==========================================
-
+  
   double get totalPrice => cartItems.fold(0, (sum, item) => sum + ((item.price - item.discount) * item.qty));
   double get subtotal => cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
   double get kembalian => inputUang.value > totalPrice ? inputUang.value - totalPrice : 0.0;

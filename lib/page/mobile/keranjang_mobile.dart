@@ -233,7 +233,7 @@ class KeranjangMobilePage extends StatelessWidget {
                           if (cartController.selectedPayment.value == 'cash') {
                             Get.to(() => KalkulatorCashPage());
                           } else {
-                            Get.offAll(() => SuksesMobilePage());
+                            Get.to(() => SuksesMobilePage());
                           }
                         },
                         child: const Text(

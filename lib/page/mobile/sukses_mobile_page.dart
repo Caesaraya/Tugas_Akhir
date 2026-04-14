@@ -8,12 +8,24 @@ class SuksesMobilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Ambil data yang sudah diolah oleh controller
     final data = controller.getSuksesData(Get.arguments);
     final bool isFromHistory = data['isHistory'] == 'true';
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          "Nota Transaksi",
+          style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+          onPressed: () => controller.handleSelesaiAction(isFromHistory),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Column(
@@ -24,12 +36,12 @@ class SuksesMobilePage extends StatelessWidget {
             InfoRow(label: "Total Tagihan", value: data['total']!),
             InfoRow(label: data['label']!, value: data['bayar']!),
             const Divider(thickness: 1.5, height: 30),
-            InfoRow(label: "Kembalian", value: data['kembalian']!, isBold: true),
-            const SizedBox(height: 50),
-            SuccessActions(
-              onPrint: () => print("Proses Print..."),
-              onFinish: () => controller.handleSelesaiAction(isFromHistory),
+            InfoRow(
+              label: "Kembalian",
+              value: data['kembalian']!,
+              isBold: true,
             ),
+            const SizedBox(height: 50),
           ],
         ),
       ),
