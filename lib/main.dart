@@ -5,6 +5,7 @@ import 'package:tugas_akhir/routes/routes.dart';
 
 
 void main() {
+
   runApp(const MyApp());
 }
 
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      initialRoute: AppRoutes.dashboardMobile,
+      initialRoute: AppRoutes.navbar,
       getPages: AppPages.pages,
     );
   }

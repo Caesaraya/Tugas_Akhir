@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/cart_item.dart'; // Sesuaikan path model CartItem kamu
+import 'package:tugas_akhir/models/cart_item.dart';
 
 class CartTile extends StatelessWidget {
   final CartItem item;
@@ -25,7 +25,7 @@ class CartTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black26,
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -33,19 +33,9 @@ class CartTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Placeholder Gambar (karena model CartItem kamu belum ada image, 
-          // sementara pakai icon atau tambahkan field image nanti)
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.bakery_dining, color: Colors.brown),
-          ),
+  
           const SizedBox(width: 12),
-          
+
           // Info Produk
           Expanded(
             child: Column(
@@ -53,7 +43,10 @@ class CartTile extends StatelessWidget {
               children: [
                 Text(
                   item.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 Text(
                   "Rp ${item.price.toStringAsFixed(0)}",
@@ -62,26 +55,32 @@ class CartTile extends StatelessWidget {
                 if (item.discount > 0)
                   Text(
                     "Hemat Rp ${item.discount.toStringAsFixed(0)}",
-                    style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
               ],
             ),
           ),
-
-          // Kontrol Jumlah (Qty)
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               IconButton(
                 onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.red,
+                  size: 20,
+                ),
                 constraints: const BoxConstraints(),
                 padding: EdgeInsets.zero,
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  _qtyButton(Icons.remove, onRemove),
+                  Button(Icons.remove, onRemove),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
@@ -89,7 +88,7 @@ class CartTile extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                  _qtyButton(Icons.add, onAdd),
+                  Button(Icons.add, onAdd),
                 ],
               ),
             ],
@@ -98,8 +97,7 @@ class CartTile extends StatelessWidget {
       ),
     );
   }
-
-  Widget _qtyButton(IconData icon, VoidCallback action) {
+  Widget Button(IconData icon, VoidCallback action) {
     return GestureDetector(
       onTap: action,
       child: Container(
@@ -112,4 +110,5 @@ class CartTile extends StatelessWidget {
       ),
     );
   }
+  
 }
