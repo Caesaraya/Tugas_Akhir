@@ -29,7 +29,7 @@ class PaymentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final PaymentController controller = Get.put(PaymentController());
-    final CartController cartController = Get.put(CartController());
+    final CartController cartController = Get.find<CartController>();
 
     return Scaffold(
       appBar: AppBar(
@@ -64,13 +64,15 @@ class PaymentPage extends StatelessWidget {
                   Obx(
                     () => PaymentMethodWidget(
                       title: "Cash",
+                      value: "cash",
                       selectedMethod: controller.selectedMethod.value,
                       onChanged: controller.onPaymentMethodChanged,
                     ),
                   ),
                   Obx(
                     () => PaymentMethodWidget(
-                      title: "E-wallet/Qris",
+                      title: "QRIS",
+                      value: "qris",
                       selectedMethod: controller.selectedMethod.value,
                       onChanged: controller.onPaymentMethodChanged,
                     ),
@@ -141,6 +143,16 @@ class PaymentPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     onPressed: () {
+                      cartController.selectedPayment.value =
+                          controller.selectedMethod.value;
+                      cartController.inputUang.value =
+                          double.tryParse(
+                            controller.input.value.replaceAll(
+                              RegExp(r'[^0-9]'),
+                              '',
+                            ),
+                          ) ??
+                          0;
                       Get.offAllNamed(AppRoutes.kasirprint);
                     },
                     child: const Text(

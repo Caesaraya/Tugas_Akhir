@@ -12,7 +12,7 @@ class KasirSelesaiDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CartController cartController = Get.put(CartController());
+    final CartController cartController = Get.find<CartController>();
     final PaymentController paymentController = Get.find<PaymentController>();
 
     return Scaffold(
@@ -133,9 +133,7 @@ class KasirSelesaiDesktop extends StatelessWidget {
                     Obx(
                       () => ReceiptRowItem(
                         title: "Metode Pembayaran",
-                        value: paymentController.selectedMethod.value.isEmpty
-                            ? "-"
-                            : paymentController.selectedMethod.value,
+                        value: paymentController.methodLabel,
                       ),
                     ),
 

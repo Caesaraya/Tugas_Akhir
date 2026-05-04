@@ -18,16 +18,7 @@ class TransactionCardDesktop extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          Get.toNamed(
-            AppRoutes.sukses,
-            arguments: {
-              'total': transaction['total_harga'],
-              'bayar': transaction['jumlah_bayar'],
-              'kembalian': transaction['kembalian'],
-              'metode': transaction['metode_pembayaran'],
-              'isFromHistory': true,
-            },
-          );
+          Get.toNamed(AppRoutes.transactionDetail, arguments: transaction);
         },
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -54,6 +45,43 @@ class TransactionCardDesktop extends StatelessWidget {
                 "Metode: ${transaction['metode_pembayaran'].toString().toUpperCase()}",
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
+              const SizedBox(height: 8),
+              if (transaction['items'] != null &&
+                  (transaction['items'] as List).isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Item yang dibeli:",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    ...((transaction['items'] as List<dynamic>).map((item) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Qty: ${item['qty']} x Rp ${double.parse(item['price'].toString()).toInt()}",
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            Text(
+                              "Rp ${double.parse(item['subtotal'].toString()).toInt()}",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList()),
+                  ],
+                ),
               const Spacer(),
               Align(
                 alignment: Alignment.bottomRight,

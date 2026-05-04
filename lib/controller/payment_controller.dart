@@ -25,4 +25,15 @@ class PaymentController extends GetxController {
       input.value = text.replaceAll(RegExp(r'[^0-9]'), '');
     }
   }
+
+  String get methodLabel {
+    switch (selectedMethod.value) {
+      case 'cash':
+        return 'Tunai / Cash';
+      case 'qris':
+        return 'QRIS';
+      default:
+        return selectedMethod.value.isEmpty ? '-' : selectedMethod.value;
+    }
+  }
 }
