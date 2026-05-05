@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/riwayat_controller.dart';
 import 'package:tugas_akhir/api%20service/api_service.dart';
 
-
 class CartController extends GetxController {
   final textController = TextEditingController();
 
@@ -29,8 +28,8 @@ class CartController extends GetxController {
         CartItem(
           productId: product.id,
           name: product.name,
-          price: product.price,
-          discount: product.discount,
+          price: product.price.toDouble(),
+          discount: product.discount.toDouble(),
           qty: 1,
         ),
       );
@@ -69,7 +68,8 @@ class CartController extends GetxController {
     if (value.isEmpty) {
       inputUang.value = 0;
     } else {
-      inputUang.value = double.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+      inputUang.value =
+          double.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
     }
   }
 
@@ -84,7 +84,9 @@ class CartController extends GetxController {
       // Jika data berasal dari Riwayat (Arguments)
       return {
         'total': "Rp ${double.parse(args['total'].toString()).toInt()}",
-        'label': args['metode'] == 'cash' ? "Tunai / Cash" : args['metode'].toString().toUpperCase(),
+        'label': args['metode'] == 'cash'
+            ? "Tunai / Cash"
+            : args['metode'].toString().toUpperCase(),
         'bayar': "Rp ${double.parse(args['bayar'].toString()).toInt()}",
         'kembalian': "Rp ${double.parse(args['kembalian'].toString()).toInt()}",
         'isHistory': 'true',
@@ -107,7 +109,7 @@ class CartController extends GetxController {
       Get.back(); // Hanya kembali jika cuma melihat riwayat
     } else {
       await prosesKeApi(); // Simpan ke database
-      clearCart();        // Bersihkan keranjang
+      clearCart(); // Bersihkan keranjang
       Get.offAllNamed('/navbar'); // Kembali ke home (sesuaikan route namamu)
     }
   }
@@ -132,28 +134,40 @@ class CartController extends GetxController {
       }
     }
   }
-  
-  double get totalPrice => cartItems.fold(0, (sum, item) => sum + ((item.price - item.discount) * item.qty));
-  double get subtotal => cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
-  double get kembalian => inputUang.value > totalPrice ? inputUang.value - totalPrice : 0.0;
+
+  double get totalPrice => cartItems.fold(
+    0,
+    (sum, item) => sum + ((item.price - item.discount) * item.qty),
+  );
+  double get subtotal =>
+      cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
+  double get kembalian =>
+      inputUang.value > totalPrice ? inputUang.value - totalPrice : 0.0;
   bool get isUangCukup => inputUang.value >= totalPrice && totalPrice > 0;
-  double get totalDiscount => cartItems.fold(0, (sum, item) => sum + (item.discount * item.qty));
+  double get totalDiscount =>
+      cartItems.fold(0, (sum, item) => sum + (item.discount * item.qty));
   int get itemCount => cartItems.length;
 
   String get paymentMethodLabel {
     switch (selectedPayment.value) {
-      case 'va': return "Virtual Account";
-      case 'qris': return "QRIS";
-      default: return "Tunai / Cash";
+      case 'va':
+        return "Virtual Account";
+      case 'qris':
+        return "QRIS";
+      default:
+        return "Tunai / Cash";
     }
   }
 
   String get paymentDisplayValue {
-    double value = selectedPayment.value == "cash" ? inputUang.value : totalPrice;
+    double value = selectedPayment.value == "cash"
+        ? inputUang.value
+        : totalPrice;
     return "Rp ${value.toInt()}";
   }
 
-  String get kembalianDisplay => selectedPayment.value == "cash" ? "Rp ${kembalian.toInt()}" : "Rp 0";
+  String get kembalianDisplay =>
+      selectedPayment.value == "cash" ? "Rp ${kembalian.toInt()}" : "Rp 0";
 
   @override
   void onClose() {
