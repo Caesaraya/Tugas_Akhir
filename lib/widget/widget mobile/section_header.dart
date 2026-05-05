@@ -20,16 +20,6 @@ class SectionHeader extends StatelessWidget {
               color: Color(0xFF2D1B1B),
             ),
           ),
-          TextButton(
-            onPressed: () {},
-            child: Text(
-              "Lihat Semua",
-              style: TextStyle(
-                color: Colors.brown[600],
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
         ],
       ),
     );

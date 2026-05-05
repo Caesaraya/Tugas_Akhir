@@ -91,41 +91,48 @@ class ProductCard extends StatelessWidget {
                 ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Rp ${product.price.toStringAsFixed(0)}",
-                    style: const TextStyle(
-                      color: Color(0xFFE89336), // Warna orange bakery
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  if (product.discount > 0)
-                    Text(
-                      "Disc ${product.discount.toStringAsFixed(0)}%",
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                ],
-              ),
+           Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        product.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+      ),
+      const SizedBox(height: 4),
+      // Gunakan Row untuk Harga dan Icon
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            "Rp ${product.price.toStringAsFixed(0)}",
+            style: const TextStyle(
+              color: Color(0xFFE89336), 
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
             ),
+          ),
+          // ICON TAMBAH (Agar user tahu harus diklik)
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE89336),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.add, 
+              color: Colors.white, 
+              size: 16,
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
           ],
         ),
       ),
