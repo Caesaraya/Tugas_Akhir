@@ -4,7 +4,7 @@ import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/success_widgets.dart';
 
 class SuksesMobilePage extends StatelessWidget {
-  final CartController controller = Get.find();
+  final CartController controller = Get.put(CartController());
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,11 @@ class SuksesMobilePage extends StatelessWidget {
         centerTitle: true,
         title: const Text(
           "Nota Transaksi",
-          style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
@@ -33,6 +37,49 @@ class SuksesMobilePage extends StatelessWidget {
           children: [
             SuccessHeader(),
             const SizedBox(height: 40),
+            if (!isFromHistory) ...[
+              const Text(
+                "Detail Pembelian",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: Obx(
+                  () => ListView.builder(
+                    itemCount: controller.cartItems.length,
+                    itemBuilder: (context, index) {
+                      final item = controller.cartItems[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                item.name,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ),
+                            Text(
+                              "Qty: ${item.qty}",
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            Text(
+                              "Rp ${item.total.toInt()}",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
             InfoRow(label: "Total Tagihan", value: data['total']!),
             InfoRow(label: data['label']!, value: data['bayar']!),
             const Divider(thickness: 1.5, height: 30),

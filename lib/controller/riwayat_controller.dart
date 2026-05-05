@@ -16,7 +16,22 @@ class RiwayatController extends GetxController {
     try {
       isLoading(true);
       var data = await ApiService.getTransactions();
-      transactions.assignAll(data); 
+      // Ambil detail untuk setiap transaksi
+      var details = await Future.wait(
+        data.map(
+          (trx) =>
+              ApiService.getTransactionDetail(int.parse(trx['id'].toString())),
+        ),
+      );
+      // Assign items ke setiap transaksi
+      for (int i = 0; i < data.length; i++) {
+        if (details[i] is Map && (details[i] as Map)['items'] != null) {
+          data[i]['items'] = (details[i] as Map)['items'];
+        } else {
+          data[i]['items'] = details[i]; // Jika langsung list
+        }
+      }
+      transactions.assignAll(data);
     } catch (e) {
       Get.snackbar("Error", "Gagal ambil riwayat: $e");
     } finally {

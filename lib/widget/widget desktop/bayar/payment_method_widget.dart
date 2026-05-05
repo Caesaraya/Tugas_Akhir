@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 class PaymentMethodWidget extends StatelessWidget {
   final String title;
+  final String value;
   final String selectedMethod;
   final ValueChanged<String?> onChanged;
 
   const PaymentMethodWidget({
     super.key,
     required this.title,
+    required this.value,
     required this.selectedMethod,
     required this.onChanged,
   });
@@ -25,7 +27,7 @@ class PaymentMethodWidget extends StatelessWidget {
         children: [
           Expanded(child: Text(title)),
           Radio<String>(
-            value: title,
+            value: value,
             groupValue: selectedMethod,
             onChanged: onChanged,
           ),

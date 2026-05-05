@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/routes/routes.dart';
 import '../../../controller/cart_controller.dart';
 import '../../widget mobile/cart_item.dart';
 
@@ -77,7 +78,7 @@ class CartPanelDesktop extends StatelessWidget {
                 children: [
                   InkWell(
                     onTap: cartController.cartItems.isNotEmpty
-                        ? () => Get.toNamed('/KasirBayar')
+                        ? () => Get.toNamed(AppRoutes.kasirbayar)
                         : null,
                     child: Text(
                       "${cartController.itemCount} | Bayar",

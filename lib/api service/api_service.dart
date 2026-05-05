@@ -43,7 +43,7 @@ class ApiService {
             (item) => {
               "product_id": item.productId,
               "qty": item.qty,
-              "price": item.price, 
+              "price": item.price,
               "subtotal": item.total,
             },
           )
@@ -68,7 +68,6 @@ class ApiService {
       throw Exception("Failed to load transactions");
     }
   }
-
 
   static Future<List<dynamic>> getTransactionDetail(int id) async {
     final response = await http.get(Uri.parse("$baseUrl/api/transactions/$id"));
