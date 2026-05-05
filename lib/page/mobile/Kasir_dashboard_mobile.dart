@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/dashboard_Mobile_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/search_bar.dart';
 import 'package:tugas_akhir/widget/widget mobile/section_header.dart';
-import 'package:tugas_akhir/widget/widget mobile/product_list.dart';
 import 'package:tugas_akhir/widget/widget%20mobile/product_card.dart';
 
 class KasirDashboardMobile extends StatelessWidget {
@@ -102,7 +101,7 @@ class KasirDashboardMobile extends StatelessWidget {
                       crossAxisCount: 2,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
-                      childAspectRatio: 0.7,
+                      childAspectRatio: 0.65,
                     ),
                     itemCount: controller.filteredList.length,
                     itemBuilder: (context, index) {
