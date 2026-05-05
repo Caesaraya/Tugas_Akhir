@@ -8,16 +8,28 @@ class ProductCard extends StatelessWidget {
   final String tag;
 
    ProductCard({super.key, required this.product, this.tag = "Roti"});
-   final CartController cartController = Get.find<CartController>();
+   final CartController cartController = Get.put(CartController());
 
   @override
   Widget build(BuildContext context) {
    
 
     return GestureDetector(
-      onTap: () => cartController.addToCart(product),
+      onTap: () {
+      cartController.addToCart(product);
+      
+      // Feedback visual agar kasir tahu produk sudah masuk keranjang
+      Get.snackbar(
+        "Berhasil", 
+        "${product.name} ditambah ke keranjang",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.black87,
+        colorText: Colors.white,
+        duration: const Duration(milliseconds: 800),
+        margin: const EdgeInsets.all(10), // Tambahan agar lebih rapi
+      );
+    },
       child: Container(
-        width: 180, // Lebar tetap agar sinkron dengan ProductList
         margin: const EdgeInsets.only(right: 12, bottom: 10, left: 2),
         decoration: BoxDecoration(
           color: Colors.white,

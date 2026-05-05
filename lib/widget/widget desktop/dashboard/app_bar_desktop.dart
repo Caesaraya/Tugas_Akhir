@@ -49,7 +49,7 @@ class AppBarDesktop extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: TextField(
-                onChanged: (value) => controller.filterProducts(value),
+                // onChanged: (value) => controller.filterProducts(value),
                 decoration: const InputDecoration(
                   prefixIcon: Icon(Icons.search),
                   border: InputBorder.none,

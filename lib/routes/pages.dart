@@ -34,7 +34,7 @@ class AppPages {
       page: () => KasirDashboardDesktop(),
     ),
     GetPage(name: AppRoutes.kasirbayar, page: () => KasirPembayaranDesktop()),
-    GetPage(name: AppRoutes.kasirprint, page: () => KasirSelesaiDesktop()),
+    // GetPage(name: AppRoutes.kasirprint, page: () => KasirSelesaiDesktop()),
     GetPage(
       name: AppRoutes.transactionDetail,
       page: () => DetailScreen(data: Get.arguments),

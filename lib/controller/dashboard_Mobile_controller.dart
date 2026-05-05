@@ -8,6 +8,11 @@ class DashboardController extends GetxController {
   var isLoading = true.obs;
   var productList = <Product>[].obs;
   var filteredList = <Product>[].obs;
+  
+  // Tambahkan state untuk kategori
+  var categories = <String>[].obs;
+  var selectedCategory = "Semua".obs;
+  var lastQuery = "".obs;
 
   @override
   void onInit() {
@@ -21,21 +26,34 @@ class DashboardController extends GetxController {
       var products = await ApiService.getProducts();
       if (products != null) {
         productList.assignAll(products);
-        filteredList.assignAll(products);
+        var uniqueCategories = productList.map((p) => p.jenis).toSet().toList();
+        uniqueCategories.sort(); 
+        categories.assignAll(["Semua", ...uniqueCategories]);
+        applyFilter();
       }
     } finally {
       isLoading(false);
     }
   }
 
-  void filterProducts(String query) {
-    if (query.isEmpty) {
-      filteredList.assignAll(productList);
-    } else {
-      var result = productList.where((product) {
-        return product.name.toLowerCase().contains(query.toLowerCase());
-      }).toList();
-      filteredList.assignAll(result);
-    }
+  // Fungsi tunggal untuk menangani pencarian DAN kategori sekaligus
+  void applyFilter({String? query, String? category}) {
+    // Update state jika ada parameter yang dikirim
+    if (query != null) lastQuery.value = query;
+    if (category != null) selectedCategory.value = category;
+
+    var temp = productList.where((product) {
+      // Cek apakah produk sesuai dengan kategori yang dipilih
+      bool matchCategory = selectedCategory.value == "Semua" || 
+                           product.jenis == selectedCategory.value;
+      
+      // Cek apakah produk sesuai dengan kata kunci pencarian (nama atau barcode)
+      bool matchSearch = product.name.toLowerCase().contains(lastQuery.value.toLowerCase()) ||
+                         product.barcode.contains(lastQuery.value);
+
+      return matchCategory && matchSearch;
+    }).toList();
+
+    filteredList.assignAll(temp);
   }
 }
