@@ -22,6 +22,32 @@ class ApiService {
   }
 
   // ========================
+  // UPDATE PRODUCT
+  // ========================
+  static Future<bool> updateProduct(Product product) async {
+    final url = Uri.parse("$baseUrl/api/products/${product.id}");
+
+    final body = {
+      "name": product.name,
+      "price": product.price,
+      "discount": product.discount,
+      "stock": product.stock,
+      "jenis": product.jenis,
+      "satuan": product.satuan,
+      "barcode": product.barcode,
+      "image": product.image,
+    };
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(body),
+    );
+
+    return response.statusCode == 200;
+  }
+
+  // ========================
   // CREATE TRANSACTION
   // ========================
   static Future<bool> createTransaction({
@@ -43,7 +69,7 @@ class ApiService {
             (item) => {
               "product_id": item.productId,
               "qty": item.qty,
-              "price": item.price, 
+              "price": item.price,
               "subtotal": item.total,
             },
           )
@@ -68,7 +94,6 @@ class ApiService {
       throw Exception("Failed to load transactions");
     }
   }
-
 
   static Future<List<dynamic>> getTransactionDetail(int id) async {
     final response = await http.get(Uri.parse("$baseUrl/api/transactions/$id"));

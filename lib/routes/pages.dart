@@ -3,6 +3,7 @@ import 'package:tugas_akhir/page/desktop/Kasir_dashboard_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_pembayaran_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_selesai_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_riwayat_desktop.dart';
+import 'package:tugas_akhir/page/desktop/Kasir_kelola_produk.dart';
 import 'package:tugas_akhir/page/desktop/transaction_detail_desktop.dart';
 import 'package:tugas_akhir/page/media_query.dart';
 import 'package:tugas_akhir/page/mobile/Kasir_dashboard_mobile.dart';
@@ -34,11 +35,12 @@ class AppPages {
       page: () => KasirDashboardDesktop(),
     ),
     GetPage(name: AppRoutes.kasirbayar, page: () => KasirPembayaranDesktop()),
-    // GetPage(name: AppRoutes.kasirprint, page: () => KasirSelesaiDesktop()),
+    GetPage(name: AppRoutes.kasirprint, page: () => KasirSelesaiDesktop()),
     GetPage(
       name: AppRoutes.transactionDetail,
       page: () => DetailScreen(data: Get.arguments),
     ),
     GetPage(name: AppRoutes.riwayatdesk, page: () => KasirRiwayatDesktop()),
+    GetPage(name: AppRoutes.kelolaProduk, page: () => ProductPage()),
   ];
 }

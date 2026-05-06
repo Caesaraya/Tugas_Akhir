@@ -15,4 +15,5 @@ class AppRoutes {
   static const String riwayatdesk = '/riwayatdesk';
   static const String kalkulatordesk = '/kalkulatordesk';
   static const String transactionDetail = '/transactionDetail';
+  static const String kelolaProduk = '/kelolaProduk';
 }

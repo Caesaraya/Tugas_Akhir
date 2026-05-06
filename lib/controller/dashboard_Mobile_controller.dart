@@ -3,12 +3,11 @@ import 'package:tugas_akhir/api%20service/api_service.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
 
-
 class DashboardController extends GetxController {
   var isLoading = true.obs;
   var productList = <Product>[].obs;
   var filteredList = <Product>[].obs;
-  
+
   // Tambahkan state untuk kategori
   var categories = <String>[].obs;
   var selectedCategory = "Semua".obs;
@@ -27,7 +26,7 @@ class DashboardController extends GetxController {
       if (products != null) {
         productList.assignAll(products);
         var uniqueCategories = productList.map((p) => p.jenis).toSet().toList();
-        uniqueCategories.sort(); 
+        uniqueCategories.sort();
         categories.assignAll(["Semua", ...uniqueCategories]);
         applyFilter();
       }
@@ -44,12 +43,14 @@ class DashboardController extends GetxController {
 
     var temp = productList.where((product) {
       // Cek apakah produk sesuai dengan kategori yang dipilih
-      bool matchCategory = selectedCategory.value == "Semua" || 
-                           product.jenis == selectedCategory.value;
-      
+      bool matchCategory =
+          selectedCategory.value == "Semua" ||
+          product.jenis == selectedCategory.value;
+
       // Cek apakah produk sesuai dengan kata kunci pencarian (nama atau barcode)
-      bool matchSearch = product.name.toLowerCase().contains(lastQuery.value.toLowerCase()) ||
-                         product.barcode.contains(lastQuery.value);
+      bool matchSearch =
+          product.name.toLowerCase().contains(lastQuery.value.toLowerCase()) ||
+          product.barcode.contains(lastQuery.value);
 
       return matchCategory && matchSearch;
     }).toList();

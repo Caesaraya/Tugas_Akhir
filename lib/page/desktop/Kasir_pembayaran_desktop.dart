@@ -101,7 +101,7 @@ class PaymentPage extends StatelessWidget {
                       ),
                       QuickChip(
                         text: "Rp50,000",
-                        onPressed: () => controller.onChipPressed("Rp60,000"),
+                        onPressed: () => controller.onChipPressed("Rp50,000"),
                       ),
                       QuickChip(
                         text: "Rp100,000",

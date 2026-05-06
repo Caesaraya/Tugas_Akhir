@@ -44,6 +44,12 @@ class DesktopNavigationDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             context,
+            icon: Icons.inventory,
+            label: 'Kelola Produk',
+            route: AppRoutes.kelolaProduk,
+          ),
+          _buildDrawerItem(
+            context,
             icon: Icons.history,
             label: 'Riwayat',
             route: AppRoutes.riwayatdesk,

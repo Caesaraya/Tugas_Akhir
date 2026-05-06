@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../controller/dashboard_Mobile_controller.dart';
+import '../../widget mobile/search_bar.dart';
 
 class AppBarDesktop extends StatelessWidget {
   final String title;
@@ -41,19 +42,11 @@ class AppBarDesktop extends StatelessWidget {
           ),
           const Spacer(),
           if (showSearch) ...[
-            Container(
+            SizedBox(
               width: 250,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TextField(
-                // onChanged: (value) => controller.filterProducts(value),
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  border: InputBorder.none,
-                ),
+              child: MySearchBar(
+                hintText: 'Cari produk...',
+                onChanged: (value) => controller.applyFilter(query: value),
               ),
             ),
           ],
