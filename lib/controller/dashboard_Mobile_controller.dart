@@ -12,6 +12,7 @@ class DashboardController extends GetxController {
   var categories = <String>[].obs;
   var selectedCategory = "Semua".obs;
   var lastQuery = "".obs;
+  var errorMessage = "".obs;
 
   @override
   void onInit() {
@@ -22,14 +23,22 @@ class DashboardController extends GetxController {
   void fetchProducts() async {
     try {
       isLoading(true);
+      errorMessage.value = "";
       var products = await ApiService.getProducts();
       if (products != null) {
         productList.assignAll(products);
+        // Extract unique jenis from products
         var uniqueCategories = productList.map((p) => p.jenis).toSet().toList();
         uniqueCategories.sort();
         categories.assignAll(["Semua", ...uniqueCategories]);
         applyFilter();
       }
+    } catch (e) {
+      errorMessage.value = "Gagal memuat produk: $e";
+      Get.snackbar("Error", errorMessage.value, 
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading(false);
     }
@@ -56,5 +65,11 @@ class DashboardController extends GetxController {
     }).toList();
 
     filteredList.assignAll(temp);
+  }
+
+  void resetFilters() {
+    selectedCategory.value = "Semua";
+    lastQuery.value = "";
+    applyFilter();
   }
 }
