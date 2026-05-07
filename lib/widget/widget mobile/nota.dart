@@ -21,13 +21,6 @@ class Nota extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          "RUMAH LEZAA",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-        ),
-        const Text("Bakery & Cake Custom"),
-        const Divider(thickness: 1, height: 30),
-
         // --- BAGIAN DAFTAR PRODUK ---
         if (items != null)
           Column(

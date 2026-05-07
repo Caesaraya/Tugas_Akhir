@@ -37,32 +37,31 @@ class InfoRow extends StatelessWidget {
   }
 }
 
-// Widget 3: Tombol Aksi (Print & Selesai)
-class SuccessActions extends StatelessWidget {
-  final VoidCallback onPrint;
-  final VoidCallback onFinish;
+// class SuccessActions extends StatelessWidget {
+//   final VoidCallback onPrint;
+//   final VoidCallback onFinish;
 
-  const SuccessActions({required this.onPrint, required this.onFinish});
+//   const SuccessActions({required this.onPrint, required this.onFinish});
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
+//   @override
+//   Widget build(BuildContext context) {
+//     return Row(
+//       children: [
 
-        const SizedBox(width: 15),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: onFinish,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-              backgroundColor: Colors.orange.shade400,
-              elevation: 0
-            ),
-            child: const Text("Selesai", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ),
-      ],
-    );
-  }
-}
+//         const SizedBox(width: 15),
+//         Expanded(
+//           child: ElevatedButton(
+//             onPressed: onFinish,
+//             style: ElevatedButton.styleFrom(
+//               padding: const EdgeInsets.symmetric(vertical: 15),
+//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+//               backgroundColor: Colors.orange.shade400,
+//               elevation: 0
+//             ),
+//             child: const Text("Selesai", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }
