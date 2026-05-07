@@ -4,10 +4,12 @@ import 'package:tugas_akhir/controller/dashboard_Mobile_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/search_bar.dart';
 import 'package:tugas_akhir/widget/widget mobile/section_header.dart';
 import 'package:tugas_akhir/widget/widget%20mobile/product_card.dart';
+import 'package:intl/intl.dart';
 
 class KasirDashboardMobile extends StatelessWidget {
   KasirDashboardMobile({super.key});
   final DashboardController controller = Get.put(DashboardController());
+  final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
   @override
   Widget build(BuildContext context) {

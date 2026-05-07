@@ -5,9 +5,17 @@ import 'package:tugas_akhir/widget/widget mobile/payment_method.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
 import 'package:tugas_akhir/widget/widget mobile/delete_validation.dart';
+import 'package:intl/intl.dart';
 
 class KeranjangMobilePage extends StatelessWidget {
   final CartController cartController = Get.put(CartController());
+  
+  // Formatter untuk format Rupiah dengan titik
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID', 
+    symbol: 'Rp ', 
+    decimalDigits: 0
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +71,8 @@ class KeranjangMobilePage extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                          "${item.qty} X  |  Rp ${((item.price - item.discount) * item.qty).toInt()}",
+                                // UBAH DISINI: Format harga per item
+                                "${item.qty} X  |  ${currencyFormatter.format((item.price - item.discount) * item.qty)}",
                                 style: const TextStyle(fontSize: 14),
                               ),
                             ],
@@ -73,9 +82,7 @@ class KeranjangMobilePage extends StatelessWidget {
                           children: [
                             IconButton(
                               onPressed: item.qty > 1
-                                  ? () => cartController.decreaseQty(
-                                      item.productId,
-                                    )
+                                  ? () => cartController.decreaseQty(item.productId)
                                   : null,
                               icon: Icon(
                                 Icons.remove_circle_outline,
@@ -100,13 +107,10 @@ class KeranjangMobilePage extends StatelessWidget {
                             ),
                             IconButton(
                               onPressed: () {
-                                // Panggil widget dialog yang baru dibuat
                                 DeleteValidation.show(
                                   productName: item.name,
                                   onConfirm: () {
-                                    cartController.removeFromCart(
-                                      item.productId,
-                                    );
+                                    cartController.removeFromCart(item.productId);
                                     Get.back(); 
                                     Get.snackbar(
                                       "Berhasil",
@@ -138,9 +142,7 @@ class KeranjangMobilePage extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(
-                    30,
-                  ), 
+                  topLeft: Radius.circular(30), 
                   topRight: Radius.circular(30),
                 ),
                 boxShadow: [
@@ -166,7 +168,8 @@ class KeranjangMobilePage extends StatelessWidget {
                           style: TextStyle(color: Colors.grey, fontSize: 14),
                         ),
                         Text(
-                          "Rp ${cartController.subtotal.toInt()}",
+                          // UBAH DISINI: Format Subtotal
+                        currencyFormatter.format(cartController.subtotal),
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
@@ -174,26 +177,27 @@ class KeranjangMobilePage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (cartController.totalDiscount > 0) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Potongan Diskon",
-                            style: TextStyle(color: Colors.red, fontSize: 14),
-                          ),
-                          Text(
-                            "- Rp ${cartController.totalDiscount.toInt()}",
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    // if (cartController.totalDiscount > 0) ...[
+                    //   const SizedBox(height: 4),
+                    //   Row(
+                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //     children: [
+                    //       const Text(
+                    //         "Potongan Diskon",
+                    //         style: TextStyle(color: Colors.red, fontSize: 14),
+                    //       ),
+                    //       Text(
+                    //         // UBAH DISINI: Format Diskon (tambahkan minus manual)
+                    //         "- ${currencyFormatter.format(cartController.totalDiscount)}",
+                    //         style: const TextStyle(
+                    //           color: Colors.red,
+                    //           fontSize: 14,
+                    //           fontWeight: FontWeight.bold,
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ],
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Divider(thickness: 1),
@@ -209,7 +213,8 @@ class KeranjangMobilePage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "Rp ${cartController.totalPrice.toInt()}",
+                          // UBAH DISINI: Format Total Harga
+                          currencyFormatter.format(cartController.totalPrice),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -223,7 +228,7 @@ class KeranjangMobilePage extends StatelessWidget {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange.shade900,
+                          backgroundColor: const Color(0xFFE89336), // Menggunakan warna oranye bakery
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

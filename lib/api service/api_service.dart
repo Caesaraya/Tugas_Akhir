@@ -20,11 +20,8 @@ class ApiService {
       throw Exception("Failed to load products");
     }
   }
-
-
   static Future<bool> updateProduct(Product product) async {
     final url = Uri.parse("$baseUrl/api/products/${product.id}");
-
     final body = {
       "name": product.name,
       "price": product.price,
@@ -35,7 +32,6 @@ class ApiService {
       "barcode": product.barcode,
       "image": product.image,
     };
-
     final response = await http.put(
       url,
       headers: {"Content-Type": "application/json"},
@@ -44,10 +40,6 @@ class ApiService {
 
     return response.statusCode == 200;
   }
-
-  // ========================
-  // CREATE TRANSACTION
-  // ========================
   static Future<bool> createTransaction({
     required double total,
     required double bayar,
@@ -68,7 +60,7 @@ class ApiService {
               "product_id": item.productId,
               "qty": item.qty,
               "price": item.price,
-              "subtotal": item.total,
+              "subtotal": item.total, 
             },
           )
           .toList(),

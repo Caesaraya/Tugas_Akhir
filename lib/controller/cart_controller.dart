@@ -4,7 +4,7 @@ import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/riwayat_controller.dart';
 import 'package:tugas_akhir/api%20service/api_service.dart';
-
+import 'package:intl/intl.dart'; // Wajib untuk format titik
 
 class CartController extends GetxController {
   final textController = TextEditingController();
@@ -12,6 +12,13 @@ class CartController extends GetxController {
   var cartItems = <CartItem>[].obs;
   var selectedPayment = 'cash'.obs;
   var inputUang = 0.0.obs;
+
+  // Formatter untuk tampilan (misal: 100.000)
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   // ==========================================
   // LOGIKA KERANJANG & TRANSAKSI
@@ -69,6 +76,7 @@ class CartController extends GetxController {
     if (value.isEmpty) {
       inputUang.value = 0;
     } else {
+      // Menghapus semua karakter non-angka (seperti titik dari formatter) sebelum parsing
       inputUang.value = double.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
     }
   }
@@ -77,38 +85,36 @@ class CartController extends GetxController {
     cartItems.clear();
     selectedPayment.value = 'cash';
     inputUang.value = 0.0;
+    textController.clear();
   }
 
   Map<String, String> getSuksesData(dynamic args) {
     if (args != null) {
-      // Jika data berasal dari Riwayat (Arguments)
       return {
-        'total': "Rp ${double.parse(args['total'].toString()).toInt()}",
+        'total': currencyFormatter.format(double.parse(args['total'].toString())),
         'label': args['metode'] == 'cash' ? "Tunai / Cash" : args['metode'].toString().toUpperCase(),
-        'bayar': "Rp ${double.parse(args['bayar'].toString()).toInt()}",
-        'kembalian': "Rp ${double.parse(args['kembalian'].toString()).toInt()}",
+        'bayar': currencyFormatter.format(double.parse(args['bayar'].toString())),
+        'kembalian': currencyFormatter.format(double.parse(args['kembalian'].toString())),
         'isHistory': 'true',
       };
     } else {
-      // Jika data berasal dari transaksi yang baru saja selesai
       return {
-        'total': "Rp ${totalPrice.toInt()}",
+        'total': currencyFormatter.format(totalPrice),
         'label': paymentMethodLabel,
-        'bayar': paymentDisplayValue,
-        'kembalian': kembalianDisplay,
+        'bayar': paymentDisplayValueFormatted,
+        'kembalian': kembalianDisplayFormatted,
         'isHistory': 'false',
       };
     }
   }
 
-  /// Fungsi yang dijalankan saat tombol "Selesai" diklik
   void handleSelesaiAction(bool isFromHistory) async {
     if (isFromHistory) {
-      Get.back(); // Hanya kembali jika cuma melihat riwayat
+      Get.back();
     } else {
-      await prosesKeApi(); // Simpan ke database
-      clearCart();        // Bersihkan keranjang
-      Get.offAllNamed('/navbar'); // Kembali ke home (sesuaikan route namamu)
+      await prosesKeApi();
+      clearCart();
+      Get.offAllNamed('/navbar');
     }
   }
 
@@ -116,8 +122,8 @@ class CartController extends GetxController {
     if (cartItems.isNotEmpty) {
       bool success = await ApiService.createTransaction(
         total: totalPrice,
-        bayar: inputUang.value,
-        kembalian: kembalian,
+        bayar: selectedPayment.value == "cash" ? inputUang.value : totalPrice,
+        kembalian: selectedPayment.value == "cash" ? kembalian : 0.0,
         metode: selectedPayment.value,
         cart: cartItems,
       );
@@ -126,19 +132,27 @@ class CartController extends GetxController {
         if (Get.isRegistered<RiwayatController>()) {
           Get.find<RiwayatController>().fetchHistory();
         }
-        print("Berhasil simpan ke Database!");
       } else {
-        Get.snackbar("Gagal", "Database gagal menyimpan transaksi");
+        Get.snackbar(
+          "Gagal", 
+          "Database gagal menyimpan transaksi",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
       }
     }
   }
-  
+
+  // GETTERS
   double get totalPrice => cartItems.fold(0, (sum, item) => sum + ((item.price - item.discount) * item.qty));
   double get subtotal => cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
   double get kembalian => inputUang.value > totalPrice ? inputUang.value - totalPrice : 0.0;
-  bool get isUangCukup => inputUang.value >= totalPrice && totalPrice > 0;
   double get totalDiscount => cartItems.fold(0, (sum, item) => sum + (item.discount * item.qty));
   int get itemCount => cartItems.length;
+
+  // Logika baru untuk Button
+  bool get hasInputUang => inputUang.value > 0; // Cek apakah sudah ketik uang (untuk aktifkan tombol)
+  bool get isUangCukup => inputUang.value >= totalPrice; // Cek kecukupan uang (untuk validasi transaksi)
 
   String get paymentMethodLabel {
     switch (selectedPayment.value) {
@@ -148,12 +162,15 @@ class CartController extends GetxController {
     }
   }
 
-  String get paymentDisplayValue {
+  // Getter dengan format titik
+  String get paymentDisplayValueFormatted {
     double value = selectedPayment.value == "cash" ? inputUang.value : totalPrice;
-    return "Rp ${value.toInt()}";
+    return currencyFormatter.format(value);
   }
 
-  String get kembalianDisplay => selectedPayment.value == "cash" ? "Rp ${kembalian.toInt()}" : "Rp 0";
+  String get kembalianDisplayFormatted {
+    return selectedPayment.value == "cash" ? currencyFormatter.format(kembalian) : "Rp 0";
+  }
 
   @override
   void onClose() {
