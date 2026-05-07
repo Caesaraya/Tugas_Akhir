@@ -3,10 +3,14 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors()); // 🔥 penting
+app.use(cors());
 app.use(express.json());
 
-// routes
+// ======================
+// IMAGE FOLDER
+// ======================
+app.use("/images", express.static("public/images"));
+
 const productRoutes = require("./routes/productRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
 

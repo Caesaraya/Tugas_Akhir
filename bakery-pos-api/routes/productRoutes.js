@@ -3,10 +3,62 @@ const router = express.Router();
 const db = require("../config/db");
 
 // ========================
+// AUTO IMAGE BY JENIS
+// ========================
+function getImageByJenis(jenis) {
+
+  switch (jenis) {
+
+    case "CAKE":
+      return "cake.jpg";
+
+    case "BREAD":
+      return "bread.jpg";
+
+    case "PASTA":
+      return "pasta.jpg";
+
+    case "KUE KERING":
+      return "kue_kering.jpg";
+
+    case "KONSINYASI":
+      return "konsinyasi.jpg";
+
+    case "MINUMAN":
+      return "minuman.jpg";
+
+    case "TART":
+      return "tart.jpg";
+
+    case "PASTRY":
+      return "pastry.jpg";
+
+    case "BASAHAN":
+      return "basahan.jpg";
+
+    case "HANTARAN":
+      return "hantaran.jpg";
+
+    case "PACKAGING":
+      return "packaging.jpg";
+
+    case "PUTUS":
+      return "putus.jpg";
+
+    case "GROSIR RESILEDO":
+      return "grosir.jpg";
+
+    default:
+      return "default.jpg";
+  }
+}
+
+// ========================
 // GET ALL PRODUCTS
 // ========================
 router.get("/", async (req, res) => {
   try {
+
     const [rows] = await db.query(`
       SELECT
         id,
@@ -16,15 +68,22 @@ router.get("/", async (req, res) => {
         stock,
         jenis,
         satuan,
-        barcode,
-        image
+        barcode
       FROM products
       ORDER BY id DESC
     `);
 
-    res.json(rows);
+    const products = rows.map((product) => ({
+      ...product,
+      image: `http://192.168.1.8:3000/images/${getImageByJenis(product.jenis)}`
+    }));
+
+    res.json(products);
+
   } catch (error) {
+
     console.error(error);
+
     res.status(500).json({
       message: "Failed to load products",
       error: error.message,
@@ -37,6 +96,7 @@ router.get("/", async (req, res) => {
 // ========================
 router.get("/:id", async (req, res) => {
   try {
+
     const [rows] = await db.query(
       `
       SELECT
@@ -47,8 +107,7 @@ router.get("/:id", async (req, res) => {
         stock,
         jenis,
         satuan,
-        barcode,
-        image
+        barcode
       FROM products
       WHERE id = ?
       `,
@@ -56,14 +115,23 @@ router.get("/:id", async (req, res) => {
     );
 
     if (rows.length === 0) {
+
       return res.status(404).json({
         message: "Product not found",
       });
     }
 
-    res.json(rows[0]);
+    const product = {
+      ...rows[0],
+      image: `http://192.168.1.8:3000/images/${getImageByJenis(rows[0].jenis)}`
+    };
+
+    res.json(product);
+
   } catch (error) {
+
     console.error(error);
+
     res.status(500).json({
       message: "Failed to load product",
       error: error.message,
@@ -76,6 +144,7 @@ router.get("/:id", async (req, res) => {
 // ========================
 router.post("/", async (req, res) => {
   try {
+
     const {
       name,
       price,
@@ -84,24 +153,34 @@ router.post("/", async (req, res) => {
       jenis,
       satuan,
       barcode,
-      image,
     } = req.body;
 
     const [result] = await db.query(
       `
       INSERT INTO products
-      (name, price, discount, stock, jenis, satuan, barcode, image)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (name, price, discount, stock, jenis, satuan, barcode)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
-      [name, price, discount, stock, jenis, satuan, barcode, image]
+      [
+        name,
+        price,
+        discount,
+        stock,
+        jenis,
+        satuan,
+        barcode,
+      ]
     );
 
     res.json({
       message: "Product added",
       id: result.insertId,
     });
+
   } catch (error) {
+
     console.error(error);
+
     res.status(500).json({
       message: "Failed to create product",
       error: error.message,
@@ -114,6 +193,7 @@ router.post("/", async (req, res) => {
 // ========================
 router.put("/:id", async (req, res) => {
   try {
+
     const {
       name,
       price,
@@ -122,7 +202,6 @@ router.put("/:id", async (req, res) => {
       jenis,
       satuan,
       barcode,
-      image,
     } = req.body;
 
     await db.query(
@@ -135,8 +214,7 @@ router.put("/:id", async (req, res) => {
         stock = ?,
         jenis = ?,
         satuan = ?,
-        barcode = ?,
-        image = ?
+        barcode = ?
       WHERE id = ?
       `,
       [
@@ -147,7 +225,6 @@ router.put("/:id", async (req, res) => {
         jenis,
         satuan,
         barcode,
-        image,
         req.params.id,
       ]
     );
@@ -155,8 +232,11 @@ router.put("/:id", async (req, res) => {
     res.json({
       message: "Product updated",
     });
+
   } catch (error) {
+
     console.error(error);
+
     res.status(500).json({
       message: "Failed to update product",
       error: error.message,
@@ -169,6 +249,7 @@ router.put("/:id", async (req, res) => {
 // ========================
 router.delete("/:id", async (req, res) => {
   try {
+
     await db.query(
       `DELETE FROM products WHERE id = ?`,
       [req.params.id]
@@ -177,8 +258,11 @@ router.delete("/:id", async (req, res) => {
     res.json({
       message: "Product deleted",
     });
+
   } catch (error) {
+
     console.error(error);
+
     res.status(500).json({
       message: "Failed to delete product",
       error: error.message,
