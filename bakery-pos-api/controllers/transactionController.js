@@ -4,98 +4,276 @@ const db = require("../config/db");
 // CREATE TRANSACTION
 // ========================
 exports.createTransaction = async (req, res) => {
+  const connection = await db.getConnection();
+
   try {
     const {
       total_harga,
       metode_pembayaran,
       jumlah_bayar,
       kembalian,
-      items
+      items,
     } = req.body;
 
-    // INSERT TRANSAKSI
-    const [result] = await db.execute(
-      `INSERT INTO transactions 
-      (tanggal, total_harga, metode_pembayaran, jumlah_bayar, kembalian)
-      VALUES (NOW(), ?, ?, ?, ?)`,
-      [total_harga, metode_pembayaran, jumlah_bayar, kembalian]
+    // VALIDASI
+    if (!items || items.length === 0) {
+      return res.status(400).json({
+        message: "Item transaksi kosong",
+      });
+    }
+
+    await connection.beginTransaction();
+
+    // ========================
+    // INSERT TRANSACTIONS
+    // ========================
+    const [transactionResult] = await connection.execute(
+      `
+      INSERT INTO transactions
+      (
+        tanggal,
+        total_harga,
+        metode_pembayaran,
+        jumlah_bayar,
+        kembalian
+      )
+      VALUES
+      (
+        NOW(),
+        ?,
+        ?,
+        ?,
+        ?
+      )
+      `,
+      [
+        total_harga,
+        metode_pembayaran,
+        jumlah_bayar,
+        kembalian,
+      ]
     );
 
-    const transactionId = result.insertId;
+    const transactionId = transactionResult.insertId;
 
+    // ========================
     // INSERT DETAIL
-    for (let item of items) {
-      await db.execute(
-        `INSERT INTO transaction_details 
-        (transaction_id, product_id, quantity, price, subtotal)
-        VALUES (?, ?, ?, ?, ?)`,
+    // ========================
+    for (const item of items) {
+      // ambil data produk
+      const [productRows] = await connection.execute(
+        `
+        SELECT
+          id,
+          stock,
+          discount
+        FROM products
+        WHERE id = ?
+        `,
+        [item.product_id]
+      );
+
+      if (productRows.length === 0) {
+        throw new Error(
+          `Produk ID ${item.product_id} tidak ditemukan`
+        );
+      }
+
+      const product = productRows[0];
+
+      // cek stok
+      if (product.stock < item.qty) {
+        throw new Error(
+          `Stok produk ID ${item.product_id} tidak cukup`
+        );
+      }
+
+      // ========================
+      // INSERT TRANSACTION DETAIL
+      // ========================
+      await connection.execute(
+        `
+        INSERT INTO transaction_details
+        (
+          transaction_id,
+          product_id,
+          quantity,
+          price,
+          subtotal,
+          discount
+        )
+        VALUES
+        (
+          ?,
+          ?,
+          ?,
+          ?,
+          ?,
+          ?
+        )
+        `,
         [
           transactionId,
           item.product_id,
           item.qty,
-          item.price,        // 🔥 WAJIB ADA
-          item.subtotal
+          item.price,
+          item.subtotal,
+          item.discount || 0,
+        ]
+      );
+
+      // ========================
+      // UPDATE STOCK PRODUCT
+      // ========================
+      await connection.execute(
+        `
+        UPDATE products
+        SET stock = stock - ?
+        WHERE id = ?
+        `,
+        [
+          item.qty,
+          item.product_id,
         ]
       );
     }
 
+    await connection.commit();
+
     res.json({
+      success: true,
       message: "Transaksi berhasil",
-      transaction_id: transactionId
+      transaction_id: transactionId,
     });
 
   } catch (error) {
-    console.log("ERROR:", error);
-    res.status(500).json({ message: "Error server" });
+
+    await connection.rollback();
+
+    console.log("ERROR CREATE TRANSACTION:");
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  } finally {
+
+    connection.release();
   }
 };
 
-
-
 // ========================
-// GET TRANSACTIONS
+// GET ALL TRANSACTIONS
 // ========================
 exports.getTransactions = async (req, res) => {
   try {
+
     const [rows] = await db.execute(
-      `SELECT * FROM transactions ORDER BY tanggal DESC`
+      `
+      SELECT
+        id,
+        tanggal,
+        total_harga,
+        metode_pembayaran,
+        jumlah_bayar,
+        kembalian
+      FROM transactions
+      ORDER BY tanggal DESC
+      `
     );
 
     res.json(rows);
 
   } catch (error) {
-    res.status(500).json({ message: "Error server" });
+
+    console.log("ERROR GET TRANSACTIONS:");
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error server",
+    });
   }
 };
 
-
 // ========================
-// GET DETAIL TRANSACTION
+// GET TRANSACTION DETAIL
 // ========================
 exports.getTransactionDetail = async (req, res) => {
   try {
+
     const { id } = req.params;
 
-    const [rows] = await db.execute(
-      `SELECT 
+    // ========================
+    // HEADER TRANSAKSI
+    // ========================
+    const [transactionRows] = await db.execute(
+      `
+      SELECT
+        id,
+        tanggal,
+        total_harga,
+        metode_pembayaran,
+        jumlah_bayar,
+        kembalian
+      FROM transactions
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    if (transactionRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Transaksi tidak ditemukan",
+      });
+    }
+
+    // ========================
+    // DETAIL ITEM
+    // ========================
+    const [detailRows] = await db.execute(
+      `
+      SELECT
         td.id,
         td.transaction_id,
         td.product_id,
         td.quantity,
         td.price,
         td.subtotal,
+        td.discount,
+
         p.name,
-        p.discount
+        p.jenis,
+        p.satuan,
+        p.image
+
       FROM transaction_details td
-      JOIN products p ON td.product_id = p.id
-      WHERE td.transaction_id = ?`,
+
+      JOIN products p
+      ON td.product_id = p.id
+
+      WHERE td.transaction_id = ?
+      `,
       [id]
     );
 
-    res.json(rows);
+    res.json({
+      success: true,
+      transaction: transactionRows[0],
+      items: detailRows,
+    });
 
   } catch (error) {
-    console.log("ERROR DETAIL:", error);
-    res.status(500).json({ message: "Error server" });
+
+    console.log("ERROR GET DETAIL:");
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error server",
+    });
   }
 };
