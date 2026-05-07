@@ -84,6 +84,7 @@ class RiwayatMobile extends StatelessWidget {
                       'bayar': trx['jumlah_bayar'],
                       'kembalian': trx['kembalian'],
                       'metode': trx['metode_pembayaran'],
+                      'items': trx['items'],
                       'isFromHistory': true, // Penanda untuk membedakan transaksi baru vs riwayat
                     },
                   );

@@ -38,10 +38,6 @@ class SuksesMobilePage extends StatelessWidget {
             SuccessHeader(),
             const SizedBox(height: 40),
             if (!isFromHistory) ...[
-              const Text(
-                "Detail Pembelian",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
               const SizedBox(height: 10),
               Expanded(
                 child: Obx(
@@ -61,11 +57,11 @@ class SuksesMobilePage extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "Qty: ${item.qty}",
+                              "Qty:  ${item.qty}",
                               style: const TextStyle(fontSize: 14),
                             ),
                             Text(
-                              "Rp ${item.total.toInt()}",
+                              "  Rp ${item.total.toInt()}",
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,

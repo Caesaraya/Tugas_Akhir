@@ -63,7 +63,7 @@ class KeranjangMobilePage extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "${item.qty} X  |  Rp ${(item.price - item.discount).toInt()}",
+                          "${item.qty} X  |  Rp ${((item.price - item.discount) * item.qty).toInt()}",
                                 style: const TextStyle(fontSize: 14),
                               ),
                             ],

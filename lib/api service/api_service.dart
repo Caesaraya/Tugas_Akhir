@@ -21,9 +21,7 @@ class ApiService {
     }
   }
 
-  // ========================
-  // UPDATE PRODUCT
-  // ========================
+
   static Future<bool> updateProduct(Product product) async {
     final url = Uri.parse("$baseUrl/api/products/${product.id}");
 

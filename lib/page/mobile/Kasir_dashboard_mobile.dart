@@ -50,7 +50,6 @@ class KasirDashboardMobile extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                // 3. FILTER KATEGORI (Taruh di sini)
                 Obx(() {
                   return Container(
                     height: 50,

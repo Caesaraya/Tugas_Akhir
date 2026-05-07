@@ -115,19 +115,6 @@ class ProductCard extends StatelessWidget {
               fontSize: 13,
             ),
           ),
-          // ICON TAMBAH (Agar user tahu harus diklik)
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
-              color: Color(0xFFE89336),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.add, 
-              color: Colors.white, 
-              size: 16,
-            ),
-          ),
         ],
       ),
     ],

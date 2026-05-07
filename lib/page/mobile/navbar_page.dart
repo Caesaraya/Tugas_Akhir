@@ -14,10 +14,12 @@ class NavbarPage extends StatelessWidget {
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: navbarController.currentIndex.value,
           onTap: (index) => navbarController.changePage(index),
+          type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
             BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Keranjang"),
             BottomNavigationBarItem(icon: Icon(Icons.history), label: "Riwayat"),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
           ],
         ),
       ),

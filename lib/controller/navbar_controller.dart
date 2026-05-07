@@ -3,11 +3,12 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/page/mobile/Kasir_dashboard_mobile.dart';
 import 'package:tugas_akhir/page/mobile/keranjang_mobile.dart';
 import 'package:tugas_akhir/page/mobile/riwayat_mobile.dart';
+import 'package:tugas_akhir/page/mobile/Kelolaproduk_mobile.dart';
 
 class NavbarController extends GetxController {
   var currentIndex = 0.obs;
 
-  final List<Widget> pages = [KasirDashboardMobile(), KeranjangMobilePage(), RiwayatMobile()];
+  final List<Widget> pages = [KasirDashboardMobile(), KeranjangMobilePage(), RiwayatMobile(), KelolaProdukMobile()];
 
   void changePage(int index) {
     currentIndex.value = index;

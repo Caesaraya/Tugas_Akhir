@@ -28,6 +28,7 @@ class AppPages {
     GetPage(name: AppRoutes.keranjang, page: () => KeranjangMobilePage()),
     GetPage(name: AppRoutes.navbar, page: () => NavbarPage()),
     GetPage(name: AppRoutes.riwayat, page: () => RiwayatMobile()),
+    GetPage(name: AppRoutes.riwayat, page: () => RiwayatMobile()),
     //desktop
     //kasir
     GetPage(
