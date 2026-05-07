@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/navbar_controller.dart';
+import 'package:tugas_akhir/controller/mobile/navbar_controller.dart';
 
 class NavbarPage extends StatelessWidget {
   NavbarPage({super.key});
@@ -19,7 +19,7 @@ class NavbarPage extends StatelessWidget {
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
             BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Keranjang"),
             BottomNavigationBarItem(icon: Icon(Icons.history), label: "Riwayat"),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
+            BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Kelola"),
           ],
         ),
       ),

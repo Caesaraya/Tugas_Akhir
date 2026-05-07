@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // Tambahkan ini
-import 'package:tugas_akhir/controller/cart_controller.dart'; // Tambahkan ini
+import 'package:get/get.dart';
+import 'package:tugas_akhir/controller/mobile/cart_controller.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:intl/intl.dart';
 
@@ -18,11 +18,16 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. LOGIKA DISKON
+    final bool hasDiscount = product.discount != null && product.discount! > 0;
+    final double originalPrice = product.price?.toDouble() ?? 0;
+    final double finalPrice = hasDiscount 
+        ? originalPrice - (originalPrice * (product.discount! / 100)) 
+        : originalPrice;
+
     return GestureDetector(
       onTap: () {
         cartController.addToCart(product);
-
-        // Feedback visual agar kasir tahu produk sudah masuk keranjang
         Get.snackbar(
           "Berhasil",
           "${product.name} ditambah ke keranjang",
@@ -30,7 +35,7 @@ class ProductCard extends StatelessWidget {
           backgroundColor: Colors.black87,
           colorText: Colors.white,
           duration: const Duration(milliseconds: 800),
-          margin: const EdgeInsets.all(10), // Tambahan agar lebih rapi
+          margin: const EdgeInsets.all(10),
         );
       },
       child: Container(
@@ -38,7 +43,6 @@ class ProductCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          // OUTLINE: Memastikan garis tepi terlihat jelas
           border: Border.all(color: Colors.grey.shade300, width: 1.5),
           boxShadow: [
             BoxShadow(
@@ -54,17 +58,14 @@ class ProductCard extends StatelessWidget {
           children: [
             Stack(
               children: [
+                // Gambar Produk
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(
-                      18,
-                    ), // Sedikit lebih kecil dari Container (20 - border)
-                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
                   child: Image.network(
                     product.image,
-                    height: 130, // Tinggi gambar proporsional
+                    height: 130,
                     width: double.infinity,
-                    fit: BoxFit.cover, // MEMASTIKAN GAMBAR PENUH
+                    fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       height: 130,
                       width: double.infinity,
@@ -73,28 +74,39 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Badge Kategori (Kiri Atas)
                 Positioned(
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       tag,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
+                // BADGE DISKON (Kanan Atas) - TAMBAHAN BARU
+                if (hasDiscount)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        "${product.discount}% OFF",
+                        style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
               ],
             ),
             Padding(
@@ -106,25 +118,44 @@ class ProductCard extends StatelessWidget {
                     product.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   const SizedBox(height: 4),
-                  // Gunakan Row untuk Harga dan Icon
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  
+                  // AREA HARGA
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        // UBAH BARIS INI:
-                        currencyFormatter.format(product.price),
-                        style: const TextStyle(
-                          color: Color(0xFFE89336),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                      if (hasDiscount) ...[
+                        // Harga Asli (Coret)
+                        Text(
+                          currencyFormatter.format(originalPrice),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 11,
+                            decoration: TextDecoration.lineThrough, // EFEK CORET
+                          ),
                         ),
-                      ),
+                        // Harga Setelah Diskon
+                        Text(
+                          currencyFormatter.format(finalPrice),
+                          style: const TextStyle(
+                            color: Color(0xFFE89336),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ] else ...[
+                        // Harga Normal (Jika tidak ada diskon)
+                        Text(
+                          currencyFormatter.format(originalPrice),
+                          style: const TextStyle(
+                            color: Color(0xFFE89336),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],

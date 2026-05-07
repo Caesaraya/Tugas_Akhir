@@ -2,12 +2,13 @@ class Product {
   final int id;
   final String name;
   final int price;
-  final int discount;
+  int discount;
   final int stock;
   final String jenis;
   final String satuan;
   final String barcode;
   final String image;
+  final int? resepId;
 
   Product({
     required this.id,
@@ -19,19 +20,22 @@ class Product {
     required this.satuan,
     required this.barcode,
     required this.image,
+    this.resepId,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['id'],
+      id: int.tryParse(json['id'].toString()) ?? 0,
       name: json['name'] ?? '',
-      price: json['price'] ?? 0,
-      discount: json['discount'] ?? 0,
-      stock: json['stock'] ?? 0,
+      price: int.tryParse(json['price'].toString()) ?? 0,
+      discount:int.tryParse(json['discount'].toString()) ?? 0,
+      stock: int.tryParse(json['stock'].toString()) ?? 0,
       jenis: json['jenis'] ?? '',
       satuan: json['satuan'] ?? '',
       barcode: json['barcode'] ?? '',
       image: json['image'] ?? '',
+      resepId:
+          int.tryParse(json['resep_id'].toString()),
     );
   }
 }

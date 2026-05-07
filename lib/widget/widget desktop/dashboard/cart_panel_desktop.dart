@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
-import '../../../controller/cart_controller.dart';
+import '../../../controller/mobile/cart_controller.dart';
 import '../../widget mobile/cart_item.dart';
 
 class CartPanelDesktop extends StatelessWidget {

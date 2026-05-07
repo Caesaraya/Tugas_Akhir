@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controller/dashboard_Mobile_controller.dart';
-import '../../controller/cart_controller.dart';
+import '../../controller/mobile/dashboard_Mobile_controller.dart';
+import '../../controller/mobile/cart_controller.dart';
 import '../../widget/widget desktop/dashboard/product_list_desktop.dart';
 import '../../widget/widget desktop/dashboard/app_bar_desktop.dart';
 import '../../widget/widget desktop/dashboard/cart_panel_desktop.dart';

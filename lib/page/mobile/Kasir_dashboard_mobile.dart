@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/dashboard_Mobile_controller.dart';
+import 'package:tugas_akhir/controller/mobile/dashboard_Mobile_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/search_bar.dart';
 import 'package:tugas_akhir/widget/widget mobile/section_header.dart';
 import 'package:tugas_akhir/widget/widget%20mobile/product_card.dart';

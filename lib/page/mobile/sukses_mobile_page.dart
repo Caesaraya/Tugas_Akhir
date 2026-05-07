@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/controller/mobile/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/success_widgets.dart';
 
 class SuksesMobilePage extends StatelessWidget {

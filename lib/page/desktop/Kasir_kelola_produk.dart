@@ -6,7 +6,7 @@ import '../../widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
 import '../../widget/widget desktop/reusable_data_table.dart';
 import '../../widget/widget desktop/pagination_widget.dart';
 import '../../widget/widget desktop/product_edit_dialog.dart';
-import '../../controller/product_controller.dart';
+import '../../controller/mobile/product_controller.dart';
 import '../../routes/routes.dart';
 
 class ProductPage extends StatelessWidget {
@@ -67,11 +67,11 @@ class ProductPage extends StatelessWidget {
 
                 const SizedBox(width: 10),
 
-                IconButton(
-                  onPressed: controller.resetProducts,
-                  icon: const Icon(Icons.refresh),
-                  color: Colors.green,
-                ),
+                // IconButton(
+                //   onPressed: controller.resetProducts,
+                //   icon: const Icon(Icons.refresh),
+                //   color: Colors.green,
+                // ),
               ],
             ),
           ),
@@ -178,19 +178,19 @@ class ProductPage extends StatelessWidget {
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Obx(
-              () => PaginationWidget(
-                currentPage: controller.currentPage.value,
-                totalPages: controller.totalPages,
-                pageSize: controller.pageSize,
-                totalCount: controller.totalFilteredCount,
-                onPreviousPage: controller.previousPage,
-                onNextPage: controller.nextPage,
-                itemName: 'produk',
-                canGoPrevious: controller.currentPage.value > 1,
-                canGoNext: controller.currentPage.value < controller.totalPages,
-              ),
-            ),
+            // child: Obx(
+            //   () => PaginationWidget(
+            //     currentPage: controller.currentPage.value,
+            //     totalPages: controller.totalPages,
+            //     pageSize: controller.pageSize,
+            //     totalCount: controller.totalFilteredCount,
+            //     onPreviousPage: controller.previousPage,
+            //     onNextPage: controller.nextPage,
+            //     itemName: 'produk',
+            //     canGoPrevious: controller.currentPage.value > 1,
+            //     canGoNext: controller.currentPage.value < controller.totalPages,
+            //   ),
+            // ),
           ),
         ],
       ),

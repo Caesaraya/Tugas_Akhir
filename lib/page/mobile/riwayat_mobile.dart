@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tugas_akhir/controller/riwayat_controller.dart';
+import 'package:tugas_akhir/controller/mobile/riwayat_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 
 class RiwayatMobile extends StatelessWidget {
   final RiwayatController riwayatController = Get.put(RiwayatController());
   
-  // 1. Tambahkan Formatter Global untuk halaman ini
+
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
     decimalDigits: 0,
   );
-
-  RiwayatMobile({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -83,17 +81,7 @@ class RiwayatMobile extends StatelessWidget {
               ),
               child: ListTile(
                 onTap: () {
-                  Get.toNamed(
-                    AppRoutes.sukses,
-                    arguments: {
-                      'total': trx['total_harga'],
-                      'bayar': trx['jumlah_bayar'],
-                      'kembalian': trx['kembalian'],
-                      'metode': trx['metode_pembayaran'],
-                      'items': trx['items'],
-                      'isFromHistory': true,
-                    },
-                  );
+                  riwayatController.goToDetail(trx);
                 },
                 leading: CircleAvatar(
                   backgroundColor: const Color(0xFFE89336).withOpacity(0.1),
