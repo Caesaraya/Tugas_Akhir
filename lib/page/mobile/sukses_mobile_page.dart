@@ -76,6 +76,7 @@ class SuksesMobilePage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
             ],
+            
             InfoRow(label: "Total Tagihan", value: data['total']!),
             InfoRow(label: data['label']!, value: data['bayar']!),
             const Divider(thickness: 1.5, height: 30),
