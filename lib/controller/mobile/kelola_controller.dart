@@ -3,6 +3,7 @@ import 'package:tugas_akhir/api%20service/api_service.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tugas_akhir/controller/mobile/dashboard_Mobile_controller.dart';
 
 class KelolaProdukController extends GetxController {
   var products = <Product>[].obs;
@@ -137,35 +138,28 @@ class KelolaProdukController extends GetxController {
   }
 
   try {
-    // 1. AMBIL ANGKA MURNI TERLEBIH DAHULU
-    // Ini menghapus "Rp", ".", dan spasi agar menjadi "52500"
     String cleanPriceText = priceController.text.replaceAll(RegExp(r'[^0-9]'), '');
-    
-    // 2. CEK APAKAH HASILNYA KOSONG ATAU TIDAK
     if (cleanPriceText.isEmpty) cleanPriceText = "0";
-    
     int numericPrice = int.parse(cleanPriceText);
 
-    // 3. HITUNG DISKON MENGGUNAKAN HARGA YANG SUDAH BERSIH
-    // Ambil diskon, jika kosong set ke 0
     String cleanDiscountText = discountPercentController.text.isEmpty ? "0" : discountPercentController.text;
     double percent = double.tryParse(cleanDiscountText) ?? 0;
     
     final double finalDiscountAmount = (percent / 100) * numericPrice;
 
-    Get.back(); // Tutup dialog
+    Get.back(); 
     isLoading(true);
 
     final updatedProduct = Product(
       id: id,
       name: nameController.text,
-      price: numericPrice, // Kirim angka murni
+      price: numericPrice,
       discount: finalDiscountAmount.toInt(), 
       stock: int.tryParse(stockController.text) ?? 0,
       jenis: jenisController.text,
       satuan: satuanController.text,
-      barcode: "", 
-      image: "", 
+      barcode: "product.resepId", 
+      image: "product.image", 
     );
 
     final success = await ApiService.updateProduct(updatedProduct);
@@ -173,14 +167,23 @@ class KelolaProdukController extends GetxController {
     if (success) {
       Get.snackbar("Sukses", "Produk berhasil diperbarui", 
         snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
-      fetchData(); 
+      
+      // --- BAGIAN RELASI KE DASHBOARD ---
+      // Cek apakah DashboardController sedang aktif di memori
+      if (Get.isRegistered<DashboardController>()) {
+        final DashboardController dashboard = Get.find<DashboardController>();
+        dashboard.fetchProducts(); // Perintahkan dashboard ambil data harga terbaru
+      }
+      // ----------------------------------
+
+      fetchData(); // Refresh list di halaman Kelola Produk sendiri
     } else {
       Get.snackbar("Gagal", "Gagal memperbarui produk", 
         snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
     }
   } catch (e) {
-    print("Detail Error: $e"); // Muncul di console debug
-    Get.snackbar("Error", "Format angka salah: Pastikan input hanya angka",
+    print("Detail Error: $e");
+    Get.snackbar("Error", "Gagal memperbarui: $e",
         snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
   } finally {
     isLoading(false);

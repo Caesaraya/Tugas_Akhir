@@ -33,11 +33,20 @@ class DashboardController extends GetxController {
       var discounts = results[1] as List<Diskon>?;
 
       if (products != null) {
+        // --- TAMBAHAN: Reset diskon agar data dari API Produk bersih sebelum ditempel API Diskon ---
+        for (var p in products) { p.discount = 0; }
+        // -----------------------------------------------------------------------------------------
+
         if (discounts != null) {
           for (var product in products) {
+            // --- TAMBAHAN LOGIKA PEMBATAS: Mencocokkan diskon dengan nama/jenis produk ---
             var activeDisc = discounts.firstWhereOrNull(
-              (d) => d.status.toUpperCase() == 'AKTIF' && d.isActive,
+              (d) => d.status.toUpperCase() == 'AKTIF' && 
+                     d.isActive &&
+                     (product.name.toLowerCase().contains(d.namaDiskon.toLowerCase()) || 
+                      product.jenis.toLowerCase().contains(d.namaDiskon.toLowerCase())),
             );
+            // ------------------------------------------------------------------------------
 
             if (activeDisc != null) {
               product.discount = activeDisc.persenDiskon.toInt();
