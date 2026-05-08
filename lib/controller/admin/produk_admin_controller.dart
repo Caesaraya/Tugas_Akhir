@@ -175,17 +175,14 @@ class ProductController extends GetxController {
 
     final nameCtrl = TextEditingController(text: existingProduct?.name ?? '');
     final priceCtrl = TextEditingController(
-      text: existingProduct != null
-          ? existingProduct.price.toStringAsFixed(0)
-          : '',
+      text: existingProduct != null ? existingProduct.price.toString() : '',
     );
     final stockCtrl = TextEditingController(
       text: existingProduct?.stock.toString() ?? '',
     );
     final discountCtrl = TextEditingController(
-      text: existingProduct != null
-          ? existingProduct.discount.toStringAsFixed(0)
-          : '0',
+      // discount di model adalah int, bukan double
+      text: existingProduct?.discount.toString() ?? '0',
     );
     final jenisCtrl = TextEditingController(text: existingProduct?.jenis ?? '');
     final satuanCtrl = TextEditingController(
@@ -193,12 +190,14 @@ class ProductController extends GetxController {
     );
 
     // Barcode: auto-generate saat create, terkunci saat edit
+    // barcode di model sekarang non-nullable String
     final String autoBarcode = isEdit
-        ? (existingProduct.barcode ?? '')
+        ? existingProduct.barcode
         : _generateBarcode();
     final barcodeCtrl = TextEditingController(text: autoBarcode);
 
     // Image state — reactive di dalam dialog
+    // image di model sekarang non-nullable String
     final Rx<XFile?> pickedImage = Rx<XFile?>(null);
     final RxString currentImageUrl = RxString(existingProduct?.image ?? '');
 
@@ -292,18 +291,29 @@ class ProductController extends GetxController {
                         if (!formKey.currentState!.validate()) return;
                         Get.back();
 
+                        final price = int.tryParse(priceCtrl.text) ?? 0;
+                        final discount = int.tryParse(discountCtrl.text) ?? 0;
+
+                        // priceAfterDiscount dihitung sementara di sisi client.
+                        // Nilai yang akurat akan datang dari server setelah
+                        // fetchProducts() dipanggil kembali di _createProduct/_updateProduct.
+                        final priceAfterDiscount =
+                            price - (price * discount ~/ 100);
+
                         final product = Product(
                           id: existingProduct?.id ?? 0,
                           name: nameCtrl.text.trim(),
-                          price: int.tryParse(priceCtrl.text) ?? 0,
+                          price: price,
+                          discount: discount,
+                          priceAfterDiscount: priceAfterDiscount,
                           stock: int.tryParse(stockCtrl.text) ?? 0,
-                          discount: int.tryParse(discountCtrl.text) ?? 0,
                           jenis: jenisCtrl.text.trim(),
                           satuan: satuanCtrl.text.trim(),
                           barcode: barcodeCtrl.text.trim(),
-                          // Tetap pakai URL lama jika tidak ganti foto
+                          // Pakai path lokal jika ada foto baru, atau URL lama
                           image:
                               pickedImage.value?.path ?? currentImageUrl.value,
+                          resepId: existingProduct?.resepId,
                         );
 
                         if (isEdit) {
@@ -357,6 +367,7 @@ class ProductController extends GetxController {
         imageFile: imageFile,
       );
       if (success) {
+        // Refresh dari server agar priceAfterDiscount sesuai kalkulasi backend
         await fetchProducts();
         Get.snackbar(
           'Berhasil',
@@ -390,11 +401,8 @@ class ProductController extends GetxController {
         imageFile: imageFile,
       );
       if (success) {
-        final idx = _allProducts.indexWhere((p) => p.id == product.id);
-        if (idx != -1) {
-          _allProducts[idx] = product;
-          _applyFilters();
-        }
+        // Refresh dari server agar priceAfterDiscount sesuai kalkulasi backend
+        await fetchProducts();
         Get.snackbar(
           'Berhasil',
           '"${product.name}" berhasil diperbarui.',
@@ -460,7 +468,6 @@ class _ImagePickerField extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // Preview area
           GestureDetector(
             onTap: onPick,
             child: Container(

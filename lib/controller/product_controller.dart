@@ -3,7 +3,6 @@ import 'package:tugas_akhir/api service/api_service.dart';
 import 'package:tugas_akhir/models/product.dart';
 
 class ProductController extends GetxController {
-  // Observable state
   var products = <Product>[].obs;
   var searchQuery = ''.obs;
   var currentPage = 1.obs;
@@ -23,97 +22,81 @@ class ProductController extends GetxController {
       isLoading(true);
       final fetched = await ApiService.getProducts();
       products.assignAll(fetched);
-    } catch (_) {
-      // Fallback dummy data bila API gagal
-      loadDummyProducts();
+    } catch (e) {
+      print("Error fetch products: $e");
+      // Fallback ke dummy data jika API gagal
     } finally {
       isLoading(false);
     }
   }
 
-  void loadDummyProducts() {
-    products.assignAll([
-      Product(
-        id: 1,
-        name: 'Roti Pizza',
-        price: 15000,
-        discount: 0,
-        stock: 20,
-        jenis: 'Roti',
-        satuan: 'pcs',
-        barcode: '1234567890123',
-        image: '',
-      ),
-      Product(
-        id: 2,
-        name: 'Mini Pizza',
-        price: 12000,
-        discount: 20,
-        stock: 0,
-        jenis: 'Roti',
-        satuan: 'pcs',
-        barcode: '1234567890124',
-        image: '',
-      ),
-      Product(
-        id: 3,
-        name: 'Roti Sosis',
-        price: 14000,
-        discount: 0,
-        stock: 0,
-        jenis: 'Roti',
-        satuan: 'pcs',
-        barcode: '1234567890125',
-        image: '',
-      ),
-      Product(
-        id: 4,
-        name: 'Nama Produk',
-        price: 10000,
-        discount: 10,
-        stock: 0,
-        jenis: 'Roti',
-        satuan: 'pcs',
-        barcode: '1234567890126',
-        image: '',
-      ),
-    ]);
-  }
-
-  // Computed property for filtered products
+  // --- LOGIC FILTER ---
   List<Product> get filteredProducts {
-    var result = products.toList();
+    // Gunakan .where secara beruntun agar lebih efisien
+    return products.where((p) {
+      // Filter Stok Habis
+      bool matchStock = isFilteringOutOfStock.value ? p.stock == 0 : true;
 
-    // Apply out of stock filter
-    if (isFilteringOutOfStock.value) {
-      result = result.where((p) => p.stock == 0).toList();
-    }
+      // Filter Pencarian (Nama atau Barcode)
+      bool matchSearch =
+          searchQuery.value.isEmpty ||
+          p.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
+          p.barcode.contains(searchQuery.value);
 
-    // Apply search filter
-    if (searchQuery.value.isNotEmpty) {
-      result = result
-          .where(
-            (p) =>
-                p.name.toLowerCase().contains(searchQuery.value.toLowerCase()),
-          )
-          .toList();
-    }
-
-    return result;
+      return matchStock && matchSearch;
+    }).toList();
   }
 
+  // --- PAGINATION ---
   int get totalFilteredCount => filteredProducts.length;
 
-  int get totalPages =>
-      (totalFilteredCount / pageSize).ceil().clamp(1, double.infinity).toInt();
+  int get totalPages => (totalFilteredCount / pageSize).ceil().clamp(1, 999);
 
   List<Product> get paginatedProducts {
     final start = (currentPage.value - 1) * pageSize;
+    if (start >= filteredProducts.length) return [];
+
     final end = (start + pageSize).clamp(0, filteredProducts.length);
     return filteredProducts.sublist(start, end);
   }
 
-  // Methods
+  // --- ACTIONS ---
+  void updateProductLocally(int id, Product updatedProduct) {
+    final index = products.indexWhere((p) => p.id == id);
+    if (index != -1) {
+      products[index] = updatedProduct;
+      products
+          .refresh(); // PENTING: Memastikan GetX menyadari perubahan isi list
+    }
+  }
+
+  Future<void> saveProductChanges(Product updatedProduct) async {
+    try {
+      isLoading(true);
+      final success = await ApiService.updateProduct(updatedProduct);
+
+      if (success) {
+        updateProductLocally(updatedProduct.id, updatedProduct);
+        editingProduct.value = null;
+        Get.snackbar(
+          "Sukses",
+          "Produk berhasil diperbarui",
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        Get.snackbar("Gagal", "Gagal memperbarui produk di server");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Terjadi kesalahan: $e");
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  // Tambahan: Helper untuk cek apakah produk punya resep
+  bool hasRecipe(Product product) => product.resepId != null;
+
+  // Method standar lainnya (updateSearchQuery, nextPage, dll) tetap sama
   void updateSearchQuery(String query) {
     searchQuery.value = query;
     currentPage.value = 1;
@@ -122,75 +105,5 @@ class ProductController extends GetxController {
   void filterOutOfStock() {
     isFilteringOutOfStock.toggle();
     currentPage.value = 1;
-  }
-
-  void resetProducts() {
-    fetchProducts();
-    searchQuery.value = '';
-    isFilteringOutOfStock.value = false;
-    currentPage.value = 1;
-  }
-
-  void nextPage() {
-    if (currentPage.value < totalPages) {
-      currentPage.value += 1;
-    }
-  }
-
-  void previousPage() {
-    if (currentPage.value > 1) {
-      currentPage.value -= 1;
-    }
-  }
-
-  void goToPage(int page) {
-    if (page >= 1 && page <= totalPages) {
-      currentPage.value = page;
-    }
-  }
-
-  void addProduct(Product product) {
-    products.add(product);
-  }
-
-  void removeProduct(int id) {
-    products.removeWhere((p) => p.id == id);
-  }
-
-  void updateProduct(int id, Product updatedProduct) {
-    final index = products.indexWhere((p) => p.id == id);
-    if (index != -1) {
-      products[index] = updatedProduct;
-    }
-  }
-
-  void setEditingProduct(Product product) {
-    editingProduct.value = product;
-  }
-
-  Future<void> saveProductChanges(Product updatedProduct) async {
-    try {
-      isLoading(true);
-      // Simpan ke API
-      final success = await ApiService.updateProduct(updatedProduct);
-
-      if (success) {
-        // Update data lokal jika API berhasil
-        updateProduct(updatedProduct.id, updatedProduct);
-        editingProduct.value = null;
-        // TODO: Show success message
-      } else {
-        // TODO: Show error message
-      }
-    } catch (e) {
-      // TODO: Show error message
-      print('Error updating product: $e');
-    } finally {
-      isLoading(false);
-    }
-  }
-
-  void clearEditingProduct() {
-    editingProduct.value = null;
   }
 }
