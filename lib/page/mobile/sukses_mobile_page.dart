@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/mobile/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/success_widgets.dart';
+import 'package:intl/intl.dart';
 
 class SuksesMobilePage extends StatelessWidget {
   final CartController controller = Get.put(CartController());
-
+ final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID', 
+    symbol: 'Rp ', 
+    decimalDigits: 0
+  );
   @override
   Widget build(BuildContext context) {
     final data = controller.getSuksesData(Get.arguments);
@@ -37,45 +42,74 @@ class SuksesMobilePage extends StatelessWidget {
           children: [
             SuccessHeader(),
             const SizedBox(height: 40),
-            if (!isFromHistory) ...[
-              const SizedBox(height: 10),
-              Expanded(
-                child: Obx(
-                  () => ListView.builder(
-                    itemCount: controller.cartItems.length,
-                    itemBuilder: (context, index) {
-                      final item = controller.cartItems[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                item.name,
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ),
-                            Text(
-                              "Qty:  ${item.qty}",
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            Text(
-                              "  Rp ${item.total.toInt()}",
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
+            
+            // HAPUS tanda "!" agar daftar item muncul di keduanya, 
+            // atau biarkan tampil tanpa syarat jika ingin selalu muncul.
+            const SizedBox(height: 10),
+            Expanded(
+              child: ListView.builder(
+                // Jika dari riwayat, ambil dari data['items'], jika transaksi baru ambil dari controller
+                itemCount: isFromHistory 
+                    ? (data['items'] as List).length 
+                    : controller.cartItems.length,
+                itemBuilder: (context, index) {
+  // Ambil data item
+  final dynamic item = isFromHistory 
+      ? (data['items'] as List)[index] 
+      : controller.cartItems[index];
+
+  String itemName;
+  int itemQty;
+  double displayPrice;
+
+  if (isFromHistory) {
+    // Gunakan Map agar bisa diakses dengan [key]
+    final Map<String, dynamic> itemMap = item as Map<String, dynamic>;
+    
+    // Ambil nama produk (cek relasi di Laravel)
+    itemName = itemMap['product'] != null 
+        ? itemMap['product']['name'].toString() 
+        : "Produk #${itemMap['product_id']}";
+    
+    // Parsing qty dan subtotal secara aman dari string/int ke double/int
+    itemQty = int.tryParse(itemMap['qty'].toString()) ?? 0;
+    displayPrice = double.tryParse(itemMap['subtotal'].toString()) ?? 0.0;
+  } else {
+    // Logika untuk transaksi baru (dari keranjang)
+    itemName = item.name;
+    itemQty = item.qty;
+    displayPrice = (item.price - (item.price * (item.discount / 100))) * item.qty;
+  }
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            itemName,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+        Text(
+          "Qty: $itemQty",
+          style: const TextStyle(fontSize: 14),
+        ),
+        Text(
+          " ${currencyFormatter.format(displayPrice)}",
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  );
+},
               ),
-              const SizedBox(height: 20),
-            ],
+            ),
+            const SizedBox(height: 20),
             
             InfoRow(label: "Total Tagihan", value: data['total']!),
             InfoRow(label: data['label']!, value: data['bayar']!),

@@ -16,33 +16,41 @@ class RiwayatController extends GetxController {
   void fetchHistory() async {
     try {
       isLoading(true);
-      var data = await ApiService.getTransactions();
+      var rawData = await ApiService.getTransactions();
+      
+      // KUNCI PERBAIKAN: Paksa data menjadi List<Map> yang bisa diubah (mutable)
+      List<Map<String, dynamic>> data = List<Map<String, dynamic>>.from(
+        rawData.map((x) => Map<String, dynamic>.from(x))
+      );
 
-      // Gunakan dynamic untuk menampung hasil yang fleksibel
       var details = await Future.wait(
-        data.map<Future<dynamic>>(
-          (trx) => ApiService.getTransactionDetail(int.parse(trx['id'].toString())),
-        ),
+        data.map((trx) => ApiService.getTransactionDetail(int.parse(trx['id'].toString()))),
       );
 
       for (int i = 0; i < data.length; i++) {
-        var currentDetail = details[i];
+        dynamic currentDetail = details[i];
         
-        // Pengecekan: Apakah detail berupa Map yang berisi key 'items' atau langsung List?
-        if (currentDetail is Map && currentDetail.containsKey('items')) {
-          data[i]['items'] = currentDetail['items'];
+        if (currentDetail is Map) {
+          // Gunakan pengecekan key yang aman
+          if (currentDetail.containsKey('items')) {
+            data[i]['items'] = currentDetail['items'];
+          } else if (currentDetail.containsKey('data')) {
+            data[i]['items'] = currentDetail['data'];
+          } else {
+            // Jika Map tidak punya key pembungkus, bungkus sendiri jadi List
+            data[i]['items'] = [currentDetail];
+          }
         } else if (currentDetail is List) {
           data[i]['items'] = currentDetail;
         } else {
-          data[i]['items'] = []; // Fallback jika data kosong atau format salah
+          data[i]['items'] = [];
         }
       }
 
       transactions.assignAll(data);
     } catch (e) {
-      // ignore: avoid_print
-      print("Error Detail: $e"); // Cek log untuk melihat detail error sebenarnya
-      Get.snackbar("Error", "Gagal ambil riwayat: $e");
+      print("Error Riwayat: $e");
+      Get.snackbar("Error", "Gagal memproses data: $e");
     } finally {
       isLoading(false);
     }

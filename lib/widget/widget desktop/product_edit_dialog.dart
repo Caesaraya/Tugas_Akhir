@@ -59,30 +59,30 @@ class _ProductEditDialogState extends State<ProductEditDialog> {
     super.dispose();
   }
 
-  Future<void> _saveChanges() async {
-    final updatedProduct = Product(
-      id: widget.product.id,
-      name: nameController.text,
-      price: int.tryParse(priceController.text) ?? widget.product.price,
-      discount:
-          int.tryParse(discountController.text) ?? widget.product.discount,
-      stock: int.tryParse(stockController.text) ?? widget.product.stock,
-      jenis: jenisController.text,
-      satuan: satuanController.text,
-      barcode: barcodeController.text,
-      image: imageController.text.trim().isEmpty
-          ? widget.product.image
-          : imageController.text.trim(),
-    );
+  // Future<void> _saveChanges() async {
+  //   final updatedProduct = Product(
+  //     id: widget.product.id,
+  //     name: nameController.text,
+  //     price: int.tryParse(priceController.text) ?? widget.product.price,
+  //     discount:
+  //         int.tryParse(discountController.text) ?? widget.product.discount,
+  //     stock: int.tryParse(stockController.text) ?? widget.product.stock,
+  //     jenis: jenisController.text,
+  //     satuan: satuanController.text,
+  //     barcode: barcodeController.text,
+  //     image: imageController.text.trim().isEmpty
+  //         ? widget.product.image
+  //         : imageController.text.trim(),
+  //   );
 
-    setState(() => isSaving = true);
-    await widget.onSave(updatedProduct);
-    setState(() => isSaving = false);
+  //   setState(() => isSaving = true);
+  //   await widget.onSave(updatedProduct);
+  //   setState(() => isSaving = false);
 
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
-  }
+  //   if (mounted) {
+  //     Navigator.of(context).pop();
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -142,17 +142,17 @@ class _ProductEditDialogState extends State<ProductEditDialog> {
           onPressed: isSaving ? null : () => Navigator.of(context).pop(),
           child: const Text('Batal'),
         ),
-        ElevatedButton(
-          onPressed: isSaving ? null : _saveChanges,
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-          child: isSaving
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Simpan'),
-        ),
+        // ElevatedButton(
+        //   onPressed: isSaving ? null : _saveChanges,
+        //   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+        //   child: isSaving
+        //       ? const SizedBox(
+        //           width: 20,
+        //           height: 20,
+        //           child: CircularProgressIndicator(strokeWidth: 2),
+        //         )
+        //       : const Text('Simpan'),
+        // ),
       ],
     );
   }

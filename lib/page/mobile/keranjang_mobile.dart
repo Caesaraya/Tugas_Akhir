@@ -51,7 +51,7 @@ class KeranjangMobilePage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       border: Border.all(
-                        color: Colors.blue.shade400,
+                        color: const Color.fromARGB(255, 237, 118, 0),
                         width: 1.5,
                       ),
                       borderRadius: BorderRadius.circular(20),
@@ -70,11 +70,11 @@ class KeranjangMobilePage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(
-                                // UBAH DISINI: Format harga per item
-                                "${item.qty} X  |  ${currencyFormatter.format((item.price - item.discount) * item.qty)}",
-                                style: const TextStyle(fontSize: 14),
-                              ),
+                            // KODE BARU (BENAR)
+Text(
+  "${item.qty} X  |  ${currencyFormatter.format((item.price - (item.price * (item.discount / 100))) * item.qty)}",
+  style: const TextStyle(fontSize: 14),
+),
                             ],
                           ),
                         ),
@@ -177,27 +177,31 @@ class KeranjangMobilePage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    // if (cartController.totalDiscount > 0) ...[
-                    //   const SizedBox(height: 4),
-                    //   Row(
-                    //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //     children: [
-                    //       const Text(
-                    //         "Potongan Diskon",
-                    //         style: TextStyle(color: Colors.red, fontSize: 14),
-                    //       ),
-                    //       Text(
-                    //         // UBAH DISINI: Format Diskon (tambahkan minus manual)
-                    //         "- ${currencyFormatter.format(cartController.totalDiscount)}",
-                    //         style: const TextStyle(
-                    //           color: Colors.red,
-                    //           fontSize: 14,
-                    //           fontWeight: FontWeight.bold,
-                    //         ),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ],
+                  Obx(() => cartController.totalDiscount > 0 
+    ? Column(
+        children: [
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Potongan Diskon",
+                style: TextStyle(color: Colors.red, fontSize: 14),
+              ),
+              Text(
+                "- ${currencyFormatter.format(cartController.totalDiscount)}",
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      )
+    : const SizedBox.shrink(),
+  ),
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Divider(thickness: 1),

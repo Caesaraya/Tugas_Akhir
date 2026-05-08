@@ -4,55 +4,73 @@ import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/mobile/kelola_controller.dart';
 
 class KelolaProdukPage extends StatelessWidget {
-  // Inisialisasi Controller khusus KelolaProduk
   final KelolaProdukController controller = Get.put(KelolaProdukController());
-  final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5F2),
       appBar: AppBar(
-        title: const Text("Kelola Produk", 
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Kelola Produk",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFFE89336),
         centerTitle: true,
+        elevation: 0,
         actions: [
           IconButton(
-            onPressed: () => controller.refreshData(),
+            onPressed: () => controller.fetchData(),
             icon: const Icon(Icons.refresh, color: Colors.white),
           ),
         ],
       ),
       body: Column(
         children: [
-          // Search Bar
+          // --- Search Bar ---
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               onChanged: (value) => controller.searchQuery.value = value,
               decoration: InputDecoration(
                 hintText: "Cari Produk...",
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFFE89336)),
                 filled: true,
                 fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12), 
-                  borderSide: BorderSide.none
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
               ),
             ),
           ),
 
-          // List Produk Reaktif
+          // --- List Produk Reaktif ---
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator(color: Color(0xFFE89336)));
+                return const Center(
+                  child: CircularProgressIndicator(color: Color(0xFFE89336)),
+                );
               }
 
               if (controller.filteredProducts.isEmpty) {
-                return const Center(child: Text("Produk tidak ditemukan"));
+                return const Center(
+                  child: Text(
+                    "Produk tidak ditemukan",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                );
               }
 
               return RefreshIndicator(
@@ -62,36 +80,115 @@ class KelolaProdukPage extends StatelessWidget {
                   itemCount: controller.filteredProducts.length,
                   itemBuilder: (context, index) {
                     final produk = controller.filteredProducts[index];
-                    
+
                     return Card(
                       margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.all(12),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: produk.image != null && produk.image!.isNotEmpty
-                              ? Image.network(produk.image!, width: 60, height: 60, fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(Icons.broken_image))
-                              : const Icon(Icons.image, size: 60),
+                        leading: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            // Perbaikan logika Image: model terbaru Anda name & image tidak nullable
+                            child: produk.image.isNotEmpty
+                                ? Image.network(
+                                    produk.image,
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Icon(
+                                      Icons.broken_image,
+                                      color: Colors.grey,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.image,
+                                    size: 30,
+                                    color: Colors.grey,
+                                  ),
+                          ),
                         ),
-                        title: Text(produk.name ?? "", 
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(currencyFormatter.format(produk.price ?? 0)),
-                            Text("Stok: ${produk.stock}", style: const TextStyle(fontSize: 12)),
-                          ],
+                        title: Text(
+                          produk.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Logika Diskon
+                              if ((produk.discount ?? 0) > 0) ...[
+                                // Harga Asli (Dicoret)
+                                Text(
+                                  currencyFormatter.format(produk.price),
+                                  style: const TextStyle(
+                                    decoration: TextDecoration.lineThrough,
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                // Harga Setelah Diskon
+                                Text(
+                                  currencyFormatter.format(
+                                    produk.priceAfterDiscount,
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors
+                                        .green, // Warna hijau untuk harga promo
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ] else ...[
+                                // Jika tidak ada diskon, tampilkan harga normal saja
+                                Text(
+                                  currencyFormatter.format(produk.price),
+                                  style: const TextStyle(
+                                    color: Color(0xFFE89336),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 2),
+                              Text(
+                                "Stok: ${produk.stock} ${produk.satuan} | ${produk.jenis.toUpperCase()}",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         trailing: ElevatedButton(
-                          onPressed: () {controller.showEditForm(context, produk);
-                          },
+                          onPressed: () =>
+                              controller.showEditForm(context, produk),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
+                            backgroundColor: Colors.blue.shade600,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                          child: const Text("Edit", style: TextStyle(color: Colors.white)),
+                          child: const Text("Edit"),
                         ),
                       ),
                     );

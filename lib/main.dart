@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       initialBinding: CartBinding(),
-      initialRoute: AppRoutes.kelolaprodukdesk,
+      initialRoute: AppRoutes.mediaQuery,
       getPages: AppPages.pages,
     );
   }

@@ -336,24 +336,24 @@ class ProductController extends GetxController {
 
                         Get.back();
 
-                        final product = Product(
-                          id: existingProduct?.id ?? 0,
-                          name: nameCtrl.text.trim(),
-                          price: int.tryParse(priceCtrl.text) ?? 0,
-                          discount: int.tryParse(discountCtrl.text) ?? 0,
-                          stock: int.tryParse(stockCtrl.text) ?? 0,
-                          jenis: jenisCtrl.text.trim(),
-                          satuan: satuanCtrl.text.trim(),
-                          barcode: barcodeCtrl.text.trim(),
-                          image: pickedImage.value?.path ?? currentImage.value,
-                          resepId: existingProduct?.resepId,
-                        );
+                        // final product = Product(
+                        //   id: existingProduct?.id ?? 0,
+                        //   name: nameCtrl.text.trim(),
+                        //   price: int.tryParse(priceCtrl.text) ?? 0,
+                        //   discount: int.tryParse(discountCtrl.text) ?? 0,
+                        //   stock: int.tryParse(stockCtrl.text) ?? 0,
+                        //   jenis: jenisCtrl.text.trim(),
+                        //   satuan: satuanCtrl.text.trim(),
+                        //   barcode: barcodeCtrl.text.trim(),
+                        //   image: pickedImage.value?.path ?? currentImage.value,
+                        //   resepId: existingProduct?.resepId,
+                        // );
 
-                        if (isEdit) {
-                          await _updateProduct(product);
-                        } else {
-                          await _createProduct(product);
-                        }
+                        // if (isEdit) {
+                        //   await _updateProduct(product);
+                        // } else {
+                        //   await _createProduct(product);
+                        // }
                       },
                       child: Text(isEdit ? 'Simpan' : 'Tambah'),
                     ),
