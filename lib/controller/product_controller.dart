@@ -25,60 +25,60 @@ class ProductController extends GetxController {
       products.assignAll(fetched);
     } catch (_) {
       // Fallback dummy data bila API gagal
-      loadDummyProducts();
+      // loadDummyProducts();
     } finally {
       isLoading(false);
     }
   }
 
-  void loadDummyProducts() {
-    products.assignAll([
-      Product(
-        id: 1,
-        name: 'Roti Pizza',
-        price: 15000,
-        discount: 0,
-        stock: 20,
-        jenis: 'Roti',
-        satuan: 'pcs',
-        barcode: '1234567890123',
-        image: '',
-      ),
-      Product(
-        id: 2,
-        name: 'Mini Pizza',
-        price: 12000,
-        discount: 20,
-        stock: 0,
-        jenis: 'Roti',
-        satuan: 'pcs',
-        barcode: '1234567890124',
-        image: '',
-      ),
-      Product(
-        id: 3,
-        name: 'Roti Sosis',
-        price: 14000,
-        discount: 0,
-        stock: 0,
-        jenis: 'Roti',
-        satuan: 'pcs',
-        barcode: '1234567890125',
-        image: '',
-      ),
-      Product(
-        id: 4,
-        name: 'Nama Produk',
-        price: 10000,
-        discount: 10,
-        stock: 0,
-        jenis: 'Roti',
-        satuan: 'pcs',
-        barcode: '1234567890126',
-        image: '',
-      ),
-    ]);
-  }
+  // void loadDummyProducts() {
+  //   products.assignAll([
+  //     Product(
+  //       id: 1,
+  //       name: 'Roti Pizza',
+  //       price: 15000,
+  //       discount: 0,
+  //       stock: 20,
+  //       jenis: 'Roti',
+  //       satuan: 'pcs',
+  //       barcode: '1234567890123',
+  //       image: '',
+  //     ),
+  //     Product(
+  //       id: 2,
+  //       name: 'Mini Pizza',
+  //       price: 12000,
+  //       discount: 20,
+  //       stock: 0,
+  //       jenis: 'Roti',
+  //       satuan: 'pcs',
+  //       barcode: '1234567890124',
+  //       image: '',
+  //     ),
+  //     Product(
+  //       id: 3,
+  //       name: 'Roti Sosis',
+  //       price: 14000,
+  //       discount: 0,
+  //       stock: 0,
+  //       jenis: 'Roti',
+  //       satuan: 'pcs',
+  //       barcode: '1234567890125',
+  //       image: '',
+  //     ),
+  //     Product(
+  //       id: 4,
+  //       name: 'Nama Produk',
+  //       price: 10000,
+  //       discount: 10,
+  //       stock: 0,
+  //       jenis: 'Roti',
+  //       satuan: 'pcs',
+  //       barcode: '1234567890126',
+  //       image: '',
+  //     ),
+  //   ]);
+  // }
 
   // Computed property for filtered products
   List<Product> get filteredProducts {

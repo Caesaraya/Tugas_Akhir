@@ -59,13 +59,21 @@ class _ProductEditDialogState extends State<ProductEditDialog> {
     super.dispose();
   }
 
-  Future<void> _saveChanges() async {
+Future<void> _saveChanges() async {
+    // Hitung harga setelah diskon secara lokal untuk keperluan objek Model
+    final int currentPrice = int.tryParse(priceController.text) ?? widget.product.price;
+    final int currentDiscount = int.tryParse(discountController.text) ?? widget.product.discount;
+    
+    // Rumus: Harga - (Harga * Diskon / 100)
+    final int calculatedPriceAfterDiscount = (currentPrice - (currentPrice * currentDiscount / 100)).round();
+
     final updatedProduct = Product(
       id: widget.product.id,
       name: nameController.text,
-      price: int.tryParse(priceController.text) ?? widget.product.price,
-      discount:
-          int.tryParse(discountController.text) ?? widget.product.discount,
+      price: currentPrice,
+      discount: currentDiscount,
+      // TAMBAHKAN BARIS INI:
+      priceAfterDiscount: calculatedPriceAfterDiscount, 
       stock: int.tryParse(stockController.text) ?? widget.product.stock,
       jenis: jenisController.text,
       satuan: satuanController.text,
@@ -73,7 +81,9 @@ class _ProductEditDialogState extends State<ProductEditDialog> {
       image: imageController.text.trim().isEmpty
           ? widget.product.image
           : imageController.text.trim(),
+      resepId: widget.product.resepId, // Pastikan resepId juga terbawa jika ada
     );
+
 
     setState(() => isSaving = true);
     await widget.onSave(updatedProduct);

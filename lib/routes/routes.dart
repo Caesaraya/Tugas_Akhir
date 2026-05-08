@@ -16,4 +16,9 @@ class AppRoutes {
   static const String kalkulatordesk = '/kalkulatordesk';
   static const String transactionDetail = '/transactionDetail';
   static const String kelolaProduk = '/kelolaProduk';
+  //products management
+  static const String productList = '/productList';
+  static const String productDetail = '/productDetail';
+  static const String productCreate = '/productCreate';
+  static const String productEdit = '/productEdit';
 }

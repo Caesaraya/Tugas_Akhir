@@ -12,6 +12,9 @@ import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
 import 'package:tugas_akhir/page/mobile/keranjang_mobile.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/riwayat_mobile.dart';
+import 'package:tugas_akhir/pages/products/product_list_page.dart';
+import 'package:tugas_akhir/pages/products/product_detail_page.dart';
+import 'package:tugas_akhir/pages/products/product_form_page.dart';
 import 'routes.dart';
 
 class AppPages {
@@ -42,5 +45,16 @@ class AppPages {
     ),
     GetPage(name: AppRoutes.riwayatdesk, page: () => KasirRiwayatDesktop()),
     GetPage(name: AppRoutes.kelolaProduk, page: () => ProductPage()),
+    //products management
+    GetPage(name: AppRoutes.productList, page: () => ProductListPage()),
+    GetPage(
+      name: AppRoutes.productDetail,
+      page: () => ProductDetailPage(productId: Get.arguments),
+    ),
+    GetPage(name: AppRoutes.productCreate, page: () => ProductFormPage()),
+    GetPage(
+      name: AppRoutes.productEdit,
+      page: () => ProductFormPage(product: Get.arguments),
+    ),
   ];
 }

@@ -60,6 +60,8 @@ exports.getProducts = async (req, res) => {
         name,
         price,
         discount,
+        /* Hitung harga setelah diskon di SQL */
+        (price - (price * discount / 100)) AS price_after_discount,
         stock,
         jenis,
         satuan,
@@ -71,6 +73,8 @@ exports.getProducts = async (req, res) => {
 
     const products = rows.map((product) => ({
       ...product,
+      // Pastikan hasil perhitungan dibulatkan agar tidak ada desimal mengganggu
+      price_after_discount: Math.round(product.price_after_discount),
       image:
         `https://oafishly-noncontagious-cali.ngrok-free.dev/images/` +
         getImageByJenis(product.jenis),
@@ -79,7 +83,6 @@ exports.getProducts = async (req, res) => {
     res.json(products);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Failed to load products",
       error: error.message,
@@ -99,6 +102,7 @@ exports.getProductById = async (req, res) => {
         name,
         price,
         discount,
+        (price - (price * discount / 100)) AS price_after_discount,
         stock,
         jenis,
         satuan,
@@ -111,13 +115,12 @@ exports.getProductById = async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({
-        message: "Product not found",
-      });
+      return res.status(404).json({ message: "Product not found" });
     }
 
     const product = {
       ...rows[0],
+      price_after_discount: Math.round(rows[0].price_after_discount),
       image:
         `https://oafishly-noncontagious-cali.ngrok-free.dev/images/` +
         getImageByJenis(rows[0].jenis),
@@ -126,7 +129,6 @@ exports.getProductById = async (req, res) => {
     res.json(product);
   } catch (error) {
     console.log(error);
-
     res.status(500).json({
       message: "Failed to load product",
       error: error.message,

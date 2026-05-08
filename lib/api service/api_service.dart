@@ -49,6 +49,61 @@ class ApiService {
   }
 
   // ========================
+  // GET PRODUCT BY ID
+  // ========================
+  static Future<Product> getProductById(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/products/$id"),
+            headers: {
+              "Connection": "close",
+            },
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return Product.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception("Failed to load product");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat produk: $e");
+    }
+  }
+
+  // ========================
+  // CREATE PRODUCT
+  // ========================
+  static Future<bool> createProduct(Product product) async {
+    try {
+      final body = {
+        "name": product.name,
+        "price": product.price,
+        "discount": product.discount,
+        "stock": product.stock,
+        "jenis": product.jenis,
+        "satuan": product.satuan,
+        "barcode": product.barcode,
+        "image": product.image,
+        "resep_id": product.resepId,
+      };
+
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/products"),
+            headers: headers,
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal membuat produk: $e");
+    }
+  }
+
+  // ========================
   // UPDATE PRODUCT
   // ========================
   static Future<bool> updateProduct(Product product) async {
@@ -66,6 +121,7 @@ class ApiService {
         "satuan": product.satuan,
         "barcode": product.barcode,
         "image": product.image,
+        "resep_id": product.resepId,
       };
 
       final response = await http
@@ -79,6 +135,24 @@ class ApiService {
       return response.statusCode == 200;
     } catch (e) {
       throw Exception("Gagal update produk: $e");
+    }
+  }
+
+  // ========================
+  // DELETE PRODUCT
+  // ========================
+  static Future<bool> deleteProduct(int id) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse("$baseUrl/api/products/$id"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal hapus produk: $e");
     }
   }
 
