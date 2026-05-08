@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/riwayat_controller.dart';
+import 'package:tugas_akhir/controller/mobile/riwayat_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import '../../widget/widget desktop/dashboard/app_bar_desktop.dart';
 import '../../widget/widget desktop/dashboard/desktop_navigation_drawer.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/controller/mobile/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/payment_method.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
@@ -32,7 +32,7 @@ class KeranjangMobilePage extends StatelessWidget {
       ),
       body: Obx(() {
         if (cartController.cartItems.isEmpty) {
-          return const Center(child: Text("Belum ada roti di keranjang"));
+          return const Center(child: Text("Belum ada product di keranjang"));
         }
         return Column(
           children: [

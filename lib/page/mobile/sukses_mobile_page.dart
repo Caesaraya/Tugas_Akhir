@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/controller/mobile/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/success_widgets.dart';
 
 class SuksesMobilePage extends StatelessWidget {
@@ -76,6 +76,7 @@ class SuksesMobilePage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
             ],
+            
             InfoRow(label: "Total Tagihan", value: data['total']!),
             InfoRow(label: data['label']!, value: data['bayar']!),
             const Divider(thickness: 1.5, height: 30),

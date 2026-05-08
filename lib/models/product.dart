@@ -2,8 +2,7 @@ class Product {
   final int id;
   final String name;
   final int price;
-  final int discount;
-  final int priceAfterDiscount; // Field baru
+  int discount;
   final int stock;
   final String jenis;
   final String satuan;
@@ -16,7 +15,6 @@ class Product {
     required this.name,
     required this.price,
     required this.discount,
-    required this.priceAfterDiscount, // Tambahkan di constructor
     required this.stock,
     required this.jenis,
     required this.satuan,
@@ -31,9 +29,6 @@ class Product {
       name: json['name'] ?? '',
       price: int.tryParse(json['price'].toString()) ?? 0,
       discount: int.tryParse(json['discount'].toString()) ?? 0,
-      // Ambil data dari field baru di API
-      priceAfterDiscount:
-          int.tryParse(json['price_after_discount'].toString()) ?? 0,
       stock: int.tryParse(json['stock'].toString()) ?? 0,
       jenis: json['jenis'] ?? '',
       satuan: json['satuan'] ?? '',
@@ -41,5 +36,19 @@ class Product {
       image: json['image'] ?? '',
       resepId: int.tryParse(json['resep_id'].toString()),
     );
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "price": price,
+      "discount": discount,
+      "stock": stock,
+      "jenis": jenis,
+      "satuan": satuan,
+      "barcode": barcode,
+      "image": image,
+      "resep_id": resepId,
+    };
   }
 }

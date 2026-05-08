@@ -8,7 +8,7 @@ import 'package:tugas_akhir/page/mobile/Kelolaproduk_mobile.dart';
 class NavbarController extends GetxController {
   var currentIndex = 0.obs;
 
-  final List<Widget> pages = [KasirDashboardMobile(), KeranjangMobilePage(), RiwayatMobile(), KelolaProdukMobile()];
+  final List<Widget> pages = [KasirDashboardMobile(), KeranjangMobilePage(), RiwayatMobile(), KelolaProdukPage()];
 
   void changePage(int index) {
     currentIndex.value = index;

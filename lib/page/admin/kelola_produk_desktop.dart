@@ -7,8 +7,8 @@ import 'package:tugas_akhir/widget/admin/produk/empty_state.dart';
 import 'package:tugas_akhir/widget/admin/produk/product_header_bar.dart';
 import 'package:tugas_akhir/widget/admin/produk/tabel/product_table.dart';
 
-class KelolaProdukPage extends StatelessWidget {
-  const KelolaProdukPage({super.key});
+class KelolaProdukDeskPage extends StatelessWidget {
+  const KelolaProdukDeskPage({super.key});
 
   @override
   Widget build(BuildContext context) {

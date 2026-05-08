@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:tugas_akhir/api%20service/api_service.dart';
+import 'package:tugas_akhir/models/diskon.dart';
 import 'package:tugas_akhir/models/product.dart';
-import 'package:flutter/material.dart';
 
 class DashboardController extends GetxController {
   var isLoading = true.obs;
@@ -22,17 +22,47 @@ class DashboardController extends GetxController {
   void fetchProducts() async {
     try {
       isLoading(true);
-      var products = await ApiService.getProducts();
+
+      // Ambil produk dan diskon secara bersamaan
+      final results = await Future.wait([
+        ApiService.getProducts(),
+        ApiService.getAllDiskon(),
+      ]);
+
+      var products = results[0] as List<Product>?;
+      var discounts = results[1] as List<Diskon>?;
+
       if (products != null) {
+        if (discounts != null) {
+          for (var product in products) {
+            var activeDisc = discounts.firstWhereOrNull(
+              (d) => d.status.toUpperCase() == 'AKTIF' && d.isActive,
+            );
+
+            if (activeDisc != null) {
+              product.discount = activeDisc.persenDiskon.toInt();
+            }
+          }
+        }
+
         productList.assignAll(products);
         var uniqueCategories = productList.map((p) => p.jenis).toSet().toList();
         uniqueCategories.sort();
         categories.assignAll(["Semua", ...uniqueCategories]);
         applyFilter();
       }
+    } catch (e) {
+      print("Error: $e");
     } finally {
       isLoading(false);
     }
+  }
+
+  // Helper untuk hitung harga akhir di UI
+  double getFinalPrice(Product product) {
+    double price = product.price?.toDouble() ?? 0;
+    double discPercent = product.discount?.toDouble() ?? 0;
+    return price - (price * (discPercent / 100));
   }
 
   // Fungsi tunggal untuk menangani pencarian DAN kategori sekaligus

@@ -1,8 +1,8 @@
 class CartItem {
   final int productId;
   final String name;
-  final int price;    // Ubah jadi int
-  final int discount; // Ubah jadi int
+  final int price;   
+  final int discount;
   int qty;
 
   CartItem({
@@ -13,7 +13,7 @@ class CartItem {
     this.qty = 1,
   });
 
-  // Karena ini getter untuk total uang, return double tidak apa-apa
+ 
   double get total {
     double finalPrice = (price - discount).toDouble();
     return finalPrice * qty;

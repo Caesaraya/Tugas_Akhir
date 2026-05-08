@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/controller/mobile/cart_controller.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/widget/widget%20mobile/kalkulator_input.dart';
 import 'package:intl/intl.dart'; 
