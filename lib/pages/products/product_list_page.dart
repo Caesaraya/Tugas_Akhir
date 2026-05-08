@@ -212,24 +212,27 @@ class ProductCard extends StatelessWidget {
               Row(
                 children: [
                   // Product image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      product.image,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(Icons.image, color: Colors.grey[400]),
-                        );
-                      },
+                  Hero(
+                    tag: 'product_image_${product.id}',
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        product.image,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(Icons.image, color: Colors.grey[400]),
+                          );
+                        },
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),

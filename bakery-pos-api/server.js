@@ -13,6 +13,7 @@ app.use(express.json());
 // STATIC FILES
 // ======================
 app.use("/images", express.static("public/images"));
+app.use("/uploads", express.static("uploads"));
 
 // ======================
 // ROUTES
@@ -26,7 +27,6 @@ const supplierRoutes = require("./routes/supplierRoutes");
 const diskonRoutes = require("./routes/diskonRoutes");
 const userRoutes = require("./routes/userRoutes");
 
-// API PREFIX
 app.use("/api/products", productRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/bahan-baku", bahanBakuRoutes);

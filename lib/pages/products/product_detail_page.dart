@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:tugas_akhir/api service/api_service.dart';
+import 'package:tugas_akhir/pages/products/full_screen_image_page.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final int productId;
@@ -98,24 +99,40 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         children: [
           // Product Image
           Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                _product!.image,
-                width: 200,
-                height: 200,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullScreenImagePage(
+                      imageUrl: _product!.image,
+                      heroTag: 'product_image_${_product!.id}',
+                    ),
+                  ),
+                );
+              },
+              child: Hero(
+                tag: 'product_image_${_product!.id}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    _product!.image,
                     width: 200,
                     height: 200,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(Icons.image, size: 64, color: Colors.grey[400]),
-                  );
-                },
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(Icons.image, size: 64, color: Colors.grey[400]),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ),

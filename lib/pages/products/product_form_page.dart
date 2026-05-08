@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:tugas_akhir/api service/api_service.dart';
+import 'dart:typed_data';
 
 class ProductFormPage extends StatefulWidget {
   final Product? product;
@@ -23,6 +27,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
   String _selectedJenis = 'CAKE';
   bool _isLoading = false;
+  File? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
+  bool _isImageLoading = false;
+  Uint8List? _imageBytes;
 
   final List<String> _jenisOptions = [
     'CAKE',
@@ -42,6 +50,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
 
   final List<String> _satuanOptions = [
     'pcs',
+    'piece',
     'kg',
     'liter',
     'box',
@@ -57,6 +66,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
     if (widget.product != null) {
       _initializeFields();
     }
+    _requestPermissions();
   }
 
   void _initializeFields() {
@@ -70,6 +80,13 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _selectedJenis = product.jenis;
   }
 
+  Future<void> _requestPermissions() async {
+    await [
+      Permission.camera,
+      Permission.storage,
+    ].request();
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -81,6 +98,54 @@ class _ProductFormPageState extends State<ProductFormPage> {
     super.dispose();
   }
 
+  Future<void> _pickImage() async {
+    try {
+      setState(() {
+        _isImageLoading = true;
+      });
+      
+      final ImagePicker picker = ImagePicker();
+      
+      // Try to get image from gallery first
+      XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70, // Reduced quality for better performance
+        maxWidth: 800, // Limit width for better performance
+        maxHeight: 800, // Limit height for better performance
+      );
+      
+      // If gallery fails or user cancels, try camera
+      if (image == null) {
+        image = await picker.pickImage(
+          source: ImageSource.camera,
+          imageQuality: 70,
+          maxWidth: 800,
+          maxHeight: 800,
+        );
+      }
+      
+      if (image != null) {
+        // Read image bytes in background
+        final bytes = await image.readAsBytes();
+        
+        setState(() {
+          _selectedImage = File(image!.path);
+          _imageBytes = bytes;
+          _isImageLoading = false;
+        });
+      } else {
+        setState(() {
+          _isImageLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isImageLoading = false;
+      });
+      Get.snackbar('Error', 'Gagal memilih gambar: $e');
+    }
+  }
+
   Future<void> _saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -90,27 +155,41 @@ class _ProductFormPageState extends State<ProductFormPage> {
       final price = int.parse(_priceController.text);
       final discount = int.parse(_discountController.text);
       final stock = int.parse(_stockController.text);
-      final priceAfterDiscount = price - (price * discount ~/ 100);
-
-      final product = Product(
-        id: widget.product?.id ?? 0,
-        name: _nameController.text,
-        price: price,
-        discount: discount,
-        priceAfterDiscount: priceAfterDiscount,
-        stock: stock,
-        jenis: _selectedJenis,
-        satuan: _satuanController.text,
-        barcode: _barcodeController.text,
-        image: _getImageByJenis(_selectedJenis),
-        resepId: widget.product?.resepId,
-      );
 
       if (widget.product == null) {
-        await ApiService.createProduct(product);
+        // Create new product
+        if (_selectedImage == null) {
+          Get.snackbar('Error', 'Silakan pilih gambar produk');
+          setState(() => _isLoading = false);
+          return;
+        }
+
+        await ApiService.createProductWithImage(
+          name: _nameController.text,
+          price: price,
+          discount: discount,
+          stock: stock,
+          jenis: _selectedJenis,
+          satuan: _satuanController.text,
+          barcode: _barcodeController.text,
+          imageFile: _selectedImage!,
+          resepId: widget.product?.resepId,
+        );
         Get.snackbar('Sukses', 'Produk berhasil ditambahkan');
       } else {
-        await ApiService.updateProduct(product);
+        // Update existing product
+        await ApiService.updateProductWithImage(
+          id: widget.product!.id,
+          name: _nameController.text,
+          price: price,
+          discount: discount,
+          stock: stock,
+          jenis: _selectedJenis,
+          satuan: _satuanController.text,
+          barcode: _barcodeController.text,
+          imageFile: _selectedImage,
+          resepId: widget.product?.resepId,
+        );
         Get.snackbar('Sukses', 'Produk berhasil diupdate');
       }
 
@@ -119,39 +198,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
       Get.snackbar('Error', 'Gagal menyimpan produk: $e');
     } finally {
       setState(() => _isLoading = false);
-    }
-  }
-
-  String _getImageByJenis(String jenis) {
-    switch (jenis) {
-      case "CAKE":
-        return "cake.jpg";
-      case "BREAD":
-        return "bread.jpg";
-      case "PASTA":
-        return "pasta.jpg";
-      case "KUE KERING":
-        return "kue_kering.jpg";
-      case "KONSINYASI":
-        return "konsinyasi.jpg";
-      case "MINUMAN":
-        return "minuman.jpg";
-      case "TART":
-        return "tart.jpg";
-      case "PASTRY":
-        return "pastry.jpg";
-      case "BASAHAN":
-        return "basahan.jpg";
-      case "HANTARAN":
-        return "hantaran.jpg";
-      case "PACKAGING":
-        return "packaging.jpg";
-      case "PUTUS":
-        return "putus.jpg";
-      case "GROSIR RESILEDO":
-        return "grosir.jpg";
-      default:
-        return "default.jpg";
     }
   }
 
@@ -170,6 +216,10 @@ class _ProductFormPageState extends State<ProductFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Image Upload Section
+              _buildImageUploadSection(),
+              const SizedBox(height: 16),
+
               // Name Field
               TextFormField(
                 controller: _nameController,
@@ -263,7 +313,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
                 enabled: false,
                 decoration: InputDecoration(
                   labelText: 'Harga Setelah Diskon',
-                  border: const OutlineInputBorder(),
+                  border: OutlineInputBorder(),
                   prefixText: 'Rp ',
                   fillColor: Colors.grey[200],
                   filled: true,
@@ -300,7 +350,8 @@ class _ProductFormPageState extends State<ProductFormPage> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _satuanController.text.isEmpty ? 'pcs' : _satuanController.text,
+                      value: _satuanController.text.isEmpty ? 'pcs' : 
+                             _satuanOptions.contains(_satuanController.text) ? _satuanController.text : 'pcs',
                       decoration: const InputDecoration(
                         labelText: 'Satuan',
                         border: OutlineInputBorder(),
@@ -354,6 +405,178 @@ class _ProductFormPageState extends State<ProductFormPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildImageUploadSection() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.image, color: Colors.grey.shade600),
+                const SizedBox(width: 8),
+                Text(
+                  'Gambar Produk',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Column(
+              children: [
+                if (_isImageLoading) ...[
+                  Container(
+                    height: 150,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (_selectedImage != null) ...[
+                  Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: _imageBytes != null
+                            ? Image.memory(
+                                _imageBytes!,
+                                height: 150,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true, // Prevent flickering
+                              )
+                            : Image.file(
+                                _selectedImage!,
+                                height: 150,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true,
+                              ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedImage = null;
+                              _imageBytes = null;
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (widget.product != null && _selectedImage == null) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      widget.product!.image,
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 150,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.image, color: Colors.grey[400]),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (_selectedImage == null && widget.product == null) ...[
+                  Container(
+                    height: 150,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add_photo_alternate, 
+                           size: 48, color: Colors.grey.shade400),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Pilih Gambar',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _pickImage,
+                    icon: const Icon(Icons.camera_alt),
+                    label: Text(_selectedImage != null || widget.product != null 
+                        ? 'Ganti Gambar' 
+                        : 'Pilih Gambar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade700,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

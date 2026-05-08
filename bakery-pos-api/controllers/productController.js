@@ -7,43 +7,30 @@ function getImageByJenis(jenis) {
   switch (jenis) {
     case "CAKE":
       return "cake.jpg";
-
     case "BREAD":
       return "bread.jpg";
-
     case "PASTA":
       return "pasta.jpg";
-
     case "KUE KERING":
       return "kue_kering.jpg";
-
     case "KONSINYASI":
       return "konsinyasi.jpg";
-
     case "MINUMAN":
       return "minuman.jpg";
-
     case "TART":
       return "tart.jpg";
-
     case "PASTRY":
       return "pastry.jpg";
-
     case "BASAHAN":
       return "basahan.jpg";
-
     case "HANTARAN":
       return "hantaran.jpg";
-
     case "PACKAGING":
       return "packaging.jpg";
-
     case "PUTUS":
       return "putus.jpg";
-
     case "GROSIR RESILEDO":
       return "grosir.jpg";
-
     default:
       return "default.jpg";
   }
@@ -60,12 +47,12 @@ exports.getProducts = async (req, res) => {
         name,
         price,
         discount,
-        /* Hitung harga setelah diskon di SQL */
         (price - (price * discount / 100)) AS price_after_discount,
         stock,
         jenis,
         satuan,
         barcode,
+        image,
         resep_id
       FROM products
       ORDER BY id DESC
@@ -73,16 +60,17 @@ exports.getProducts = async (req, res) => {
 
     const products = rows.map((product) => ({
       ...product,
-      // Pastikan hasil perhitungan dibulatkan agar tidak ada desimal mengganggu
       price_after_discount: Math.round(product.price_after_discount),
-      image:
-        `https://oafishly-noncontagious-cali.ngrok-free.dev/images/` +
-        getImageByJenis(product.jenis),
+      image: product.image
+        ? `https://oafishly-noncontagious-cali.ngrok-free.dev/uploads/${product.image}`
+        : `https://oafishly-noncontagious-cali.ngrok-free.dev/images/${getImageByJenis(
+            product.jenis
+          )}`,
     }));
 
     res.json(products);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({
       message: "Failed to load products",
       error: error.message,
@@ -107,6 +95,7 @@ exports.getProductById = async (req, res) => {
         jenis,
         satuan,
         barcode,
+        image,
         resep_id
       FROM products
       WHERE id = ?
@@ -121,14 +110,16 @@ exports.getProductById = async (req, res) => {
     const product = {
       ...rows[0],
       price_after_discount: Math.round(rows[0].price_after_discount),
-      image:
-        `https://oafishly-noncontagious-cali.ngrok-free.dev/images/` +
-        getImageByJenis(rows[0].jenis),
+      image: rows[0].image
+        ? `https://oafishly-noncontagious-cali.ngrok-free.dev/uploads/${rows[0].image}`
+        : `https://oafishly-noncontagious-cali.ngrok-free.dev/images/${getImageByJenis(
+            rows[0].jenis
+          )}`,
     };
 
     res.json(product);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({
       message: "Failed to load product",
       error: error.message,
@@ -141,10 +132,10 @@ exports.getProductById = async (req, res) => {
 // ========================
 exports.createProduct = async (req, res) => {
   try {
-    const {
+    let {
       name,
       price,
-      discount = 0,
+      discount,
       stock,
       jenis,
       satuan,
@@ -152,20 +143,20 @@ exports.createProduct = async (req, res) => {
       resep_id,
     } = req.body;
 
+    price = parseInt(price);
+    discount = parseInt(discount || 0);
+    stock = parseInt(stock || 0);
+    resep_id = resep_id ? parseInt(resep_id) : null;
+
+    const image = req.file
+      ? req.file.filename
+      : getImageByJenis(jenis);
+
     const [result] = await db.query(
       `
       INSERT INTO products
-      (
-        name,
-        price,
-        discount,
-        stock,
-        jenis,
-        satuan,
-        barcode,
-        resep_id
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (name, price, discount, stock, jenis, satuan, barcode, image, resep_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         name,
@@ -175,17 +166,25 @@ exports.createProduct = async (req, res) => {
         jenis,
         satuan,
         barcode,
+        image,
         resep_id,
       ]
     );
 
-    res.json({
-      message: "Product created",
+    res.status(201).json({
       id: result.insertId,
+      name,
+      price,
+      discount,
+      stock,
+      jenis,
+      satuan,
+      barcode,
+      image,
+      resep_id,
     });
   } catch (error) {
-    console.log(error);
-
+    console.error(error);
     res.status(500).json({
       message: "Failed to create product",
       error: error.message,
@@ -198,7 +197,7 @@ exports.createProduct = async (req, res) => {
 // ========================
 exports.updateProduct = async (req, res) => {
   try {
-    const {
+    let {
       name,
       price,
       discount,
@@ -208,6 +207,28 @@ exports.updateProduct = async (req, res) => {
       barcode,
       resep_id,
     } = req.body;
+
+    price = parseInt(price);
+    discount = parseInt(discount || 0);
+    stock = parseInt(stock || 0);
+    resep_id = resep_id ? parseInt(resep_id) : null;
+
+    let image;
+
+    if (req.file) {
+      image = req.file.filename;
+      console.log("New image uploaded:", image);
+    } else {
+      const [existingProduct] = await db.query(
+        "SELECT image FROM products WHERE id = ?",
+        [req.params.id]
+      );
+
+      image =
+        existingProduct[0]?.image || getImageByJenis(jenis);
+
+      console.log("Using existing image:", image);
+    }
 
     await db.query(
       `
@@ -220,6 +241,7 @@ exports.updateProduct = async (req, res) => {
         jenis = ?,
         satuan = ?,
         barcode = ?,
+        image = ?,
         resep_id = ?
       WHERE id = ?
       `,
@@ -231,6 +253,7 @@ exports.updateProduct = async (req, res) => {
         jenis,
         satuan,
         barcode,
+        image,
         resep_id,
         req.params.id,
       ]
@@ -238,10 +261,21 @@ exports.updateProduct = async (req, res) => {
 
     res.json({
       message: "Product updated",
+      data: {
+        id: parseInt(req.params.id),
+        name,
+        price,
+        discount,
+        stock,
+        jenis,
+        satuan,
+        barcode,
+        image,
+        resep_id,
+      },
     });
   } catch (error) {
-    console.log(error);
-
+    console.error(error);
     res.status(500).json({
       message: "Failed to update product",
       error: error.message,
@@ -255,7 +289,7 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   try {
     await db.query(
-      `DELETE FROM products WHERE id = ?`,
+      "DELETE FROM products WHERE id = ?",
       [req.params.id]
     );
 
@@ -263,8 +297,7 @@ exports.deleteProduct = async (req, res) => {
       message: "Product deleted",
     });
   } catch (error) {
-    console.log(error);
-
+    console.error(error);
     res.status(500).json({
       message: "Failed to delete product",
       error: error.message,

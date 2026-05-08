@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class Product {
   final int id;
   final String name;
@@ -40,5 +42,51 @@ class Product {
       image: json['image'] ?? '',
       resepId: int.tryParse(json['resep_id'].toString()),
     );
+  }
+
+  // Method untuk copyWith
+  Product copyWith({
+    int? id,
+    String? name,
+    int? price,
+    int? discount,
+    int? priceAfterDiscount,
+    int? stock,
+    String? jenis,
+    String? satuan,
+    String? barcode,
+    String? image,
+    int? resepId,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      price: price ?? this.price,
+      discount: discount ?? this.discount,
+      priceAfterDiscount: priceAfterDiscount ?? this.priceAfterDiscount,
+      stock: stock ?? this.stock,
+      jenis: jenis ?? this.jenis,
+      satuan: satuan ?? this.satuan,
+      barcode: barcode ?? this.barcode,
+      image: image ?? this.image,
+      resepId: resepId ?? this.resepId,
+    );
+  }
+
+  // Method untuk convert ke JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'price': price,
+      'discount': discount,
+      'price_after_discount': priceAfterDiscount,
+      'stock': stock,
+      'jenis': jenis,
+      'satuan': satuan,
+      'barcode': barcode,
+      'image': image,
+      'resep_id': resepId,
+    };
   }
 }
