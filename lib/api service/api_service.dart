@@ -53,170 +53,13 @@ class ApiService {
   // ========================
   // GET PRODUCT BY ID
   // ========================
-  static Future<Product> getProductById(int id) async {
+<<<<<<<<< Temporary merge branch 1
+  static Future<bool> updateProduct(Product product) async {
     try {
-      final response = await http
-          .get(
-            Uri.parse("$baseUrl/api/products/$id"),
-            headers: {
-              "Connection": "close",
-            },
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        return Product.fromJson(jsonDecode(response.body));
-      } else {
-        throw Exception("Failed to load product");
-      }
-    } catch (e) {
-      throw Exception("Gagal memuat produk: $e");
-    }
-  }
-
-  // ========================
-  // CREATE PRODUCT WITH IMAGE
-  // ========================
-  static Future<bool> createProductWithImage({
-    required String name,
-    required int price,
-    required int discount,
-    required int stock,
-    required String jenis,
-    required String satuan,
-    required String barcode,
-    required File imageFile,
-    int? resepId,
-  }) async {
-    try {
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse("$baseUrl/api/products"),
+      final url = Uri.parse(
+        "$baseUrl/api/products/${product.id}",
       );
 
-      // Add headers
-      request.headers.addAll({
-        'Connection': 'close',
-      });
-
-      // Add fields
-      request.fields['name'] = name;
-      request.fields['price'] = price.toString();
-      request.fields['discount'] = discount.toString();
-      request.fields['stock'] = stock.toString();
-      request.fields['jenis'] = jenis;
-      request.fields['satuan'] = satuan;
-      request.fields['barcode'] = barcode;
-      if (resepId != null) {
-        request.fields['resep_id'] = resepId.toString();
-      }
-
-      // Add image file
-      final imageBytes = await imageFile.readAsBytes();
-      final imageExtension = imageFile.path.split('.').last.toLowerCase();
-      final contentType = _getContentType(imageExtension);
-      
-      request.files.add(
-        http.MultipartFile.fromBytes(
-          'image',
-          imageBytes,
-          filename: 'product_${DateTime.now().millisecondsSinceEpoch}.$imageExtension',
-          contentType: http_parser.MediaType.parse(contentType),
-        ),
-      );
-
-      final response = await request.send().timeout(const Duration(seconds: 30));
-      
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal membuat produk dengan gambar: $e");
-    }
-  }
-
-  // ========================
-  // UPDATE PRODUCT WITH IMAGE
-  // ========================
-  static Future<bool> updateProductWithImage({
-    required int id,
-    required String name,
-    required int price,
-    required int discount,
-    required int stock,
-    required String jenis,
-    required String satuan,
-    required String barcode,
-    File? imageFile,
-    int? resepId,
-  }) async {
-    try {
-      final request = http.MultipartRequest(
-        'PUT',
-        Uri.parse("$baseUrl/api/products/$id"),
-      );
-
-      // Add headers
-      request.headers.addAll({
-        'Connection': 'close',
-      });
-
-      // Add fields
-      request.fields['name'] = name;
-      request.fields['price'] = price.toString();
-      request.fields['discount'] = discount.toString();
-      request.fields['stock'] = stock.toString();
-      request.fields['jenis'] = jenis;
-      request.fields['satuan'] = satuan;
-      request.fields['barcode'] = barcode;
-      if (resepId != null) {
-        request.fields['resep_id'] = resepId.toString();
-      }
-
-      // Add image file if provided
-      if (imageFile != null) {
-        final imageBytes = await imageFile.readAsBytes();
-        final imageExtension = imageFile.path.split('.').last.toLowerCase();
-        final contentType = _getContentType(imageExtension);
-        
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'image',
-            imageBytes,
-            filename: 'product_${DateTime.now().millisecondsSinceEpoch}.$imageExtension',
-            contentType: http_parser.MediaType.parse(contentType),
-          ),
-        );
-      }
-
-      final response = await request.send().timeout(const Duration(seconds: 30));
-      
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal update produk dengan gambar: $e");
-    }
-  }
-
-  // Helper method untuk mendapatkan content type berdasarkan extension
-  static String _getContentType(String extension) {
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'webp':
-        return 'image/webp';
-      default:
-        return 'image/jpeg';
-    }
-  }
-
-  // ========================
-  // CREATE PRODUCT (LEGACY - untuk backward compatibility)
-  // ========================
-  static Future<bool> createProduct(Product product) async {
-    try {
       final body = {
         "name": product.name,
         "price": product.price,
@@ -246,59 +89,89 @@ class ApiService {
   // ========================
   // UPDATE PRODUCT
   // ========================
-  static Future<bool> updateProduct(Product product) async {
+=========
+  static Future<bool> updateProduct(Product product, {XFile? imageFile}) async {
+    final url = Uri.parse("$baseUrl/api/products/${product.id}");
+
     try {
-      final url = Uri.parse(
-        "$baseUrl/api/products/${product.id}",
-      );
+      if (imageFile != null) {
+        // ── Multipart: ada foto baru ─────────────────────
+        // Laravel tidak mendukung PUT multipart,
+        // gunakan POST + _method spoofing
+        debugPrint('[API] updateProduct multipart → $url');
 
-      final body = {
-        "name": product.name,
-        "price": product.price,
-        "discount": product.discount,
-        "stock": product.stock,
-        "jenis": product.jenis,
-        "satuan": product.satuan,
-        "barcode": product.barcode,
-        "image": product.image,
-        "resep_id": product.resepId,
-      };
+        final request = http.MultipartRequest('POST', url);
 
-      final response = await http
-          .put(
-            url,
-            headers: headers,
-            body: jsonEncode(body),
-          )
-          .timeout(const Duration(seconds: 10));
+        request.headers['Accept'] = 'application/json';
+        request.fields['_method'] = 'PUT'; // Laravel method spoofing
+        request.fields['name'] = product.name;
+        request.fields['price'] = product.price.toString();
+        request.fields['discount'] = product.discount.toString();
+        request.fields['stock'] = product.stock.toString();
+        request.fields['jenis'] = product.jenis;
+        request.fields['satuan'] = product.satuan;
+        request.fields['barcode'] = product.barcode ?? '';
 
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal update produk: $e");
+        final mimeType = lookupMimeType(imageFile.path) ?? 'image/jpeg';
+        final mimeParts = mimeType.split('/');
+
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            imageFile.path,
+            contentType: MediaType(mimeParts[0], mimeParts[1]),
+          ),
+        );
+
+        debugPrint('[API] fields: ${request.fields}');
+        debugPrint('[API] file: ${imageFile.path} ($mimeType)');
+
+        final streamed = await request.send();
+        final responseBody = await streamed.stream.bytesToString();
+
+        debugPrint('[API] updateProduct status: ${streamed.statusCode}');
+        debugPrint('[API] updateProduct body: $responseBody');
+
+        return streamed.statusCode == 200;
+      } else {
+        // ── JSON: tanpa foto (atau hapus foto lama) ──────
+        debugPrint('[API] updateProduct JSON → $url');
+
+        final body = {
+          'name': product.name,
+          'price': product.price,
+          'discount': product.discount,
+          'stock': product.stock,
+          'jenis': product.jenis,
+          'satuan': product.satuan,
+          'barcode': product.barcode,
+          'image': product.image, // null jika foto dihapus
+        };
+
+        debugPrint('[API] body: $body');
+
+        final response = await http.put(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode(body),
+        );
+
+        debugPrint('[API] updateProduct status: ${response.statusCode}');
+        debugPrint('[API] updateProduct body: ${response.body}');
+
+        return response.statusCode == 200;
+      }
+    } catch (e, stack) {
+      debugPrint('[API] updateProduct EXCEPTION: $e');
+      debugPrint('[API] $stack');
+      rethrow;
     }
   }
 
-  // ========================
-  // DELETE PRODUCT
-  // ========================
-  static Future<bool> deleteProduct(int id) async {
-    try {
-      final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/products/$id"),
-            headers: headers,
-          )
-          .timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal hapus produk: $e");
-    }
-  }
-
-  // ========================
-  // CREATE TRANSACTION
-  // ========================
+>>>>>>>>> Temporary merge branch 2
   static Future<bool> createTransaction({
     required double total,
     required double bayar,
@@ -382,15 +255,124 @@ class ApiService {
           )
           .timeout(const Duration(seconds: 10));
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+    if (response.statusCode == 200) {
+   
+      return jsonDecode(response.body); 
+    } else {
+      throw Exception("Failed to load detail");
+    }
+  } catch (e) {
+    throw Exception("Gagal memuat detail: $e");
+  }
+
+  // ========================
+  // CREATE PRODUCT
+  // ========================
+  static Future<bool> createProduct(Product product, {XFile? imageFile}) async {
+    final url = Uri.parse("$baseUrl/api/products");
+
+    try {
+      if (imageFile != null) {
+        // ── Multipart: ada foto ──────────────────────────
+        debugPrint('[API] createProduct multipart → $url');
+
+        final request = http.MultipartRequest('POST', url);
+
+        // Tambahkan Accept header agar Laravel tidak redirect
+        request.headers['Accept'] = 'application/json';
+
+        request.fields['name'] = product.name;
+        request.fields['price'] = product.price.toString();
+        request.fields['discount'] = product.discount.toString();
+        request.fields['stock'] = product.stock.toString();
+        request.fields['jenis'] = product.jenis;
+        request.fields['satuan'] = product.satuan;
+        request.fields['barcode'] = product.barcode ?? '';
+
+        final mimeType = lookupMimeType(imageFile.path) ?? 'image/jpeg';
+        final mimeParts = mimeType.split('/');
+
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image', // sesuaikan dengan nama field di backend Laravel
+            imageFile.path,
+            contentType: MediaType(mimeParts[0], mimeParts[1]),
+          ),
+        );
+
+        debugPrint('[API] fields: ${request.fields}');
+        debugPrint('[API] file: ${imageFile.path} ($mimeType)');
+
+        final streamed = await request.send();
+        final responseBody = await streamed.stream.bytesToString();
+
+        debugPrint('[API] createProduct status: ${streamed.statusCode}');
+        debugPrint('[API] createProduct body: $responseBody');
+
+        return streamed.statusCode == 200 || streamed.statusCode == 201;
       } else {
-        throw Exception("Failed to load detail");
+        // ── JSON: tanpa foto ─────────────────────────────
+        debugPrint('[API] createProduct JSON → $url');
+
+        final body = {
+          'name': product.name,
+          'price': product.price,
+          'discount': product.discount,
+          'stock': product.stock,
+          'jenis': product.jenis,
+          'satuan': product.satuan,
+          'barcode': product.barcode,
+          'image': product.image,
+        };
+
+        debugPrint('[API] body: $body');
+
+        final response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode(body),
+        );
+
+        debugPrint('[API] createProduct status: ${response.statusCode}');
+        debugPrint('[API] createProduct body: ${response.body}');
+
+        return response.statusCode == 200 || response.statusCode == 201;
       }
-    } catch (e) {
-      throw Exception("Gagal memuat detail: $e");
+    } catch (e, stack) {
+      debugPrint('[API] createProduct EXCEPTION: $e');
+      debugPrint('[API] $stack');
+      rethrow;
     }
   }
+
+  // ========================
+  // DELETE PRODUCT
+  // ========================
+  static Future<bool> deleteProduct(int id) async {
+    final url = Uri.parse("$baseUrl/api/products/$id");
+
+    try {
+      debugPrint('[API] deleteProduct → $url');
+
+      final response = await http.delete(
+        url,
+        headers: {'Accept': 'application/json'},
+      );
+
+      debugPrint('[API] deleteProduct status: ${response.statusCode}');
+      debugPrint('[API] deleteProduct body: ${response.body}');
+
+      return response.statusCode == 200;
+    } catch (e, stack) {
+      debugPrint('[API] deleteProduct EXCEPTION: $e');
+      debugPrint('[API] $stack');
+      rethrow;
+    }
+  }
+}
 
   // ========================
   // BAHAN BAKU APIS
