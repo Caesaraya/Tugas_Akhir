@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import 'package:tugas_akhir/bindings/admin/admin_binding.dart';
+import 'package:tugas_akhir/page/admin/kelola_produk_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_dashboard_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_pembayaran_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_selesai_desktop.dart';
@@ -17,8 +19,16 @@ import 'routes.dart';
 
 class AppPages {
   static final pages = [
+    //===ADMIN===
+    //desktop
+    GetPage(
+      name: AppRoutes.kelolaprodukdesk,
+      page: () => KelolaProdukDeskPage(),
+      binding: AdminBinding(),
+    ),
     //media query
     GetPage(name: AppRoutes.mediaQuery, page: () => DashboardWrapper()),
+    //===KASIR===
     //mobile
     GetPage(
       name: AppRoutes.dashboardMobile,
