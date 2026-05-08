@@ -1,6 +1,10 @@
 class AppRoutes {
+  //===ADMIN===
+  //desktop
+  static const String kelolaprodukdesk = '/kelolaprodukdesk';
   //media query
   static const String mediaQuery = '/mediaQuery';
+  //===KASIR===
   //mobile
   static const String dashboardMobile = '/dashboardMobile';
   static const String navbar = '/navbar';
