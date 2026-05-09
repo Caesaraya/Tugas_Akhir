@@ -72,6 +72,7 @@ class DashboardController extends GetxController {
     if (category != null) selectedCategory.value = category;
 
     var temp = productList.where((product) {
+      bool isAvailable = product.stock > 0;
       bool matchCategory =
           selectedCategory.value == "Semua" ||
           product.jenis == selectedCategory.value;
