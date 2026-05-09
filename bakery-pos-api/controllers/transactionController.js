@@ -15,7 +15,6 @@ exports.createTransaction = async (req, res) => {
       items,
     } = req.body;
 
-    // VALIDASI
     if (!items || items.length === 0) {
       return res.status(400).json({
         message: "Item transaksi kosong",
@@ -24,9 +23,6 @@ exports.createTransaction = async (req, res) => {
 
     await connection.beginTransaction();
 
-    // ========================
-    // INSERT TRANSACTIONS
-    // ========================
     const [transactionResult] = await connection.execute(
       `
       INSERT INTO transactions
@@ -56,11 +52,7 @@ exports.createTransaction = async (req, res) => {
 
     const transactionId = transactionResult.insertId;
 
-    // ========================
-    // INSERT DETAIL
-    // ========================
     for (const item of items) {
-      // ambil data produk
       const [productRows] = await connection.execute(
         `
         SELECT
@@ -81,16 +73,12 @@ exports.createTransaction = async (req, res) => {
 
       const product = productRows[0];
 
-      // cek stok
       if (product.stock < item.qty) {
         throw new Error(
           `Stok produk ID ${item.product_id} tidak cukup`
         );
       }
 
-      // ========================
-      // INSERT TRANSACTION DETAIL
-      // ========================
       await connection.execute(
         `
         INSERT INTO transaction_details
@@ -122,9 +110,6 @@ exports.createTransaction = async (req, res) => {
         ]
       );
 
-      // ========================
-      // UPDATE STOCK PRODUCT
-      // ========================
       await connection.execute(
         `
         UPDATE products
@@ -147,7 +132,6 @@ exports.createTransaction = async (req, res) => {
     });
 
   } catch (error) {
-
     await connection.rollback();
 
     console.log("ERROR CREATE TRANSACTION:");
@@ -159,7 +143,6 @@ exports.createTransaction = async (req, res) => {
     });
 
   } finally {
-
     connection.release();
   }
 };
@@ -169,7 +152,6 @@ exports.createTransaction = async (req, res) => {
 // ========================
 exports.getTransactions = async (req, res) => {
   try {
-
     const [rows] = await db.execute(
       `
       SELECT
@@ -187,7 +169,6 @@ exports.getTransactions = async (req, res) => {
     res.json(rows);
 
   } catch (error) {
-
     console.log("ERROR GET TRANSACTIONS:");
     console.log(error);
 
@@ -203,12 +184,8 @@ exports.getTransactions = async (req, res) => {
 // ========================
 exports.getTransactionDetail = async (req, res) => {
   try {
-
     const { id } = req.params;
 
-    // ========================
-    // HEADER TRANSAKSI
-    // ========================
     const [transactionRows] = await db.execute(
       `
       SELECT
@@ -231,9 +208,6 @@ exports.getTransactionDetail = async (req, res) => {
       });
     }
 
-    // ========================
-    // DETAIL ITEM
-    // ========================
     const [detailRows] = await db.execute(
       `
       SELECT
@@ -245,14 +219,18 @@ exports.getTransactionDetail = async (req, res) => {
         td.subtotal,
         td.discount,
 
-        p.name,
-        p.jenis,
-        p.satuan,
-        p.image
+        COALESCE(p.name, 'Produk sudah dihapus') AS name,
+        COALESCE(p.jenis, '-') AS jenis,
+        COALESCE(p.satuan, '-') AS satuan,
+        CASE
+          WHEN p.image IS NOT NULL
+          THEN CONCAT('https://oafishly-noncontagious-cali.ngrok-free.dev/uploads/', p.image)
+          ELSE NULL
+        END AS image
 
       FROM transaction_details td
 
-      JOIN products p
+      LEFT JOIN products p
       ON td.product_id = p.id
 
       WHERE td.transaction_id = ?
@@ -267,7 +245,6 @@ exports.getTransactionDetail = async (req, res) => {
     });
 
   } catch (error) {
-
     console.log("ERROR GET DETAIL:");
     console.log(error);
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_dashboard_desktop.dart';
-import 'package:tugas_akhir/page/mobile/Kasir_dashboard_mobile.dart';
+import 'package:tugas_akhir/pages/products/product_list_page.dart';
 
 class DashboardWrapper extends StatelessWidget {
   const DashboardWrapper({super.key});
@@ -13,7 +13,7 @@ class DashboardWrapper extends StatelessWidget {
     if (width >= 600) {
       return KasirDashboardDesktop();
     } else {
-      return KasirDashboardMobile();
+      return ProductListPage(); // Mobile starts with product list
     }
   }
 }

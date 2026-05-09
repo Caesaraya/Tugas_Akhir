@@ -95,7 +95,7 @@ class _ProductListPageState extends State<ProductListPage> {
           ),
         ],
       ),
-      body: Column(
+            body: Column(
         children: [
           // Search bar
           Container(

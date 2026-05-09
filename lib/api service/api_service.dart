@@ -367,7 +367,7 @@ class ApiService {
   // ========================
   // GET TRANSACTION DETAIL
   // ========================
-  static Future<List<dynamic>> getTransactionDetail(
+  static Future<Map<String, dynamic>> getTransactionDetail(
     int id,
   ) async {
     try {

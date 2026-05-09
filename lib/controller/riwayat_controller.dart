@@ -25,10 +25,10 @@ class RiwayatController extends GetxController {
       );
       // Assign items ke setiap transaksi
       for (int i = 0; i < data.length; i++) {
-        if (details[i] is Map && (details[i] as Map)['items'] != null) {
-          data[i]['items'] = (details[i] as Map)['items'];
+        if (details[i]['items'] != null) {
+          data[i]['items'] = details[i]['items'];
         } else {
-          data[i]['items'] = details[i]; // Jika langsung list
+          data[i]['items'] = []; // Default empty list jika tidak ada items
         }
       }
       transactions.assignAll(data);

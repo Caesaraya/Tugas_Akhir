@@ -37,6 +37,47 @@ function getImageByJenis(jenis) {
 }
 
 // ========================
+// CHECK DEFAULT IMAGE
+// ========================
+function isDefaultImage(imageName) {
+  const defaultImages = [
+    "cake.jpg",
+    "bread.jpg",
+    "pasta.jpg",
+    "kue_kering.jpg",
+    "konsinyasi.jpg",
+    "minuman.jpg",
+    "tart.jpg",
+    "pastry.jpg",
+    "basahan.jpg",
+    "hantaran.jpg",
+    "packaging.jpg",
+    "putus.jpg",
+    "grosir.jpg",
+    "default.jpg",
+  ];
+
+  return defaultImages.includes(imageName);
+}
+
+// ========================
+// BUILD IMAGE URL
+// ========================
+function buildImageUrl(product) {
+  const baseUrl = "https://oafishly-noncontagious-cali.ngrok-free.dev";
+
+  if (!product.image) {
+    return `${baseUrl}/images/${getImageByJenis(product.jenis)}`;
+  }
+
+  if (isDefaultImage(product.image)) {
+    return `${baseUrl}/images/${product.image}`;
+  }
+
+  return `${baseUrl}/uploads/${product.image}`;
+}
+
+// ========================
 // GET ALL PRODUCTS
 // ========================
 exports.getProducts = async (req, res) => {
@@ -61,11 +102,7 @@ exports.getProducts = async (req, res) => {
     const products = rows.map((product) => ({
       ...product,
       price_after_discount: Math.round(product.price_after_discount),
-      image: product.image
-        ? `https://oafishly-noncontagious-cali.ngrok-free.dev/uploads/${product.image}`
-        : `https://oafishly-noncontagious-cali.ngrok-free.dev/images/${getImageByJenis(
-            product.jenis
-          )}`,
+      image: buildImageUrl(product),
     }));
 
     res.json(products);
@@ -104,17 +141,15 @@ exports.getProductById = async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        message: "Product not found",
+      });
     }
 
     const product = {
       ...rows[0],
       price_after_discount: Math.round(rows[0].price_after_discount),
-      image: rows[0].image
-        ? `https://oafishly-noncontagious-cali.ngrok-free.dev/uploads/${rows[0].image}`
-        : `https://oafishly-noncontagious-cali.ngrok-free.dev/images/${getImageByJenis(
-            rows[0].jenis
-          )}`,
+      image: buildImageUrl(rows[0]),
     };
 
     res.json(product);
@@ -288,16 +323,30 @@ exports.updateProduct = async (req, res) => {
 // ========================
 exports.deleteProduct = async (req, res) => {
   try {
-    await db.query(
+    const [result] = await db.query(
       "DELETE FROM products WHERE id = ?",
       [req.params.id]
     );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
 
     res.json({
       message: "Product deleted",
     });
   } catch (error) {
     console.error(error);
+
+    if (error.code === "ER_ROW_IS_REFERENCED_2") {
+      return res.status(400).json({
+        message:
+          "Product tidak bisa dihapus karena sudah dipakai pada transaksi",
+      });
+    }
+
     res.status(500).json({
       message: "Failed to delete product",
       error: error.message,
