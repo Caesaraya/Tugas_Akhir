@@ -15,7 +15,9 @@ class CartItem {
 
   // Karena ini getter untuk total uang, return double tidak apa-apa
   double get total {
-    double finalPrice = (price - discount).toDouble();
+    double finalPrice = discount > 0 
+      ? price * (1 - discount / 100)  // Hitung harga setelah diskon persen
+      : price.toDouble();
     return finalPrice * qty;
   }
 }

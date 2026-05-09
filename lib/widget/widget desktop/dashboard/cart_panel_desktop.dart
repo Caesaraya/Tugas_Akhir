@@ -9,7 +9,7 @@ class CartPanelDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CartController cartController = Get.find<CartController>();
+    final CartController cartController = Get.put(CartController());
 
     return Container(
       width: 320,

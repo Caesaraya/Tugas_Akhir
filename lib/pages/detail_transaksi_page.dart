@@ -206,33 +206,87 @@ class DetailTransaksiPage extends StatelessWidget {
                     end: Alignment.bottomRight,
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: [
-                    const Text(
-                      'Total Pembayaran',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF8B4513),
-                      ),
+                    // Subtotal
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Subtotal',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF8B4513),
+                          ),
+                        ),
+                        Text(
+                          NumberFormat.currency(
+                            locale: 'id_ID',
+                            symbol: 'Rp ',
+                            decimalDigits: 0,
+                          ).format(_calculateSubtotal()),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF8B4513),
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      NumberFormat.currency(
-                        locale: 'id_ID',
-                        symbol: 'Rp ',
-                        decimalDigits: 0,
-                      ).format(
-                        double.tryParse(
-                              transaction['total_harga'].toString(),
-                            ) ??
-                            0,
+                    const SizedBox(height: 8),
+                    // Total Discount
+                    if (_calculateTotalDiscount() > 0) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Total Diskon',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.red,
+                            ),
+                          ),
+                          Text(
+                            '-${NumberFormat.currency(
+                              locale: 'id_ID',
+                              symbol: 'Rp ',
+                              decimalDigits: 0,
+                            ).format(_calculateTotalDiscount())}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF8B4513),
-                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    const Divider(color: Color(0xFF8B4513)),
+                    // Total Pembayaran
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Total Pembayaran',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF8B4513),
+                          ),
+                        ),
+                        Text(
+                          NumberFormat.currency(
+                            locale: 'id_ID',
+                            symbol: 'Rp ',
+                            decimalDigits: 0,
+                          ).format(_calculateTotal()),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF8B4513),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -322,10 +376,14 @@ class DetailTransaksiPage extends StatelessWidget {
   }
 
   Widget _buildItemCard(dynamic item) {
-    final itemName = item['name'] ?? 'Item tidak diketahui';
-    final quantity = item['qty'] ?? item['quantity'] ?? 0;
+    final itemName = item['product_name'] ?? item['name'] ?? 'Item tidak diketahui';
+    final productId = item['product_id'] ?? item['id'] ?? 0;
+    final jenis = item['product_jenis'] ?? '';
+    final satuan = item['product_satuan'] ?? '';
+    // Backend sudah menyediakan image URL yang lengkap di field 'image'
+    final image = item['image'] ?? item['product_image'] ?? '';
+    final quantity = item['quantity'] ?? item['qty'] ?? 0;
     final price = double.tryParse(item['price'].toString()) ?? 0;
-    final subtotal = double.tryParse(item['subtotal'].toString()) ?? 0;
     final discount = double.tryParse(item['discount'].toString()) ?? 0;
 
     return Container(
@@ -338,17 +396,192 @@ class DetailTransaksiPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Product Info Row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product Image
+              if (image.isNotEmpty) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    image,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              const Color(0xFF8B4513),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ] else ...[
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.image,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              // Product Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            itemName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'ID: $productId',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (jenis.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          jenis,
+                          style: TextStyle(
+                            color: Colors.blue[700],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (satuan.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Satuan: $satuan',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Price and Quantity Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Text(
-                  itemName,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Harga',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
                   ),
-                ),
+                  if (discount > 0) ...[
+                    Text(
+                      NumberFormat.currency(
+                        locale: 'id_ID',
+                        symbol: 'Rp ',
+                        decimalDigits: 0,
+                      ).format(price),
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: Colors.grey[400],
+                      ),
+                    ),
+                    Text(
+                      NumberFormat.currency(
+                        locale: 'id_ID',
+                        symbol: 'Rp ',
+                        decimalDigits: 0,
+                      ).format(price * (1 - discount / 100)),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color(0xFF8B4513),
+                      ),
+                    ),
+                  ] else ...[
+                    Text(
+                      NumberFormat.currency(
+                        locale: 'id_ID',
+                        symbol: 'Rp ',
+                        decimalDigits: 0,
+                      ).format(price),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color(0xFF8B4513),
+                      ),
+                    ),
+                  ],
+                ],
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -375,14 +608,10 @@ class DetailTransaksiPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                NumberFormat.currency(
-                  locale: 'id_ID',
-                  symbol: 'Rp ',
-                  decimalDigits: 0,
-                ).format(price),
+                'Subtotal',
                 style: TextStyle(
                   color: Colors.grey[600],
-                  fontSize: 14,
+                  fontSize: 12,
                 ),
               ),
               Text(
@@ -390,7 +619,7 @@ class DetailTransaksiPage extends StatelessWidget {
                   locale: 'id_ID',
                   symbol: 'Rp ',
                   decimalDigits: 0,
-                ).format(subtotal),
+                ).format(price * quantity),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -407,11 +636,7 @@ class DetailTransaksiPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                'Diskon: ${NumberFormat.currency(
-                  locale: 'id_ID',
-                  symbol: 'Rp ',
-                  decimalDigits: 0,
-                ).format(discount)}',
+                'Diskon: ${discount.toStringAsFixed(0)}%',
                 style: TextStyle(
                   color: Colors.red[700],
                   fontSize: 12,
@@ -440,6 +665,44 @@ class DetailTransaksiPage extends StatelessWidget {
     } catch (e) {
       return dateString;
     }
+  }
+
+  // Calculation methods
+  double _calculateSubtotal() {
+    if (transaction['items'] == null) return 0;
+    
+    double subtotal = 0;
+    for (var item in transaction['items']) {
+      final price = double.tryParse(item['price'].toString()) ?? 0;
+      final quantity = int.tryParse(item['quantity'].toString()) ?? int.tryParse(item['qty'].toString()) ?? 0;
+      
+      // Hitung harga asli × quantity (untuk subtotal sebelum diskon)
+      subtotal += price * quantity;
+    }
+    return subtotal;
+  }
+
+  double _calculateTotalDiscount() {
+    if (transaction['items'] == null) return 0;
+    
+    double totalDiscount = 0;
+    for (var item in transaction['items']) {
+      final price = double.tryParse(item['price'].toString()) ?? 0;
+      final quantity = int.tryParse(item['quantity'].toString()) ?? int.tryParse(item['qty'].toString()) ?? 0;
+      final discountPercent = double.tryParse(item['discount'].toString()) ?? 0;
+      
+      if (discountPercent > 0) {
+        // Hitung total diskon per item: (harga asli × persen diskon) × quantity
+        final discountAmount = (price * discountPercent / 100) * quantity;
+        totalDiscount += discountAmount;
+      }
+    }
+    return totalDiscount;
+  }
+
+  double _calculateTotal() {
+    // Total = Subtotal - Total Diskon
+    return _calculateSubtotal() - _calculateTotalDiscount();
   }
 
   void _showPrintDialog(BuildContext context) {

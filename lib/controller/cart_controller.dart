@@ -133,11 +133,16 @@ class CartController extends GetxController {
     }
   }
   
-  double get totalPrice => cartItems.fold(0, (sum, item) => sum + ((item.price - item.discount) * item.qty));
+  double get totalPrice => cartItems.fold(0, (sum, item) => sum + item.total);
   double get subtotal => cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
   double get kembalian => inputUang.value > totalPrice ? inputUang.value - totalPrice : 0.0;
   bool get isUangCukup => inputUang.value >= totalPrice && totalPrice > 0;
-  double get totalDiscount => cartItems.fold(0, (sum, item) => sum + (item.discount * item.qty));
+  double get totalDiscount => cartItems.fold(0, (sum, item) {
+    double discountAmount = item.discount > 0 
+      ? (item.price * item.discount / 100) * item.qty
+      : 0.0;
+    return sum + discountAmount;
+  });
   int get itemCount => cartItems.length;
 
   String get paymentMethodLabel {

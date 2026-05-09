@@ -1,6 +1,39 @@
 const db = require("../config/db");
 
 // ========================
+// BUILD IMAGE URL
+// ========================
+function buildImageUrl(image) {
+  const baseUrl =
+    "https://oafishly-noncontagious-cali.ngrok-free.dev";
+
+  if (!image) return null;
+
+  const defaultImages = [
+    "cake.jpg",
+    "bread.jpg",
+    "pasta.jpg",
+    "kue_kering.jpg",
+    "konsinyasi.jpg",
+    "minuman.jpg",
+    "tart.jpg",
+    "pastry.jpg",
+    "basahan.jpg",
+    "hantaran.jpg",
+    "packaging.jpg",
+    "putus.jpg",
+    "grosir.jpg",
+    "default.jpg",
+  ];
+
+  if (defaultImages.includes(image)) {
+    return `${baseUrl}/images/${image}`;
+  }
+
+  return `${baseUrl}/uploads/${image}`;
+}
+
+// ========================
 // CREATE TRANSACTION
 // ========================
 exports.createTransaction = async (req, res) => {
@@ -57,6 +90,10 @@ exports.createTransaction = async (req, res) => {
         `
         SELECT
           id,
+          name,
+          jenis,
+          satuan,
+          image,
           stock,
           discount
         FROM products
@@ -81,32 +118,44 @@ exports.createTransaction = async (req, res) => {
 
       await connection.execute(
         `
-        INSERT INTO transaction_details
-        (
-          transaction_id,
-          product_id,
-          quantity,
-          price,
-          subtotal,
-          discount
-        )
-        VALUES
-        (
-          ?,
-          ?,
-          ?,
-          ?,
-          ?,
-          ?
-        )
-        `,
+  INSERT INTO transaction_details
+  (
+    transaction_id,
+    product_id,
+    product_name,
+    product_jenis,
+    product_satuan,
+    product_image,
+    quantity,
+    price,
+    subtotal,
+    discount
+  )
+  VALUES
+  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
+  )
+  `,
         [
           transactionId,
           item.product_id,
+          product.name,
+          product.jenis,
+          product.satuan,
+          product.image,
           item.qty,
           item.price,
           item.subtotal,
-          item.discount || 0,
+          product.discount || 0,
         ]
       );
 
@@ -214,34 +263,29 @@ exports.getTransactionDetail = async (req, res) => {
         td.id,
         td.transaction_id,
         td.product_id,
+        td.product_name,
+        td.product_jenis,
+        td.product_satuan,
+        td.product_image,
         td.quantity,
         td.price,
         td.subtotal,
-        td.discount,
-
-        COALESCE(p.name, 'Produk sudah dihapus') AS name,
-        COALESCE(p.jenis, '-') AS jenis,
-        COALESCE(p.satuan, '-') AS satuan,
-        CASE
-          WHEN p.image IS NOT NULL
-          THEN CONCAT('https://oafishly-noncontagious-cali.ngrok-free.dev/uploads/', p.image)
-          ELSE NULL
-        END AS image
-
+        td.discount
       FROM transaction_details td
-
-      LEFT JOIN products p
-      ON td.product_id = p.id
-
       WHERE td.transaction_id = ?
       `,
       [id]
     );
 
+    const items = detailRows.map((item) => ({
+      ...item,
+      image: buildImageUrl(item.product_image),
+    }));
+
     res.json({
       success: true,
       transaction: transactionRows[0],
-      items: detailRows,
+      items,
     });
 
   } catch (error) {

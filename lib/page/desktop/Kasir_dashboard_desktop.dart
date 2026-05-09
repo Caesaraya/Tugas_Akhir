@@ -13,7 +13,7 @@ class KasirDashboardDesktop extends StatelessWidget {
 
   // Tambahkan controller
   final DashboardController controller = Get.put(DashboardController());
-  final CartController cartController = Get.find<CartController>();
+  final CartController cartController = Get.put(CartController());
 
   @override
   Widget build(BuildContext context) {
