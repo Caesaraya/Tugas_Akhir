@@ -6,11 +6,13 @@ import '../../widget mobile/search_bar.dart';
 class AppBarDesktop extends StatelessWidget {
   final String title;
   final bool showSearch;
+  final VoidCallback? onMenuTap;
 
   const AppBarDesktop({
     super.key,
     this.title = 'Rumah Lezzaaa',
     this.showSearch = true,
+    this.onMenuTap,
   });
 
   @override
