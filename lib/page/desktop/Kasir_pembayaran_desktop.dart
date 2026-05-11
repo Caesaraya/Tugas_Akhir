@@ -4,32 +4,23 @@ import 'package:tugas_akhir/routes/routes.dart';
 import '../../controller/mobile/payment_controller.dart';
 import '../../controller/mobile/cart_controller.dart';
 import '../../widget/widget desktop/bayar/payment_method_widget.dart';
-import '../../widget/widget desktop/bayar/quick_chip.dart';
 import '../../widget/widget desktop/bayar/calculator_keypad.dart';
-
-//test
-class KasirPembayaranDesktop extends StatelessWidget {
-  const KasirPembayaranDesktop({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    // Initialize controller
-    Get.put(PaymentController());
-
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const PaymentPage(),
-    );
-  }
-}
+import 'package:intl/intl.dart';
 
 class PaymentPage extends StatelessWidget {
-  const PaymentPage({super.key});
+  PaymentPage({super.key});
+
+  
 
   @override
   Widget build(BuildContext context) {
-    final PaymentController controller = Get.put(PaymentController());
     final CartController cartController = Get.find<CartController>();
+     final PaymentController controller = Get.put(PaymentController());
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -51,7 +42,8 @@ class PaymentPage extends StatelessWidget {
                   const SizedBox(height: 5),
                   Obx(
                     () => Text(
-                      "Rp ${cartController.totalPrice.toStringAsFixed(0)}",
+                      // 2. Gunakan currencyFormat di sini
+                      currencyFormat.format(cartController.totalPrice),
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -90,25 +82,7 @@ class PaymentPage extends StatelessWidget {
                 /// Quick buttons
                 Container(
                   padding: const EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      QuickChip(
-                        text: "Uang Pas",
-                        onPressed: () => controller.onChipPressed(
-                          "Uang Pas",
-                          totalPrice: cartController.totalPrice,
-                        ),
-                      ),
-                      QuickChip(
-                        text: "Rp50,000",
-                        onPressed: () => controller.onChipPressed("Rp50,000"),
-                      ),
-                      QuickChip(
-                        text: "Rp100,000",
-                        onPressed: () => controller.onChipPressed("Rp100,000"),
-                      ),
-                    ],
-                  ),
+                  child: Row(children: []),
                 ),
 
                 /// Input display
@@ -116,22 +90,22 @@ class PaymentPage extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   child: Align(
                     alignment: Alignment.centerRight,
-                    child: Obx(
-                      () => Text(
-                        controller.input.value.isEmpty
-                            ? "Rp 0"
-                            : "Rp ${controller.input.value}",
+                    child: Obx(() {
+                      int amount = int.tryParse(controller.input.value) ?? 0;
+
+                      return Text(
+                        currencyFormat.format(amount),
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                   ),
                 ),
 
                 /// Keypad
-                CalculatorKeypad(onButtonPressed: controller.onButtonPressed),
+                     CalculatorKeypad(onButtonPressed: controller.onButtonPressed),
 
                 /// Pay Button
                 Container(

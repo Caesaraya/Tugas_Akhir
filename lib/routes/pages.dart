@@ -15,6 +15,7 @@ import 'package:tugas_akhir/page/mobile/keranjang_mobile.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/riwayat_mobile.dart';
 import 'package:tugas_akhir/page/mobile/Kelolaproduk_mobile.dart';
+
 import 'routes.dart';
 
 class AppPages {
@@ -46,7 +47,7 @@ class AppPages {
       name: AppRoutes.kasirboarddesk,
       page: () => KasirDashboardDesktop(),
     ),
-    GetPage(name: AppRoutes.kasirbayar, page: () => KasirPembayaranDesktop()),
+    GetPage(name: AppRoutes.kasirbayar, page: () => PaymentPage()),
     GetPage(name: AppRoutes.kasirprint, page: () => KasirSelesaiDesktop()),
     GetPage(
       name: AppRoutes.transactionDetail,

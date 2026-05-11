@@ -55,68 +55,66 @@ class CartPanelDesktop extends StatelessWidget {
                   ),
                 );
               } else {
-              return ListView.builder(
-  padding: const EdgeInsets.all(12),
-  itemCount: cartController.cartItems.length,
-  itemBuilder: (context, index) {
-    final item = cartController.cartItems[index];
-    return CartTile(
-      item: item,
-      onAdd: () => cartController.increaseQty(item.productId),
-      
-      // PERBAIKAN: Tambahkan logika if (item.qty > 1)
-      onRemove: () {
-        if (item.qty > 1) {
-          cartController.decreaseQty(item.productId);
-        }
-      },
-      
-      onDelete: () => cartController.removeFromCart(item.productId),
-    );
-  },
-);
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: cartController.cartItems.length,
+                  itemBuilder: (context, index) {
+                    final item = cartController.cartItems[index];
+                    return CartTile(
+                      item: item,
+                      onAdd: () => cartController.increaseQty(item.productId),
+
+                      // PERBAIKAN: Tambahkan logika if (item.qty > 1)
+                      onRemove: () {
+                        if (item.qty > 1) {
+                          cartController.decreaseQty(item.productId);
+                        }
+                      },
+
+                      onDelete: () =>
+                          cartController.removeFromCart(item.productId),
+                    );
+                  },
+                );
               }
             }),
           ),
 
           /// FOOTER BAYAR
-          Obx(
-            () => Container(
-              padding: const EdgeInsets.all(16),
-              color: cartController.cartItems.isNotEmpty
-                  ? Colors.orange
-                  : Colors.grey[200],
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  InkWell(
-                    onTap: cartController.cartItems.isNotEmpty
-                        ? () => Get.toNamed(AppRoutes.kasirbayar)
-                        : null,
-                    child: Text(
+          /// FOOTER BAYAR
+          Obx(() {
+            final bool hasItems = cartController.cartItems.isNotEmpty;
+
+            return InkWell(
+              // 1. Pindahkan onTap ke sini agar seluruh area warna bisa dipencet
+              onTap: hasItems ? () => Get.toNamed(AppRoutes.kasirbayar) : null,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                // 2. Warna background otomatis berubah berdasarkan kondisi hasItems
+                color: hasItems ? Colors.orange : Colors.grey[200],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // 3. Sekarang ini hanya widget Text biasa (InkWell sudah di luar)
+                    Text(
                       "${cartController.itemCount} | Bayar",
                       style: TextStyle(
-                        fontWeight: FontWeight.bold, // Tambahkan bold agar lebih jelas
-                        color: cartController.cartItems.isNotEmpty
-                            ? Colors.white
-                            : Colors.black,
+                        fontWeight: FontWeight.bold,
+                        color: hasItems ? Colors.white : Colors.black,
                       ),
                     ),
-                  ),
-                  // 3. Gunakan currencyFormat di sini
-                  Text(
-                    currencyFormat.format(cartController.totalPrice),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: cartController.cartItems.isNotEmpty
-                          ? Colors.white
-                          : Colors.black,
+                    Text(
+                      currencyFormat.format(cartController.totalPrice),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: hasItems ? Colors.white : Colors.black,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );
