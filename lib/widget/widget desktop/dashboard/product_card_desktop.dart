@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../../models/product.dart';
+import 'package:intl/intl.dart';
 
 class ProductCardDesktop extends StatelessWidget {
+  final currencyFormat = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
+  
   final Product product;
   final String tag;
   final VoidCallback? onTap;
 
-  const ProductCardDesktop({
+  ProductCardDesktop({
     super.key,
     required this.product,
-    this.tag = "Roti",
+    this.tag = "Baru",
     this.onTap,
   });
 
@@ -17,6 +24,7 @@ class ProductCardDesktop extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Card(
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -26,15 +34,12 @@ class ProductCardDesktop extends StatelessWidget {
             /// GAMBAR
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 child: Image.network(
                   product.image,
                   width: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
-                    height: 120,
                     color: Colors.grey[200],
                     child: const Icon(Icons.broken_image, color: Colors.grey),
                   ),
@@ -42,40 +47,80 @@ class ProductCardDesktop extends StatelessWidget {
               ),
             ),
 
-            /// NAMA
+            /// INFORMASI PRODUK
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Text(
-                product.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-
-            /// HARGA
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(
-                "Rp ${product.price.toStringAsFixed(0)}",
-                style: const TextStyle(color: Colors.black54),
-              ),
-            ),
-
-            if (product.discount > 0)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  "Disc ${product.discount.toStringAsFixed(0)}%",
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
-                ),
-              ),
+                  const SizedBox(height: 2),
+                  
+                  // LOGIKA DISKON: Menampilkan harga asli dicoret jika ada diskon
+                  if (product.discount > 0)
+                    Row(
+                      children: [
+                        Text(
+                          currencyFormat.format(product.price),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 10,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "${product.discount.toStringAsFixed(0)}%",
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
 
-            const SizedBox(height: 6),
+                  // Harga Setelah Diskon (Harga Utama)
+                  Text(
+                    currencyFormat.format(product.priceAfterDiscount), 
+                    style: const TextStyle(
+                      color: Color(0xFFE89336), 
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  /// FIX OVERFLOW
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          product.jenis.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.grey[500], fontSize: 9),
+                        ),
+                      ),
+                      Text(
+                        "Stok: ${product.stock}",
+                        style: TextStyle(
+                          color: product.stock < 10 ? Colors.red : Colors.black87,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

@@ -4,7 +4,7 @@ import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/mobile/riwayat_controller.dart';
 import 'package:tugas_akhir/api%20service/api_service.dart';
-import 'package:intl/intl.dart'; // Wajib untuk format titik
+import 'package:intl/intl.dart';
 
 class CartController extends GetxController {
   final textController = TextEditingController();
@@ -13,7 +13,6 @@ class CartController extends GetxController {
   var selectedPayment = 'cash'.obs;
   var inputUang = 0.0.obs;
 
-  // Formatter untuk tampilan (misal: 100.000)
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
@@ -37,7 +36,7 @@ class CartController extends GetxController {
           productId: product.id,
           name: product.name,
           price: product.price,
-          discount: product.discount,
+          discount: product.discount, // Ini berisi angka persen (misal: 12)
           qty: 1,
         ),
       );
@@ -76,7 +75,6 @@ class CartController extends GetxController {
     if (value.isEmpty) {
       inputUang.value = 0;
     } else {
-      // Menghapus semua karakter non-angka (seperti titik dari formatter) sebelum parsing
       inputUang.value = double.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
     }
   }
@@ -143,16 +141,35 @@ class CartController extends GetxController {
     }
   }
 
-  // GETTERS
-  double get totalPrice => cartItems.fold(0, (sum, item) => sum + ((item.price - item.discount) * item.qty));
+  // ==========================================
+  // PERBAIKAN GETTERS (LOGIKA DISKON PERSEN)
+  // ==========================================
+  
+  // Total Harga Akhir (Setelah Diskon)
+  double get totalPrice {
+    return cartItems.fold(0, (sum, item) {
+      double hargaAsli = item.price.toDouble();
+      double persenDiskon = (item.discount ?? 0).toDouble();
+      
+      // Hitung harga setelah diskon: Harga - (Harga * (Persen/100))
+      // Gunakan .round() agar tidak muncul angka desimal seperti .988
+      double hargaSetelahDiskon = (hargaAsli - (hargaAsli * (persenDiskon / 100))).roundToDouble();
+      
+      return sum + (hargaSetelahDiskon * item.qty);
+    });
+  }
+
+  // Subtotal (Harga asli sebelum diskon)
   double get subtotal => cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
+
+  // Selisih antara harga asli dan harga diskon
+  double get totalDiscount => subtotal - totalPrice;
+
   double get kembalian => inputUang.value > totalPrice ? inputUang.value - totalPrice : 0.0;
-  double get totalDiscount => cartItems.fold(0, (sum, item) => sum + (item.discount * item.qty));
   int get itemCount => cartItems.length;
 
-  // Logika baru untuk Button
-  bool get hasInputUang => inputUang.value > 0; // Cek apakah sudah ketik uang (untuk aktifkan tombol)
-  bool get isUangCukup => inputUang.value >= totalPrice; // Cek kecukupan uang (untuk validasi transaksi)
+  bool get hasInputUang => inputUang.value > 0;
+  bool get isUangCukup => inputUang.value >= totalPrice;
 
   String get paymentMethodLabel {
     switch (selectedPayment.value) {
@@ -162,7 +179,6 @@ class CartController extends GetxController {
     }
   }
 
-  // Getter dengan format titik
   String get paymentDisplayValueFormatted {
     double value = selectedPayment.value == "cash" ? inputUang.value : totalPrice;
     return currencyFormatter.format(value);

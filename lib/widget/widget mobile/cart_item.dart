@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
+import 'package:intl/intl.dart'; // 1. Tambahkan import ini
 
 class CartTile extends StatelessWidget {
   final CartItem item;
@@ -17,6 +18,16 @@ class CartTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 2. Tambahkan formatter ribuan
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
+
+    // Hitung nominal hemat berdasarkan persen
+    double nominalHemat = (item.price * (item.discount / 100));
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
@@ -33,7 +44,6 @@ class CartTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-  
           const SizedBox(width: 12),
 
           // Info Produk
@@ -48,13 +58,15 @@ class CartTile extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
+                // 3. Gunakan currencyFormat untuk harga
                 Text(
-                  "Rp ${item.price.toStringAsFixed(0)}",
+                  currencyFormat.format(item.price),
                   style: TextStyle(color: Colors.grey[600], fontSize: 13),
                 ),
+                // 4. Gunakan currencyFormat untuk nominal hemat
                 if (item.discount > 0)
                   Text(
-                    "Hemat Rp ${item.discount.toStringAsFixed(0)}",
+                    "Hemat ${currencyFormat.format(nominalHemat)}",
                     style: const TextStyle(
                       color: Colors.green,
                       fontSize: 11,
@@ -97,6 +109,7 @@ class CartTile extends StatelessWidget {
       ),
     );
   }
+
   Widget Button(IconData icon, VoidCallback action) {
     return GestureDetector(
       onTap: action,
@@ -110,5 +123,4 @@ class CartTile extends StatelessWidget {
       ),
     );
   }
-  
 }

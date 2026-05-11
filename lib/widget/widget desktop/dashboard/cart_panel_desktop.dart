@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import '../../../controller/mobile/cart_controller.dart';
 import '../../widget mobile/cart_item.dart';
+import 'package:intl/intl.dart'; // 1. Tambahkan import ini
 
 class CartPanelDesktop extends StatelessWidget {
   const CartPanelDesktop({super.key});
@@ -10,6 +11,13 @@ class CartPanelDesktop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final CartController cartController = Get.find<CartController>();
+
+    // 2. Tambahkan formatter di dalam build
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
 
     return Container(
       width: 320,
@@ -47,21 +55,26 @@ class CartPanelDesktop extends StatelessWidget {
                   ),
                 );
               } else {
-                return ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: cartController.cartItems.length,
-                  itemBuilder: (context, index) {
-                    final item = cartController.cartItems[index];
-                    return CartTile(
-                      item: item,
-                      onAdd: () => cartController.increaseQty(item.productId),
-                      onRemove: () =>
-                          cartController.decreaseQty(item.productId),
-                      onDelete: () =>
-                          cartController.removeFromCart(item.productId),
-                    );
-                  },
-                );
+              return ListView.builder(
+  padding: const EdgeInsets.all(12),
+  itemCount: cartController.cartItems.length,
+  itemBuilder: (context, index) {
+    final item = cartController.cartItems[index];
+    return CartTile(
+      item: item,
+      onAdd: () => cartController.increaseQty(item.productId),
+      
+      // PERBAIKAN: Tambahkan logika if (item.qty > 1)
+      onRemove: () {
+        if (item.qty > 1) {
+          cartController.decreaseQty(item.productId);
+        }
+      },
+      
+      onDelete: () => cartController.removeFromCart(item.productId),
+    );
+  },
+);
               }
             }),
           ),
@@ -83,13 +96,23 @@ class CartPanelDesktop extends StatelessWidget {
                     child: Text(
                       "${cartController.itemCount} | Bayar",
                       style: TextStyle(
+                        fontWeight: FontWeight.bold, // Tambahkan bold agar lebih jelas
                         color: cartController.cartItems.isNotEmpty
                             ? Colors.white
                             : Colors.black,
                       ),
                     ),
                   ),
-                  Text("Rp ${cartController.totalPrice.toStringAsFixed(0)}"),
+                  // 3. Gunakan currencyFormat di sini
+                  Text(
+                    currencyFormat.format(cartController.totalPrice),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: cartController.cartItems.isNotEmpty
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                  ),
                 ],
               ),
             ),

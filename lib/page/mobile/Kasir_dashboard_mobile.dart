@@ -97,7 +97,7 @@ class KasirDashboardMobile extends StatelessWidget {
 
                   return GridView.builder(
                     shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(), // Biar ngikut scroll utama
+                    physics: const NeverScrollableScrollPhysics(), 
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 16,

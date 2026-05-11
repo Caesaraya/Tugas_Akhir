@@ -54,12 +54,7 @@ class DesktopNavigationDrawer extends StatelessWidget {
             label: 'Riwayat',
             route: AppRoutes.riwayatdesk,
           ),
-          const Spacer(),
-          ListTile(
-            leading: const Icon(Icons.close, color: Colors.grey),
-            title: const Text('Tutup menu'),
-            onTap: () => Navigator.of(context).pop(),
-          ),
+       
         ],
       ),
     );

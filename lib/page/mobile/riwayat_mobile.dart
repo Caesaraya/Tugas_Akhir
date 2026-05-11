@@ -6,19 +6,14 @@ import 'package:tugas_akhir/routes/routes.dart';
 
 class RiwayatMobile extends StatelessWidget {
   final RiwayatController riwayatController = Get.put(RiwayatController());
-  
-
-  final currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
+  RiwayatMobile({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F5F2),
+      backgroundColor: const Color(0xFFF8F5F2), // Warna background krem bakery
       appBar: AppBar(
+        
         title: const Text(
           "Riwayat Transaksi",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -26,6 +21,7 @@ class RiwayatMobile extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        // Tombol refresh untuk menarik data terbaru dari API
         actions: [
           IconButton(
             onPressed: () => riwayatController.fetchHistory(),
@@ -34,10 +30,12 @@ class RiwayatMobile extends StatelessWidget {
         ],
       ),
       body: Obx(() {
+        // Tampilkan loading spinner saat data sedang diambil dari API
         if (riwayatController.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
+        // Tampilkan pesan jika data kosong
         if (riwayatController.transactions.isEmpty) {
           return Center(
             child: Column(
@@ -57,7 +55,6 @@ class RiwayatMobile extends StatelessWidget {
             ),
           );
         }
-        
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: riwayatController.transactions.length,
@@ -65,7 +62,6 @@ class RiwayatMobile extends StatelessWidget {
             final trx = riwayatController.transactions[index];
             DateTime dt = DateTime.parse(trx['tanggal']);
             String formattedDate = DateFormat('dd MMM yyyy, HH:mm').format(dt);
-            
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
@@ -81,7 +77,16 @@ class RiwayatMobile extends StatelessWidget {
               ),
               child: ListTile(
                 onTap: () {
-                  riwayatController.goToDetail(trx);
+                  Get.toNamed(
+                    AppRoutes.sukses,
+                    arguments: {
+                      'total': trx['total_harga'],
+                      'bayar': trx['jumlah_bayar'],
+                      'kembalian': trx['kembalian'],
+                      'metode': trx['metode_pembayaran'],
+                      'isFromHistory': true, // Penanda untuk membedakan transaksi baru vs riwayat
+                    },
+                  );
                 },
                 leading: CircleAvatar(
                   backgroundColor: const Color(0xFFE89336).withOpacity(0.1),
@@ -102,9 +107,8 @@ class RiwayatMobile extends StatelessWidget {
                     ),
                   ],
                 ),
-                // 2. TERAPKAN FORMATTER DISINI
                 trailing: Text(
-                  currencyFormatter.format(double.parse(trx['total_harga'])),
+                  "Rp ${double.parse(trx['total_harga']).toInt()}",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFE89336),
