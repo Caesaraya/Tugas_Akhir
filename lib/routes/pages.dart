@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:tugas_akhir/bindings/admin/admin_binding.dart';
+import 'package:tugas_akhir/page/admin/kelola_bahan_desktop.dart';
 import 'package:tugas_akhir/page/admin/kelola_produk_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_dashboard_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_pembayaran_desktop.dart';
@@ -24,6 +25,11 @@ class AppPages {
     GetPage(
       name: AppRoutes.kelolaprodukdesk,
       page: () => KelolaProdukDeskPage(),
+      binding: AdminBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.kelolabahandesk,
+      page: () => BahanBakuScreen(),
       binding: AdminBinding(),
     ),
     //media query

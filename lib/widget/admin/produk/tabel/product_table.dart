@@ -2,13 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/produk_admin_controller.dart';
-import 'package:tugas_akhir/widget/admin/produk/tabel/product_table_header.dart';
+import 'package:tugas_akhir/widget/admin/produk/tabel/produk_table_header.dart';
 import 'package:tugas_akhir/widget/admin/produk/tabel/product_table_row.dart';
 
 class ProductTable extends StatelessWidget {
   const ProductTable({super.key, required this.ctrl});
 
-  final ProductController ctrl;
+  final ProductAdminController ctrl;
 
   static const List<String> _columns = [
     'ID',
@@ -30,7 +30,7 @@ class ProductTable extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black54,
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -41,7 +41,7 @@ class ProductTable extends StatelessWidget {
         child: Column(
           children: [
             // ── Header kolom ────────────────────────────
-            ProductTableHeader(columns: _columns, colWidths: colWidths),
+            TableHeader(columns: _columns, colWidths: colWidths),
 
             // ── List baris data ─────────────────────────
             Expanded(

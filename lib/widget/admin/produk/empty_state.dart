@@ -5,7 +5,7 @@ import 'package:tugas_akhir/controller/admin/produk_admin_controller.dart';
 class ProductEmptyState extends StatelessWidget {
   const ProductEmptyState({super.key, required this.ctrl});
 
-  final ProductController ctrl;
+  final ProductAdminController ctrl;
 
   @override
   Widget build(BuildContext context) {

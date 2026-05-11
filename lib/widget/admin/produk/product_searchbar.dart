@@ -6,7 +6,7 @@ import 'package:tugas_akhir/controller/admin/produk_admin_controller.dart';
 class ProductSearchBar extends StatelessWidget {
   const ProductSearchBar({super.key, required this.ctrl});
 
-  final ProductController ctrl;
+  final ProductAdminController ctrl;
 
   @override
   Widget build(BuildContext context) {

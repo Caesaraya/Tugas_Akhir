@@ -1,81 +1,34 @@
+// lib/views/widgets/product/product_action_button.dart
 import 'package:flutter/material.dart';
 
-class ActionButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onTap;
-
-  // OPTIONAL
-  final IconData? icon;
-  final Color? backgroundColor;
-  final Color? foregroundColor;
-  final double? width;
-  final double height;
-  final double borderRadius;
-  final double fontSize;
-  final bool isLoading;
-
-  const ActionButton({
+class ProductActionButton extends StatelessWidget {
+  const ProductActionButton({
     super.key,
-
-    required this.text,
-    required this.onTap,
-
-    // optional
-    this.icon,
-    this.backgroundColor,
-    this.foregroundColor,
-    this.width,
-    this.height = 50,
-    this.borderRadius = 14,
-    this.fontSize = 16,
-    this.isLoading = false,
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onPressed,
   });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      height: height,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onTap,
-
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? Colors.blue,
-
-          foregroundColor: foregroundColor ?? Colors.white,
-
-          elevation: 2,
-
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
-          ),
-        ),
-
-        child: isLoading
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: 20),
-
-                  const SizedBox(width: 8),
-
-                  Text(
-                    text,
-                    style: TextStyle(
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 16, color: Colors.white),
+      label: Text(
+        label,
+        style: const TextStyle(color: Colors.white, fontSize: 13),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: 0,
       ),
     );
   }

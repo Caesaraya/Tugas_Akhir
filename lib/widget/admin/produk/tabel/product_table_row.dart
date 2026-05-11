@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/admin/produk_admin_controller.dart';
 import 'package:tugas_akhir/models/product.dart';
-import 'package:tugas_akhir/widget/admin/produk/tabel/product_table_action_button.dart';
+import 'package:tugas_akhir/widget/admin/table_action_button.dart';
 
 class ProductTableRow extends StatelessWidget {
   const ProductTableRow({
@@ -14,7 +14,7 @@ class ProductTableRow extends StatelessWidget {
   });
 
   final Product product;
-  final ProductController ctrl;
+  final ProductAdminController ctrl;
   final List<double?> colWidths;
   final bool isEven;
 

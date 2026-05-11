@@ -12,7 +12,7 @@ class KelolaProdukDeskPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(ProductController());
+    final ctrl = Get.find<ProductAdminController>();
 
     return Scaffold(
       drawer: AppDrawer(),

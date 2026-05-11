@@ -1,8 +1,8 @@
 // lib/views/widgets/product/product_table_header.dart
 import 'package:flutter/material.dart';
 
-class ProductTableHeader extends StatelessWidget {
-  const ProductTableHeader({
+class TableHeader extends StatelessWidget {
+  const TableHeader({
     super.key,
     required this.columns,
     required this.colWidths,

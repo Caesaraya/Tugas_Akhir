@@ -2,6 +2,7 @@ class AppRoutes {
   //===ADMIN===
   //desktop
   static const String kelolaprodukdesk = '/kelolaprodukdesk';
+  static const String kelolabahandesk = '/kelolabahandesk';
   //media query
   static const String mediaQuery = '/mediaQuery';
   //===KASIR===
@@ -20,5 +21,4 @@ class AppRoutes {
   static const String riwayatdesk = '/riwayatdesk';
   static const String kalkulatordesk = '/kalkulatordesk';
   static const String transactionDetail = '/transactionDetail';
-
 }

@@ -10,7 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:tugas_akhir/api service/api_service.dart';
 
-class ProductController extends GetxController {
+class ProductAdminController extends GetxController {
   final RxList<Product> _allProducts = <Product>[].obs;
   final RxList<Product> displayedProducts = <Product>[].obs;
 

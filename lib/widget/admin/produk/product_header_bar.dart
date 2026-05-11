@@ -2,14 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/produk_admin_controller.dart';
-import 'package:tugas_akhir/widget/admin/produk/product_action_button.dart';
+import 'package:tugas_akhir/widget/admin/action_button.dart';
 import 'package:tugas_akhir/widget/admin/produk/product_searchbar.dart';
-import 'package:tugas_akhir/widget/admin/produk/refresh_button.dart';
+import 'package:tugas_akhir/widget/admin/refresh_button.dart';
 
 class ProductHeaderBar extends StatelessWidget {
   const ProductHeaderBar({super.key, required this.ctrl});
 
-  final ProductController ctrl;
+  final ProductAdminController ctrl;
 
   @override
   Widget build(BuildContext context) {

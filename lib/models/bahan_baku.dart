@@ -1,3 +1,4 @@
+// lib/models/bahan_baku.dart
 class BahanBaku {
   final int? id;
   final String namaBahan;
@@ -21,15 +22,15 @@ class BahanBaku {
 
   factory BahanBaku.fromJson(Map<String, dynamic> json) {
     return BahanBaku(
-      id: json['id'],
-      namaBahan: json['nama_bahan'] ?? '',
-      merk: json['merk'] ?? '',
-      satuan: json['satuan'] ?? '',
-      stok: json['stok'] ?? 0,
-      hargaSatuan: (json['harga_satuan'] ?? 0).toDouble(),
-      totalHarga: json['total_harga']?.toDouble(),
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+      id: _parseInt(json['id']),
+      namaBahan: json['nama_bahan']?.toString() ?? '',
+      merk: json['merk']?.toString() ?? '',
+      satuan: json['satuan']?.toString() ?? '',
+      stok: _parseInt(json['stok']) ?? 0,
+      hargaSatuan: _parseDouble(json['harga_satuan']) ?? 0.0,
+      totalHarga: _parseDouble(json['total_harga']),
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
           : null,
     );
   }
@@ -67,5 +68,20 @@ class BahanBaku {
       totalHarga: totalHarga ?? this.totalHarga,
       createdAt: createdAt ?? this.createdAt,
     );
+  }
+
+  // ── Safe parsers — menangani String, int, double, dan null sekaligus ───────
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    return double.tryParse(value.toString());
   }
 }

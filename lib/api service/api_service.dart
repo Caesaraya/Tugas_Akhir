@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' as http_parser;
 import 'package:tugas_akhir/models/product.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/bahan_baku.dart';
@@ -22,12 +24,9 @@ class ApiService {
     "Connection": "close",
   };
 
-  // PRODUCT API ONLY
-
   // ========================
   // GET PRODUCTS
   // ========================
-
   static Future<List<Product>> getProducts() async {
     try {
       final response = await http
@@ -52,7 +51,6 @@ class ApiService {
   // ========================
   // GET PRODUCT BY ID
   // ========================
-
   static Future<Product> getProductById(int id) async {
     try {
       final response = await http
@@ -73,16 +71,167 @@ class ApiService {
   }
 
   // ========================
-  // CREATE PRODUCT
+  // CREATE PRODUCT WITH IMAGE
   // ========================
+  static Future<bool> createProductWithImage({
+    required String name,
+    required int price,
+    required int discount,
+    required int stock,
+    required String jenis,
+    required String satuan,
+    required String barcode,
+    required File imageFile,
+    int? resepId,
+  }) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse("$baseUrl/api/products"),
+      );
 
+      // Add headers
+      request.headers.addAll({'Connection': 'close'});
+
+      // Add fields
+      request.fields['name'] = name;
+      request.fields['price'] = price.toString();
+      request.fields['discount'] = discount.toString();
+      request.fields['stock'] = stock.toString();
+      request.fields['jenis'] = jenis;
+      request.fields['satuan'] = satuan;
+      request.fields['barcode'] = barcode;
+      if (resepId != null) {
+        request.fields['resep_id'] = resepId.toString();
+      }
+
+      // Add image file
+      final imageBytes = await imageFile.readAsBytes();
+      final imageExtension = imageFile.path.split('.').last.toLowerCase();
+      final contentType = _getContentType(imageExtension);
+
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'image',
+          imageBytes,
+          filename:
+              'product_${DateTime.now().millisecondsSinceEpoch}.$imageExtension',
+          contentType: http_parser.MediaType.parse(contentType),
+        ),
+      );
+
+      final response = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal membuat produk dengan gambar: $e");
+    }
+  }
+
+  // ========================
+  // UPDATE PRODUCT WITH IMAGE
+  // ========================
+  static Future<bool> updateProductWithImage({
+    required int id,
+    required String name,
+    required int price,
+    required int discount,
+    required int stock,
+    required String jenis,
+    required String satuan,
+    required String barcode,
+    File? imageFile,
+    int? resepId,
+  }) async {
+    try {
+      final request = http.MultipartRequest(
+        'PUT',
+        Uri.parse("$baseUrl/api/products/$id"),
+      );
+
+      // Add headers
+      request.headers.addAll({'Connection': 'close'});
+
+      // Add fields
+      request.fields['name'] = name;
+      request.fields['price'] = price.toString();
+      request.fields['discount'] = discount.toString();
+      request.fields['stock'] = stock.toString();
+      request.fields['jenis'] = jenis;
+      request.fields['satuan'] = satuan;
+      request.fields['barcode'] = barcode;
+      if (resepId != null) {
+        request.fields['resep_id'] = resepId.toString();
+      }
+
+      // Add image file if provided
+      if (imageFile != null) {
+        final imageBytes = await imageFile.readAsBytes();
+        final imageExtension = imageFile.path.split('.').last.toLowerCase();
+        final contentType = _getContentType(imageExtension);
+
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'image',
+            imageBytes,
+            filename:
+                'product_${DateTime.now().millisecondsSinceEpoch}.$imageExtension',
+            contentType: http_parser.MediaType.parse(contentType),
+          ),
+        );
+      }
+
+      final response = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal update produk dengan gambar: $e");
+    }
+  }
+
+  // Helper method untuk mendapatkan content type berdasarkan extension
+  static String _getContentType(String extension) {
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      default:
+        return 'image/jpeg';
+    }
+  }
+
+  // ========================
+  // CREATE PRODUCT (LEGACY - untuk backward compatibility)
+  // ========================
   static Future<bool> createProduct(Product product) async {
     try {
+      final body = {
+        "name": product.name,
+        "price": product.price,
+        "discount": product.discount,
+        "stock": product.stock,
+        "jenis": product.jenis,
+        "satuan": product.satuan,
+        "barcode": product.barcode,
+        "image": product.image,
+        "resep_id": product.resepId,
+      };
+
       final response = await http
           .post(
             Uri.parse("$baseUrl/api/products"),
             headers: headers,
-            body: jsonEncode(product.toJson()),
+            body: jsonEncode(body),
           )
           .timeout(const Duration(seconds: 10));
 
@@ -95,15 +244,24 @@ class ApiService {
   // ========================
   // UPDATE PRODUCT
   // ========================
-
   static Future<bool> updateProduct(Product product) async {
     try {
+      final url = Uri.parse("$baseUrl/api/products/${product.id}");
+
+      final body = {
+        "name": product.name,
+        "price": product.price,
+        "discount": product.discount,
+        "stock": product.stock,
+        "jenis": product.jenis,
+        "satuan": product.satuan,
+        "barcode": product.barcode,
+        "image": product.image,
+        "resep_id": product.resepId,
+      };
+
       final response = await http
-          .put(
-            Uri.parse("$baseUrl/api/products/${product.id}"),
-            headers: headers,
-            body: jsonEncode(product.toJson()),
-          )
+          .put(url, headers: headers, body: jsonEncode(body))
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode == 200;
@@ -115,7 +273,6 @@ class ApiService {
   // ========================
   // DELETE PRODUCT
   // ========================
-
   static Future<bool> deleteProduct(int id) async {
     try {
       final response = await http
@@ -193,7 +350,7 @@ class ApiService {
   // ========================
   // GET TRANSACTION DETAIL
   // ========================
-  static Future<List<dynamic>> getTransactionDetail(int id) async {
+  static Future<Map<String, dynamic>> getTransactionDetail(int id) async {
     try {
       final response = await http
           .get(
