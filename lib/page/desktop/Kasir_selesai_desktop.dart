@@ -6,6 +6,7 @@ import '../../controller/mobile/payment_controller.dart';
 import '../../widget/widget desktop/dashboard/app_bar_desktop.dart';
 import '../../widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
 import '../../widget/widget desktop/dashboard/komponen_nota.dart';
+import 'package:intl/intl.dart'; // Pastikan ini ada
 
 class KasirSelesaiDesktop extends StatelessWidget {
   const KasirSelesaiDesktop({super.key});
@@ -14,6 +15,9 @@ class KasirSelesaiDesktop extends StatelessWidget {
   Widget build(BuildContext context) {
     final CartController cartController = Get.find<CartController>();
     final PaymentController paymentController = Get.find<PaymentController>();
+
+    // 1. Tambahkan formatter untuk format ribuan
+    final formatter = NumberFormat.decimalPattern('id');
 
     return Scaffold(
       drawer: const DesktopNavigationDrawer(currentRoute: AppRoutes.kasirprint),
@@ -28,10 +32,10 @@ class KasirSelesaiDesktop extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black54,
-                      offset: const Offset(0, 6),
+                      offset: Offset(0, 6),
                       blurRadius: 18,
                       spreadRadius: 1,
                     ),
@@ -55,9 +59,7 @@ class KasirSelesaiDesktop extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 16),
-
                     const Center(
                       child: Text(
                         "Sukses!",
@@ -68,9 +70,7 @@ class KasirSelesaiDesktop extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
                     const Text(
                       "Detail Pembelian",
                       style: TextStyle(
@@ -79,7 +79,6 @@ class KasirSelesaiDesktop extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-
                     Obx(
                       () => cartController.cartItems.isEmpty
                           ? const Text("Tidak ada produk yang dibeli.")
@@ -89,48 +88,44 @@ class KasirSelesaiDesktop extends StatelessWidget {
                                     (item) => ReceiptProductRow(
                                       name: item.name,
                                       qty: item.qty,
-                                      unitPrice: (item.price - item.discount)
-                                          .toDouble(),
-                                      totalPrice:
-                                          item.qty.toDouble() *
-                                          (item.price - item.discount)
-                                              .toDouble(),
+                                      // Menggunakan formatter untuk unitPrice
+                                      unitPrice: (item.price - item.discount).toDouble(),
+                                      totalPrice: item.qty.toDouble() * (item.price - item.discount).toDouble(),
                                     ),
                                   )
                                   .toList(),
                             ),
                     ),
-
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 16),
 
+                    // Update bagian nominal di bawah ini
                     Obx(
                       () => ReceiptRowItem(
                         title: "Total Tagihan",
-                        value:
-                            "Rp ${cartController.totalPrice.toStringAsFixed(0)}",
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    const SizedBox(height: 12),
-                    Obx(
-                      () => ReceiptRowItem(
-                        title: "Jumlah Dibayar",
-                        value: paymentController.input.value.isEmpty
-                            ? "Rp 0"
-                            : "Rp ${paymentController.input.value}",
+                        value: "Rp ${formatter.format(cartController.totalPrice)}",
                       ),
                     ),
                     const SizedBox(height: 12),
                     Obx(
-                      () => ReceiptRowItem(
-                        title: "Kembalian",
-                        value: paymentController.input.value.isEmpty
-                            ? "Rp 0"
-                            : "Rp ${_calculateChange(cartController.totalPrice, paymentController.input.value)}",
-                      ),
+                      () {
+                        final paid = double.tryParse(paymentController.input.value) ?? 0;
+                        return ReceiptRowItem(
+                          title: "Jumlah Dibayar",
+                          value: "Rp ${formatter.format(paid)}",
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Obx(
+                      () {
+                        final change = _calculateChangeValue(cartController.totalPrice, paymentController.input.value);
+                        return ReceiptRowItem(
+                          title: "Kembalian",
+                          value: "Rp ${formatter.format(change)}",
+                        );
+                      },
                     ),
                     Obx(
                       () => ReceiptRowItem(
@@ -138,7 +133,6 @@ class KasirSelesaiDesktop extends StatelessWidget {
                         value: paymentController.methodLabel,
                       ),
                     ),
-
                     const SizedBox(height: 24),
                     Row(
                       children: [
@@ -152,11 +146,8 @@ class KasirSelesaiDesktop extends StatelessWidget {
                         ReceiptActionButton(
                           label: "Selesai",
                           onPressed: () async {
-                            // Simpan transaksi ke API
                             await cartController.prosesKeApi();
-                            // Bersihkan keranjang setelah simpan
                             cartController.clearCart();
-                            // Navigasi kembali ke dashboard
                             Get.offAllNamed(AppRoutes.kasirboarddesk);
                           },
                           backgroundColor: Colors.orange,
@@ -173,9 +164,10 @@ class KasirSelesaiDesktop extends StatelessWidget {
     );
   }
 
-  static String _calculateChange(double totalPrice, String input) {
+  // Fungsi pembantu baru untuk mendapatkan nilai double kembalian
+  static double _calculateChangeValue(double totalPrice, String input) {
     final paid = double.tryParse(input.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
     final change = paid - totalPrice;
-    return change > 0 ? change.toStringAsFixed(0) : '0';
+    return change > 0 ? change : 0;
   }
 }

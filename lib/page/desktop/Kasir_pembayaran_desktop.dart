@@ -10,12 +10,10 @@ import 'package:intl/intl.dart';
 class PaymentPage extends StatelessWidget {
   PaymentPage({super.key});
 
-  
-
   @override
   Widget build(BuildContext context) {
     final CartController cartController = Get.find<CartController>();
-     final PaymentController controller = Get.put(PaymentController());
+    final PaymentController controller = Get.put(PaymentController());
     final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
@@ -42,7 +40,6 @@ class PaymentPage extends StatelessWidget {
                   const SizedBox(height: 5),
                   Obx(
                     () => Text(
-                      // 2. Gunakan currencyFormat di sini
                       currencyFormat.format(cartController.totalPrice),
                       style: const TextStyle(
                         fontSize: 28,
@@ -51,7 +48,6 @@ class PaymentPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-
                   const Text("Metode Pembayaran"),
                   Obx(
                     () => PaymentMethodWidget(
@@ -91,8 +87,18 @@ class PaymentPage extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: Obx(() {
-                      int amount = int.tryParse(controller.input.value) ?? 0;
+                      String textValue = controller.input.value;
+                      if (textValue.isEmpty) {
+                        return Text(
+                          currencyFormat.format(0),
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      }
 
+                      double amount = double.tryParse(textValue) ?? 0;
                       return Text(
                         currencyFormat.format(amount),
                         style: const TextStyle(
@@ -105,9 +111,10 @@ class PaymentPage extends StatelessWidget {
                 ),
 
                 /// Keypad
-                     CalculatorKeypad(onButtonPressed: controller.onButtonPressed),
+                CalculatorKeypad(onButtonPressed: controller.onButtonPressed),
 
                 /// Pay Button
+               /// Pay Button
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.all(10),
@@ -117,17 +124,41 @@ class PaymentPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     onPressed: () {
-                      cartController.selectedPayment.value =
-                          controller.selectedMethod.value;
-                      cartController.inputUang.value =
-                          double.tryParse(
-                            controller.input.value.replaceAll(
-                              RegExp(r'[^0-9]'),
-                              '',
-                            ),
-                          ) ??
-                          0;
-                      Get.offAllNamed(AppRoutes.kasirprint);
+                      // 1. Ambil data input dan tagihan
+                      double nominalInput = double.tryParse(controller.input.value) ?? 0;
+                      double totalTagihan = cartController.totalPrice;
+                      
+                      // 2. LOGIKA VALIDASI METODE PEMBAYARAN
+                      // Mengecek apakah selectedMethod kosong atau null
+                      if (controller.selectedMethod.value.isEmpty) {
+                        Get.snackbar(
+                          "Pilih Metode",
+                          "Silakan pilih metode pembayaran terlebih dahulu!",
+                          backgroundColor: Colors.orange,
+                          colorText: Colors.white,
+                          snackPosition: SnackPosition.BOTTOM,
+                          margin: const EdgeInsets.all(10),
+                        );
+                        return; // Berhenti di sini, jangan lanjut
+                      }
+
+                      // 3. LOGIKA VALIDASI NOMINAL UANG
+                      if (nominalInput < totalTagihan) {
+                        Get.snackbar(
+                          "Pembayaran Gagal",
+                          "Uang yang dimasukkan kurang!",
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                          snackPosition: SnackPosition.BOTTOM,
+                          margin: const EdgeInsets.all(10),
+                        );
+                      } else {
+                        // Jika semua validasi lolos, proses pembayaran
+                        cartController.selectedPayment.value =
+                            controller.selectedMethod.value;
+                        cartController.inputUang.value = nominalInput;
+                        Get.offAllNamed(AppRoutes.kasirprint);
+                      }
                     },
                     child: const Text(
                       "Bayar",
