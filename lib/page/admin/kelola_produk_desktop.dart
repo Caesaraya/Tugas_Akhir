@@ -1,18 +1,21 @@
 // lib/views/kelola_produk_page.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
 import 'package:tugas_akhir/controller/admin/produk_admin_controller.dart';
 import 'package:tugas_akhir/widget/admin/custom_drawer.dart';
-import 'package:tugas_akhir/widget/admin/produk/empty_state.dart';
-import 'package:tugas_akhir/widget/admin/produk/product_header_bar.dart';
-import 'package:tugas_akhir/widget/admin/produk/tabel/product_table.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/insert_product_dialog.dart';
+import 'package:tugas_akhir/widget/admin/produk/product_table.dart';
+import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
+import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 
 class KelolaProdukDeskPage extends StatelessWidget {
-  const KelolaProdukDeskPage({super.key});
+  KelolaProdukDeskPage({super.key});
+  final ctrl = Get.put(ProductTableController());
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.find<ProductAdminController>();
+    final ctrol = Get.find<ProductAdminController>();
 
     return Scaffold(
       drawer: AppDrawer(),
@@ -22,25 +25,53 @@ class KelolaProdukDeskPage extends StatelessWidget {
       ),
       backgroundColor: const Color(0xFFF4F6F9),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Search + tombol aksi ───────────────────
-            ProductHeaderBar(ctrl: ctrl),
+            Row(
+              children: [
+                TableSearchBar(
+                  controller: ctrl.searchC,
+                  hint: 'Cari produk...',
+                ),
+                SizedBox(width: 20),
+                ToolbarButton(
+                  title: 'Insert Product',
+                  icon: Icons.add,
+                  color: Colors.cyan,
+                  onTap: () {
+                    Get.dialog(InsertProductDialog());
+                  },
+                ),
+                const SizedBox(width: 12),
+
+                ToolbarButton(
+                  title: "Sortir Stok Habis",
+                  icon: Icons.sort,
+                  color: Colors.orange,
+                  onTap: () {
+                    ctrl.sortStockHabis();
+                  },
+                ),
+                const SizedBox(width: 12),
+
+                ToolbarButton(
+                  title: "",
+                  icon: Icons.refresh,
+                  color: Colors.green,
+                  onTap: () {
+                    ctrl.refreshData();
+                  },
+                ),
+              ],
+            ),
             const SizedBox(height: 20),
 
-            // ── Tabel / loading / empty state ─────────
             Expanded(
-              child: Obx(() {
-                if (ctrl.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (ctrl.displayedProducts.isEmpty) {
-                  return ProductEmptyState(ctrl: ctrl);
-                }
-                return ProductTable(ctrl: ctrl);
-              }),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: ProductTable(),
+              ),
             ),
           ],
         ),
@@ -48,3 +79,27 @@ class KelolaProdukDeskPage extends StatelessWidget {
     );
   }
 }
+// body: Padding(
+      //   padding: const EdgeInsets.all(24),
+      //   child: Column(
+      //     crossAxisAlignment: CrossAxisAlignment.start,
+      //     children: [
+      //       // ── Search + tombol aksi ───────────────────
+      //       ProductHeaderBar(ctrl: ctrl),
+      //       const SizedBox(height: 20),
+
+      //       // ── Tabel / loading / empty state ─────────
+      //       Expanded(
+      //         child: Obx(() {
+      //           if (ctrl.isLoading.value) {
+      //             return const Center(child: CircularProgressIndicator());
+      //           }
+      //           if (ctrl.displayedProducts.isEmpty) {
+      //             return ProductEmptyState(ctrl: ctrl);
+      //           }
+      //           return ProductTable(ctrl: ctrl);
+      //         }),
+      //       ),
+      //     ],
+      //   ),
+      // ),
