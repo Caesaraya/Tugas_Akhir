@@ -20,7 +20,7 @@ class AppBarDesktop extends StatelessWidget {
     final DashboardController controller = Get.put(DashboardController());
 
     return Container(
-      color: Colors.orange,
+    color: const Color(0xFFE89336),
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [

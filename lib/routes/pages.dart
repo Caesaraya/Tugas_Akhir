@@ -40,7 +40,7 @@ class AppPages {
     GetPage(name: AppRoutes.keranjang, page: () => KeranjangMobilePage()),
     GetPage(name: AppRoutes.navbar, page: () => NavbarPage()),
     GetPage(name: AppRoutes.riwayat, page: () => RiwayatMobile()),
-    GetPage(name: AppRoutes.kelolaProduk, page: () => KelolaProdukPage()),
+    GetPage(name: AppRoutes.kelolaProduk, page: () => KasirKelolaProduk()),
     //desktop
     //kasir
     GetPage(
@@ -54,6 +54,6 @@ class AppPages {
       page: () => DetailScreen(data: Get.arguments),
     ),
     GetPage(name: AppRoutes.riwayatdesk, page: () => KasirRiwayatDesktop()),
-    GetPage(name: AppRoutes.kelolaProduk, page: () => ProductPage()),
+    GetPage(name: AppRoutes.kelolaProduk, page: () => KasirKelolaProduk()),
   ];
 }

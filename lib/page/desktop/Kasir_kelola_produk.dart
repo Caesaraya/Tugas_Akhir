@@ -3,14 +3,14 @@ import 'package:get/get.dart';
 import '../../models/product.dart';
 import '../../widget/widget desktop/dashboard/app_bar_desktop.dart';
 import '../../widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
-import '../../widget/widget desktop/reusable_data_table.dart';
-import '../../widget/widget desktop/pagination_widget.dart';
-import '../../widget/widget desktop/product_edit_dialog.dart';
+import '../../widget/widget desktop/kelola/reusable_data_table.dart';
+import '../../widget/widget desktop/kelola/pagination_widget.dart';
+import '../../widget/widget desktop/kelola/product_edit_dialog.dart';
 import '../../controller/mobile/product_controller.dart';
 import '../../routes/routes.dart';
 
-class ProductPage extends StatelessWidget {
-  const ProductPage({super.key});
+class KasirKelolaProduk extends StatelessWidget {
+  const KasirKelolaProduk({super.key});
 
   String _shortenLink(String url, {int maxLength = 40}) {
     if (url.length <= maxLength) return url;
@@ -66,12 +66,6 @@ class ProductPage extends StatelessWidget {
                 ),
 
                 const SizedBox(width: 10),
-
-                // IconButton(
-                //   onPressed: controller.resetProducts,
-                //   icon: const Icon(Icons.refresh),
-                //   color: Colors.green,
-                // ),
               ],
             ),
           ),

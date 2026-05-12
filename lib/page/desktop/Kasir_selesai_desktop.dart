@@ -83,17 +83,40 @@ class KasirSelesaiDesktop extends StatelessWidget {
                       () => cartController.cartItems.isEmpty
                           ? const Text("Tidak ada produk yang dibeli.")
                           : Column(
-                              children: cartController.cartItems
-                                  .map(
-                                    (item) => ReceiptProductRow(
-                                      name: item.name,
-                                      qty: item.qty,
-                                      // Menggunakan formatter untuk unitPrice
-                                      unitPrice: (item.price - item.discount).toDouble(),
-                                      totalPrice: item.qty.toDouble() * (item.price - item.discount).toDouble(),
-                                    ),
-                                  )
-                                  .toList(),
+                              // Cari bagian Obx cartController.cartItems di file KasirSelesaiDesktop.dart
+                              // Lalu ganti isi map-nya dengan logika di bawah ini:
+                              children: cartController.cartItems.map((item) {
+                                // 1. Tentukan harga asli
+                                double hargaAsli = item.price.toDouble();
+                                double nilaiDiskonInput = item.discount
+                                    .toDouble();
+                                double hargaSetelahDiskon;
+
+                                // 2. LOGIKA PERBAIKAN:
+                                // Jika nilai diskon kecil (misal <= 100), kita anggap itu PERSENTASE (30%)
+                                // Jika nilai diskon besar (misal > 100), kita anggap itu NOMINAL (7.500)
+                                if (nilaiDiskonInput <= 100) {
+                                  // Rumus: 25.000 - (25.000 * 30 / 100) = 17.500
+                                  hargaSetelahDiskon =
+                                      hargaAsli -
+                                      (hargaAsli * nilaiDiskonInput / 100);
+                                } else {
+                                  // Rumus: 25.000 - 7.500 = 17.500
+                                  hargaSetelahDiskon =
+                                      hargaAsli - nilaiDiskonInput;
+                                }
+
+                                // 3. Hitung Total per item
+                                double totalHargaPerItem =
+                                    hargaSetelahDiskon * item.qty;
+
+                                return ReceiptProductRow(
+                                  name: item.name,
+                                  qty: item.qty,
+                                  unitPrice: hargaSetelahDiskon,
+                                  totalPrice: totalHargaPerItem,
+                                );
+                              }).toList(),
                             ),
                     ),
                     const SizedBox(height: 16),
@@ -104,29 +127,30 @@ class KasirSelesaiDesktop extends StatelessWidget {
                     Obx(
                       () => ReceiptRowItem(
                         title: "Total Tagihan",
-                        value: "Rp ${formatter.format(cartController.totalPrice)}",
+                        value:
+                            "Rp ${formatter.format(cartController.totalPrice)}",
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Obx(
-                      () {
-                        final paid = double.tryParse(paymentController.input.value) ?? 0;
-                        return ReceiptRowItem(
-                          title: "Jumlah Dibayar",
-                          value: "Rp ${formatter.format(paid)}",
-                        );
-                      },
-                    ),
+                    Obx(() {
+                      final paid =
+                          double.tryParse(paymentController.input.value) ?? 0;
+                      return ReceiptRowItem(
+                        title: "Jumlah Dibayar",
+                        value: "Rp ${formatter.format(paid)}",
+                      );
+                    }),
                     const SizedBox(height: 12),
-                    Obx(
-                      () {
-                        final change = _calculateChangeValue(cartController.totalPrice, paymentController.input.value);
-                        return ReceiptRowItem(
-                          title: "Kembalian",
-                          value: "Rp ${formatter.format(change)}",
-                        );
-                      },
-                    ),
+                    Obx(() {
+                      final change = _calculateChangeValue(
+                        cartController.totalPrice,
+                        paymentController.input.value,
+                      );
+                      return ReceiptRowItem(
+                        title: "Kembalian",
+                        value: "Rp ${formatter.format(change)}",
+                      );
+                    }),
                     Obx(
                       () => ReceiptRowItem(
                         title: "Metode Pembayaran",

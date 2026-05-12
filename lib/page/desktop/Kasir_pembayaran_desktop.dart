@@ -114,7 +114,7 @@ class PaymentPage extends StatelessWidget {
                 CalculatorKeypad(onButtonPressed: controller.onButtonPressed),
 
                 /// Pay Button
-               /// Pay Button
+                /// Pay Button
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.all(10),
@@ -125,9 +125,10 @@ class PaymentPage extends StatelessWidget {
                     ),
                     onPressed: () {
                       // 1. Ambil data input dan tagihan
-                      double nominalInput = double.tryParse(controller.input.value) ?? 0;
+                      double nominalInput =
+                          double.tryParse(controller.input.value) ?? 0;
                       double totalTagihan = cartController.totalPrice;
-                      
+
                       // 2. LOGIKA VALIDASI METODE PEMBAYARAN
                       // Mengecek apakah selectedMethod kosong atau null
                       if (controller.selectedMethod.value.isEmpty) {
