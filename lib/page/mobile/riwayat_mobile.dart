@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tugas_akhir/controller/mobile/riwayat_controller.dart';
+import 'package:tugas_akhir/controller/riwayat_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 
 class RiwayatMobile extends StatelessWidget {
@@ -13,7 +13,6 @@ class RiwayatMobile extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5F2), // Warna background krem bakery
       appBar: AppBar(
-        
         title: const Text(
           "Riwayat Transaksi",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -21,7 +20,6 @@ class RiwayatMobile extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        // Tombol refresh untuk menarik data terbaru dari API
         actions: [
           IconButton(
             onPressed: () => riwayatController.fetchHistory(),
@@ -30,12 +28,9 @@ class RiwayatMobile extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        // Tampilkan loading spinner saat data sedang diambil dari API
         if (riwayatController.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-
-        // Tampilkan pesan jika data kosong
         if (riwayatController.transactions.isEmpty) {
           return Center(
             child: Column(
@@ -84,7 +79,7 @@ class RiwayatMobile extends StatelessWidget {
                       'bayar': trx['jumlah_bayar'],
                       'kembalian': trx['kembalian'],
                       'metode': trx['metode_pembayaran'],
-                      'isFromHistory': true, // Penanda untuk membedakan transaksi baru vs riwayat
+                      'isFromHistory': true,
                     },
                   );
                 },

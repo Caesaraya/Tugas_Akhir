@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
-import '../../controller/mobile/cart_controller.dart';
-import '../../controller/mobile/payment_controller.dart';
+import '../../controller/cart_controller.dart';
+import '../../controller/payment_controller.dart';
 import '../../widget/widget desktop/dashboard/app_bar_desktop.dart';
 import '../../widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
 import '../../widget/widget desktop/dashboard/komponen_nota.dart';

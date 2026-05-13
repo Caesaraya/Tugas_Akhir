@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/mobile/navbar_controller.dart';
+import 'package:tugas_akhir/controller/navbar_controller.dart';
 
 class NavbarPage extends StatelessWidget {
   NavbarPage({super.key});
   final NavbarController navbarController = Get.put(NavbarController());
-
   @override
   Widget build(BuildContext context) {
     return Obx(

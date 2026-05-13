@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/routes/routes.dart';
-import '../../controller/mobile/cart_controller.dart';
+import '../cart_controller.dart';
 
 class PaymentController extends GetxController {
   var input = "".obs;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/widget/widget%20desktop/dashboard/desktop_navigation_drawer.dart';
-import '../../controller/mobile/dashboard_Mobile_controller.dart';
-import '../../controller/mobile/cart_controller.dart'; // Menggunakan controller kamu
+import '../../controller/dashboard_Mobile_controller.dart';
+import '../../controller/cart_controller.dart'; // Menggunakan controller kamu
 import '../../widget/widget desktop/dashboard/product_list_desktop.dart';
 import '../../widget/widget desktop/dashboard/app_bar_desktop.dart';
 import '../../widget/widget desktop/dashboard/cart_panel_desktop.dart';

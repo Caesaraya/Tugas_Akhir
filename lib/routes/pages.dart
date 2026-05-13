@@ -5,7 +5,7 @@ import 'package:tugas_akhir/page/desktop/Kasir_dashboard_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_pembayaran_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_selesai_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_riwayat_desktop.dart';
-import 'package:tugas_akhir/page/desktop/Kasir_kelola_produk.dart';
+import 'package:tugas_akhir/page/desktop/Kasir_kelola_dashboard.dart';
 import 'package:tugas_akhir/page/desktop/transaction_detail_desktop.dart';
 import 'package:tugas_akhir/page/media_query.dart';
 import 'package:tugas_akhir/page/mobile/Kasir_dashboard_mobile.dart';
@@ -40,7 +40,7 @@ class AppPages {
     GetPage(name: AppRoutes.keranjang, page: () => KeranjangMobilePage()),
     GetPage(name: AppRoutes.navbar, page: () => NavbarPage()),
     GetPage(name: AppRoutes.riwayat, page: () => RiwayatMobile()),
-    GetPage(name: AppRoutes.kelolaProduk, page: () => KasirKelolaProduk()),
+    GetPage(name: AppRoutes.kelolaProduk, page: () => KelolaProdukPage()),
     //desktop
     //kasir
     GetPage(
@@ -54,6 +54,6 @@ class AppPages {
       page: () => DetailScreen(data: Get.arguments),
     ),
     GetPage(name: AppRoutes.riwayatdesk, page: () => KasirRiwayatDesktop()),
-    GetPage(name: AppRoutes.kelolaProduk, page: () => KasirKelolaProduk()),
+    GetPage(name: AppRoutes.kelolaprodukdashboard, page: () => KasirKelolaDashboard()),
   ];
 }

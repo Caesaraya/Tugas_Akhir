@@ -64,9 +64,7 @@ class DetailScreen extends StatelessWidget {
                             0;
                         double hargaSetelahDiskon;
 
-                        // 3. LOGIKA DISKON (Persentase vs Nominal)
-                        // Jika nilai <= 100, dianggap % (misal: 10, 30, 50)
-                        // Jika nilai > 100, dianggap Rp (misal: 5000, 10000)
+       
                         if (nilaiDiskonInput <= 100 && nilaiDiskonInput > 0) {
                           hargaSetelahDiskon =
                               hargaAsli - (hargaAsli * nilaiDiskonInput / 100);

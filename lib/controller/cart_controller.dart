@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
-import 'package:tugas_akhir/controller/mobile/riwayat_controller.dart';
+import 'package:tugas_akhir/controller/riwayat_controller.dart';
 import 'package:tugas_akhir/api%20service/api_service.dart';
 import 'package:intl/intl.dart';
 

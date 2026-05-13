@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/mobile/cart_controller.dart';
+import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/widget/widget%20mobile/kalkulator_input.dart';
 import 'package:intl/intl.dart'; 
@@ -9,14 +9,11 @@ import 'package:tugas_akhir/widget/widget%20mobile/CurrencyInputFormatter.dart';
 
 class KalkulatorCashPage extends StatelessWidget {
   final CartController cartController = Get.find();
-
-  // Inisialisasi formatter untuk tampilan teks
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
     decimalDigits: 0,
   );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,8 +73,6 @@ class KalkulatorCashPage extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 12),
-                  
-                  // Input Kalkulator dengan Formatter Titik Otomatis
                   KalkulatorInput(
                     controller: cartController.textController,
                     keyboardType: TextInputType.number,
@@ -86,12 +81,10 @@ class KalkulatorCashPage extends StatelessWidget {
                       CurrencyInputFormatter(), 
                     ],
                     onChanged: (value) {
-                      // Membersihkan titik agar tersimpan sebagai angka murni di controller
                       String cleanValue = value.replaceAll('.', '');
                       cartController.setInputUang(cleanValue);
                     },
                   ),
-                  
                   const SizedBox(height: 60),
                   Center(
                     child: Column(
@@ -107,7 +100,6 @@ class KalkulatorCashPage extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 40,
                               fontWeight: FontWeight.bold,
-                              // Warna berubah merah jika uang belum cukup
                               color: cartController.isUangCukup
                                   ? Colors.green
                                   : Colors.red[300],
@@ -121,8 +113,6 @@ class KalkulatorCashPage extends StatelessWidget {
               ),
             ),
           ),
-          
-          // Button Konfirmasi & Bayar
           Padding(
             padding: const EdgeInsets.all(24),
             child: SizedBox(
@@ -131,7 +121,6 @@ class KalkulatorCashPage extends StatelessWidget {
               child: Obx(
                 () => ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    // Tombol menyala oranye jika ada input > 0
                     backgroundColor: cartController.hasInputUang 
                         ? const Color(0xFFE89336) 
                         : Colors.grey[300],
@@ -143,10 +132,8 @@ class KalkulatorCashPage extends StatelessWidget {
                   onPressed: cartController.hasInputUang 
                       ? () {
                           if (cartController.isUangCukup) {
-                            // Jika cukup, pindah ke halaman sukses
                             Get.offAll(() => SuksesMobilePage());
                           } else {
-                            // Jika belum cukup, munculkan peringatan
                             Get.snackbar(
                               "Uang Kurang",
                               "Uang diterima belum mencukupi total tagihan",
