@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/routes/routes.dart';
 import '../../controller/admin/navigation_controller.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -12,28 +13,33 @@ class AppDrawer extends StatelessWidget {
     return Drawer(
       child: Obx(
         () => ListView(
+          padding: EdgeInsets.zero,
           children: [
             const DrawerHeader(
-              child: Text("My App 🚀", style: TextStyle(fontSize: 24)),
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Text(
+                "Admin Panel 🚀",
+                style: TextStyle(fontSize: 24, color: Colors.white),
+              ),
             ),
 
+            // Menu Kelola Produk
             ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text("Home"),
+              leading: const Icon(Icons.shopping_bag),
+              title: const Text("Kelola Produk"),
               selected: navC.selectedIndex.value == 0,
               onTap: () {
-                navC.changePage(0);
-                Get.back();
+                navC.changePage(0, AppRoutes.kelolaprodukdesk);
               },
             ),
 
+            // Menu Kelola Bahan
             ListTile(
-              leading: const Icon(Icons.shopping_bag),
-              title: const Text("Product"),
+              leading: const Icon(Icons.inventory),
+              title: const Text("Kelola Bahan"),
               selected: navC.selectedIndex.value == 1,
               onTap: () {
-                navC.changePage(1);
-                Get.back();
+                navC.changePage(1, AppRoutes.kelolabahandesk);
               },
             ),
           ],

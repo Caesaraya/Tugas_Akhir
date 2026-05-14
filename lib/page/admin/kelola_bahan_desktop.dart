@@ -1,11 +1,13 @@
 // lib/views/screens/bahan_baku/bahan_baku_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/admin/bahan_baku_controller.dart';
-import 'package:tugas_akhir/widget/admin/bahan/bahan_baku_form_dialog.dart';
-import 'package:tugas_akhir/widget/admin/bahan/tabel/bahan_baku_table.dart';
-import 'package:tugas_akhir/widget/admin/bahan/tabel/bahan_top_bar.dart';
+import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
+import 'package:tugas_akhir/widget/admin/bahan/bahan_baku_table.dart';
+
 import 'package:tugas_akhir/widget/admin/custom_drawer.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/insert_bahan_baku_dialog.dart';
+import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
+import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 
 class BahanBakuScreen extends StatelessWidget {
   const BahanBakuScreen({super.key});
@@ -13,7 +15,7 @@ class BahanBakuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Pastikan controller teregistrasi (jika belum di-inject global)
-    final controller = Get.find<BahanBakuController>();
+    final ctrl = Get.find<BahanBakuTableController>();
 
     return Scaffold(
       drawer: AppDrawer(),
@@ -22,81 +24,58 @@ class BahanBakuScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF26C6DA),
       ),
       backgroundColor: const Color(0xFFF4F6F9),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Top bar ───────────────────────────────────────────────────────
-          BahanBakuTopBar(onTambah: () => _openFormDialog(context)),
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                TableSearchBar(
+                  controller: ctrl.searchC,
+                  hint: 'Cari produk...',
+                ),
+                SizedBox(width: 20),
+                ToolbarButton(
+                  title: 'Insert Bahan',
+                  icon: Icons.add,
+                  color: Colors.cyan,
+                  onTap: () {
+                    ctrl.clearForm();
+                    Get.dialog(InsertBahanBakuDialog());
+                  },
+                ),
+                const SizedBox(width: 12),
 
-          // ── Table ─────────────────────────────────────────────────────────
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: BahanBakuTable(
-                onEdit: (index) {
-                  final item = controller.filteredList[index];
-                  _openFormDialog(context, item: item == null ? null : item);
-                },
-                onDelete: (id) => _confirmDelete(context, controller, id),
+                ToolbarButton(
+                  title: "Sortir Stok Habis",
+                  icon: Icons.sort,
+                  color: Colors.orange,
+                  onTap: () {
+                    ctrl.toggleFilterStockHabis();
+                  },
+                ),
+                const SizedBox(width: 12),
+
+                ToolbarButton(
+                  title: "",
+                  icon: Icons.refresh,
+                  color: Colors.green,
+                  onTap: () {
+                    ctrl.refreshData();
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: BahanBakuTable(),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Open form dialog ──────────────────────────────────────────────────────
-  void _openFormDialog(BuildContext context, {dynamic item}) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => BahanBakuFormDialog(existing: item),
-    );
-  }
-
-  // ── Confirm delete dialog ─────────────────────────────────────────────────
-  void _confirmDelete(
-    BuildContext context,
-    BahanBakuController controller,
-    int id,
-  ) {
-    final item = controller.bahanBakuList.firstWhereOrNull((b) => b.id == id);
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Color(0xFFEF5350)),
-            SizedBox(width: 8),
-            Text('Hapus Bahan Baku'),
           ],
         ),
-        content: Text(
-          item != null
-              ? 'Yakin ingin menghapus "${item.namaBahan}"?\nTindakan ini tidak dapat dibatalkan.'
-              : 'Yakin ingin menghapus bahan baku ini?',
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Batal')),
-          ElevatedButton(
-            onPressed: () async {
-              Get.back();
-              await controller.delete(id);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF5350),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('Hapus'),
-          ),
-        ],
       ),
     );
   }

@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
-import 'package:tugas_akhir/controller/admin/produk_admin_controller.dart';
 import 'package:tugas_akhir/widget/admin/custom_drawer.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/insert_product_dialog.dart';
 import 'package:tugas_akhir/widget/admin/produk/product_table.dart';
@@ -15,8 +14,6 @@ class KelolaProdukDeskPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrol = Get.find<ProductAdminController>();
-
     return Scaffold(
       drawer: AppDrawer(),
       appBar: AppBar(
@@ -50,7 +47,7 @@ class KelolaProdukDeskPage extends StatelessWidget {
                   icon: Icons.sort,
                   color: Colors.orange,
                   onTap: () {
-                    ctrl.sortStockHabis();
+                    ctrl.toggleFilterStockHabis();
                   },
                 ),
                 const SizedBox(width: 12),
@@ -79,27 +76,3 @@ class KelolaProdukDeskPage extends StatelessWidget {
     );
   }
 }
-// body: Padding(
-      //   padding: const EdgeInsets.all(24),
-      //   child: Column(
-      //     crossAxisAlignment: CrossAxisAlignment.start,
-      //     children: [
-      //       // ── Search + tombol aksi ───────────────────
-      //       ProductHeaderBar(ctrl: ctrl),
-      //       const SizedBox(height: 20),
-
-      //       // ── Tabel / loading / empty state ─────────
-      //       Expanded(
-      //         child: Obx(() {
-      //           if (ctrl.isLoading.value) {
-      //             return const Center(child: CircularProgressIndicator());
-      //           }
-      //           if (ctrl.displayedProducts.isEmpty) {
-      //             return ProductEmptyState(ctrl: ctrl);
-      //           }
-      //           return ProductTable(ctrl: ctrl);
-      //         }),
-      //       ),
-      //     ],
-      //   ),
-      // ),
