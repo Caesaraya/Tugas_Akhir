@@ -11,7 +11,7 @@ class RiwayatMobile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F5F2), // Warna background krem bakery
+      backgroundColor: const Color(0xFFF8F5F2),
       appBar: AppBar(
         title: const Text(
           "Riwayat Transaksi",

@@ -30,7 +30,6 @@ class ProductTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            // Harga setelah diskon
             Text(
               transactionDetailController.currencyFormatter.format(transactionDetailController.hargaSetelahDiskon(item)),
               style: const TextStyle(

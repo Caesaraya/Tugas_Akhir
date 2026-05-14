@@ -22,18 +22,17 @@ class DashboardController extends GetxController {
   try {
     isLoading(true);
 
-    // Langsung ambil data produk (asumsinya API produk sudah membawa info diskon)
     final products = await ApiService.getProducts();
 
     if (products != null) {
       List<Product> updatedProducts = [];
 
       for (var product in products) {
-        // Ambil nilai diskon langsung dari field 'discount' milik produk
+  
         double originalPrice = product.price.toDouble();
         int discountPercent = product.discount ?? 0;
 
-        // Hitung harga setelah diskon secara otomatis
+      
         int calculatedPriceAfterDiscount = (discountPercent > 0)
             ? (originalPrice - (originalPrice * (discountPercent / 100))).round()
             : product.price;
@@ -46,7 +45,7 @@ class DashboardController extends GetxController {
 
       productList.assignAll(updatedProducts);
       
-      // Update kategori
+
       var uniqueCategories = productList.map((p) => p.jenis).toSet().toList();
       uniqueCategories.sort();
       categories.assignAll(["Semua", ...uniqueCategories]);
@@ -60,9 +59,6 @@ class DashboardController extends GetxController {
   }
 }
 
-  // HELPER: Mengambil harga akhir
-  // Karena sekarang sudah ada field priceAfterDiscount di model, 
-  // kita tinggal mengambil nilainya saja.
   double getFinalPrice(Product product) {
     return product.priceAfterDiscount.toDouble();
   }

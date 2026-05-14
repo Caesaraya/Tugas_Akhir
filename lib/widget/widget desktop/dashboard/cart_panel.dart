@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
-import '../../../controller/cart_controller.dart';
-import '../../widget mobile/cart_item.dart';
-import 'package:intl/intl.dart'; // 1. Tambahkan import ini
+import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/widget/widget mobile/cart_item.dart';
+import 'package:intl/intl.dart';
 
 class CartPanel extends StatelessWidget {
   const CartPanel({super.key});
@@ -11,14 +11,11 @@ class CartPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final CartController cartController = Get.find<CartController>();
-
-    // 2. Tambahkan formatter di dalam build
     final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
       decimalDigits: 0,
     );
-
     return Container(
       width: 320,
       decoration: BoxDecoration(
@@ -26,7 +23,6 @@ class CartPanel extends StatelessWidget {
       ),
       child: Column(
         children: [
-          /// KASIR
           Container(
             padding: const EdgeInsets.all(12),
             child: const Row(
@@ -37,10 +33,7 @@ class CartPanel extends StatelessWidget {
               ],
             ),
           ),
-
           const Divider(),
-
-          /// KERANJANG
           Expanded(
             child: Obx(() {
               if (cartController.cartItems.isEmpty) {
@@ -63,14 +56,11 @@ class CartPanel extends StatelessWidget {
                     return CartTile(
                       item: item,
                       onAdd: () => cartController.increaseQty(item.productId),
-
-                      // PERBAIKAN: Tambahkan logika if (item.qty > 1)
                       onRemove: () {
                         if (item.qty > 1) {
                           cartController.decreaseQty(item.productId);
                         }
                       },
-
                       onDelete: () =>
                           cartController.removeFromCart(item.productId),
                     );
@@ -79,23 +69,16 @@ class CartPanel extends StatelessWidget {
               }
             }),
           ),
-
-          /// FOOTER BAYAR
-          /// FOOTER BAYAR
           Obx(() {
             final bool hasItems = cartController.cartItems.isNotEmpty;
-
             return InkWell(
-              // 1. Pindahkan onTap ke sini agar seluruh area warna bisa dipencet
               onTap: hasItems ? () => Get.toNamed(AppRoutes.kasirbayar) : null,
               child: Container(
                 padding: const EdgeInsets.all(16),
-                // 2. Warna background otomatis berubah berdasarkan kondisi hasItems
                 color: hasItems ? Colors.orange : Colors.grey[200],
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 3. Sekarang ini hanya widget Text biasa (InkWell sudah di luar)
                     Text(
                       "${cartController.itemCount} | Bayar",
                       style: TextStyle(

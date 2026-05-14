@@ -18,13 +18,9 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. LOGIKA DISKON LANGSUNG DARI DATA PRODUK
-    // Cek apakah discount di database lebih dari 0
     final bool hasDiscount = product.discount != null && product.discount! > 0;
     
     final double originalPrice = product.price.toDouble();
-    
-    // Gunakan priceAfterDiscount dari database, jika null baru tampilkan harga asli
     final double finalPrice = (product.priceAfterDiscount != null && product.priceAfterDiscount! > 0)
         ? product.priceAfterDiscount!.toDouble()
         : originalPrice;
@@ -62,7 +58,6 @@ class ProductCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                // Gambar Produk
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
                   child: Image.network(
@@ -78,7 +73,6 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Badge Kategori (Kiri Atas)
                 Positioned(
                   top: 8,
                   left: 8,
@@ -94,7 +88,6 @@ class ProductCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // BADGE DISKON (Kanan Atas) - Muncul jika ada discount > 0
                 if (hasDiscount)
                   Positioned(
                     top: 8,
@@ -125,13 +118,10 @@ class ProductCard extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   const SizedBox(height: 4),
-                  
-                  // AREA HARGA
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (hasDiscount) ...[
-                        // Harga Asli (Efek Coret)
                         Text(
                           currencyFormatter.format(originalPrice),
                           style: const TextStyle(
@@ -140,7 +130,6 @@ class ProductCard extends StatelessWidget {
                             decoration: TextDecoration.lineThrough,
                           ),
                         ),
-                        // Harga Setelah Diskon (Warna Orange)
                         Text(
                           currencyFormatter.format(finalPrice),
                           style: const TextStyle(
@@ -150,7 +139,6 @@ class ProductCard extends StatelessWidget {
                           ),
                         ),
                       ] else ...[
-                        // Harga Normal (Tanpa Coret jika tidak ada diskon)
                         Text(
                           currencyFormatter.format(originalPrice),
                           style: const TextStyle(

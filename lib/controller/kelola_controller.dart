@@ -57,7 +57,6 @@ class KelolaProdukController extends GetxController {
     super.onClose();
   }
 
-  // Fungsi untuk memilih gambar dari galeri
   Future<void> pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -66,7 +65,6 @@ class KelolaProdukController extends GetxController {
   }
 
   void showEditForm(BuildContext context, Product product) {
-    // Reset gambar pilihan sebelumnya
     selectedImage.value = null;
 
     nameController.text = product.name;
@@ -84,7 +82,6 @@ class KelolaProdukController extends GetxController {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // --- PREVIEW GAMBAR ---
               Obx(() => GestureDetector(
                 onTap: pickImage,
                 child: Container(
@@ -186,7 +183,6 @@ class KelolaProdukController extends GetxController {
       Get.back(); 
       isLoading(true);
 
-      // Gunakan API Multipart untuk update
       final success = await ApiService.updateProductWithImage(
         id: oldProduct.id,
         name: nameController.text,
@@ -195,9 +191,9 @@ class KelolaProdukController extends GetxController {
         stock: int.tryParse(stockController.text) ?? 0,
         jenis: jenisController.text,
         satuan: satuanController.text,
-        barcode: oldProduct.barcode, // Mengambil barcode lama
-        resepId: oldProduct.resepId, // Mengambil resepId lama
-        imageFile: selectedImage.value, // File baru jika ada
+        barcode: oldProduct.barcode,
+        resepId: oldProduct.resepId,
+        imageFile: selectedImage.value,
       );
 
       if (success) {

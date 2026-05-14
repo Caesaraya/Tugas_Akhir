@@ -5,7 +5,7 @@ class Product {
   final String name;
   final int price;
   final int discount;
-  final int priceAfterDiscount; // Field baru
+  final int priceAfterDiscount; 
   final int stock;
   final String jenis;
   final String satuan;
@@ -18,7 +18,7 @@ class Product {
     required this.name,
     required this.price,
     required this.discount,
-    required this.priceAfterDiscount, // Tambahkan di constructor
+    required this.priceAfterDiscount, 
     required this.stock,
     required this.jenis,
     required this.satuan,

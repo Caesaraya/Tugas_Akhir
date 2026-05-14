@@ -9,7 +9,7 @@ class CurrencyInputFormatter extends TextInputFormatter {
       return newValue;
     }
 
-    // Mengambil angka saja dari input
+
     double value = double.parse(newValue.text.replaceAll(RegExp(r'[^0-9]'), ''));
     
     final formatter = NumberFormat.currency(

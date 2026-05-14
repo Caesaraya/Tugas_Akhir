@@ -25,7 +25,7 @@ class ReusableDataTable extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: rows.isEmpty
-          ? _buildEmptyState()
+          ? buildEmptyState()
           : SingleChildScrollView(
               child: DataTable(
                 columnSpacing: columnSpacing,
@@ -42,11 +42,10 @@ class ReusableDataTable extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget buildEmptyState() {
     if (emptyWidget != null) {
       return Center(child: emptyWidget);
     }
-
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),

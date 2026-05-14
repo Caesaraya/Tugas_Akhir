@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-// Widget 1: Icon dan Text Status
 class SuccessHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -11,7 +9,6 @@ class SuccessHeader extends StatelessWidget {
   }
 }
 
-// Widget 2: Baris Informasi Ringkasan
 class InfoRow extends StatelessWidget {
   final String label;
   final String value;
@@ -36,32 +33,3 @@ class InfoRow extends StatelessWidget {
     );
   }
 }
-
-// class SuccessActions extends StatelessWidget {
-//   final VoidCallback onPrint;
-//   final VoidCallback onFinish;
-
-//   const SuccessActions({required this.onPrint, required this.onFinish});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Row(
-//       children: [
-
-//         const SizedBox(width: 15),
-//         Expanded(
-//           child: ElevatedButton(
-//             onPressed: onFinish,
-//             style: ElevatedButton.styleFrom(
-//               padding: const EdgeInsets.symmetric(vertical: 15),
-//               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-//               backgroundColor: Colors.orange.shade400,
-//               elevation: 0
-//             ),
-//             child: const Text("Selesai", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
