@@ -1,24 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
-import '../../controller/cart_controller.dart';
-import '../../controller/payment_controller.dart';
-import '../../widget/widget desktop/dashboard/app_bar_desktop.dart';
-import '../../widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
-import '../../widget/widget desktop/dashboard/komponen_nota.dart';
-import 'package:intl/intl.dart'; // Pastikan ini ada
+import 'package:tugas_akhir/widget/widget desktop/dashboard/succes.dart';
+import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/app_bar_desktop.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/komponen_nota.dart';
 
 class KasirSelesaiDesktop extends StatelessWidget {
   const KasirSelesaiDesktop({super.key});
-
   @override
   Widget build(BuildContext context) {
-    final CartController cartController = Get.find<CartController>();
-    final PaymentController paymentController = Get.find<PaymentController>();
-
-    // 1. Tambahkan formatter untuk format ribuan
-    final formatter = NumberFormat.decimalPattern('id');
-
+    final cart = Get.find<CartController>();
     return Scaffold(
       drawer: const DesktopNavigationDrawer(currentRoute: AppRoutes.kasirprint),
       body: Column(
@@ -45,135 +38,79 @@ class KasirSelesaiDesktop extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.check,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Center(
-                      child: Text(
-                        "Sukses!",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
+                    SuccessBadge(),
                     const SizedBox(height: 24),
                     const Text(
-                      "Detail Pembelian",
+                      'Detail Pembelian',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Obx(
-                      () => cartController.cartItems.isEmpty
-                          ? const Text("Tidak ada produk yang dibeli.")
-                          : Column(
-                              // Cari bagian Obx cartController.cartItems di file KasirSelesaiDesktop.dart
-                              // Lalu ganti isi map-nya dengan logika di bawah ini:
-                              children: cartController.cartItems.map((item) {
-                                // 1. Tentukan harga asli
-                                double hargaAsli = item.price.toDouble();
-                                double nilaiDiskonInput = item.discount
-                                    .toDouble();
-                                double hargaSetelahDiskon;
-
-                                // 2. LOGIKA PERBAIKAN:
-                                // Jika nilai diskon kecil (misal <= 100), kita anggap itu PERSENTASE (30%)
-                                // Jika nilai diskon besar (misal > 100), kita anggap itu NOMINAL (7.500)
-                                if (nilaiDiskonInput <= 100) {
-                                  // Rumus: 25.000 - (25.000 * 30 / 100) = 17.500
-                                  hargaSetelahDiskon =
-                                      hargaAsli -
-                                      (hargaAsli * nilaiDiskonInput / 100);
-                                } else {
-                                  // Rumus: 25.000 - 7.500 = 17.500
-                                  hargaSetelahDiskon =
-                                      hargaAsli - nilaiDiskonInput;
-                                }
-
-                                // 3. Hitung Total per item
-                                double totalHargaPerItem =
-                                    hargaSetelahDiskon * item.qty;
-
-                                return ReceiptProductRow(
-                                  name: item.name,
-                                  qty: item.qty,
-                                  unitPrice: hargaSetelahDiskon,
-                                  totalPrice: totalHargaPerItem,
-                                );
-                              }).toList(),
-                            ),
-                    ),
+                    Obx(() {
+                      if (cart.cartItems.isEmpty) {
+                        return const Text('Tidak ada produk yang dibeli.');
+                      }
+                      return Column(
+                        children: cart.cartItems.map((item) {
+                          final double hargaAsli = item.price.toDouble();
+                          final double persen = (item.discount ?? 0).toDouble();
+                          final double hargaDiskon =
+                              (hargaAsli - (hargaAsli * persen / 100))
+                                  .roundToDouble();
+                          return ReceiptProductRow(
+                            name: item.name,
+                            qty: item.qty,
+                            unitPrice: hargaDiskon,
+                            totalPrice: hargaDiskon * item.qty,
+                          );
+                        }).toList(),
+                      );
+                    }),
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 16),
-
-                    // Update bagian nominal di bawah ini
                     Obx(
                       () => ReceiptRowItem(
-                        title: "Total Tagihan",
-                        value:
-                            "Rp ${formatter.format(cartController.totalPrice)}",
+                        title: 'Total Tagihan',
+                        value: cart.currencyFormatter.format(cart.totalPrice),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Obx(() {
-                      final paid =
-                          double.tryParse(paymentController.input.value) ?? 0;
-                      return ReceiptRowItem(
-                        title: "Jumlah Dibayar",
-                        value: "Rp ${formatter.format(paid)}",
-                      );
-                    }),
-                    const SizedBox(height: 12),
-                    Obx(() {
-                      final change = _calculateChangeValue(
-                        cartController.totalPrice,
-                        paymentController.input.value,
-                      );
-                      return ReceiptRowItem(
-                        title: "Kembalian",
-                        value: "Rp ${formatter.format(change)}",
-                      );
-                    }),
                     Obx(
                       () => ReceiptRowItem(
-                        title: "Metode Pembayaran",
-                        value: paymentController.methodLabel,
+                        title: 'Jumlah Dibayar',
+                        value: cart.paymentDisplayValueFormatted,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Obx(
+                      () => ReceiptRowItem(
+                        title: 'Kembalian',
+                        value: cart.kembalianDisplayFormatted,
+                      ),
+                    ),
+                    Obx(
+                      () => ReceiptRowItem(
+                        title: 'Metode Pembayaran',
+                        value: cart.paymentMethodLabel,
                       ),
                     ),
                     const SizedBox(height: 24),
                     Row(
                       children: [
                         ReceiptActionButton(
-                          label: "Print Nota",
+                          label: 'Print Nota',
                           onPressed: () {},
                           backgroundColor: Colors.grey[400]!,
                           textColor: Colors.black,
                         ),
                         const SizedBox(width: 16),
                         ReceiptActionButton(
-                          label: "Selesai",
-                          onPressed: () async {
-                            await cartController.prosesKeApi();
-                            cartController.clearCart();
-                            Get.offAllNamed(AppRoutes.kasirboarddesk);
-                          },
+                          label: 'Selesai',
+                          onPressed: () =>
+                              cart.handleSelesaiActionDashboard(false),
                           backgroundColor: Colors.orange,
                         ),
                       ],
@@ -186,12 +123,5 @@ class KasirSelesaiDesktop extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  // Fungsi pembantu baru untuk mendapatkan nilai double kembalian
-  static double _calculateChangeValue(double totalPrice, String input) {
-    final paid = double.tryParse(input.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-    final change = paid - totalPrice;
-    return change > 0 ? change : 0;
   }
 }

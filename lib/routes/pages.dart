@@ -47,13 +47,13 @@ class AppPages {
       name: AppRoutes.kasirboarddesk,
       page: () => KasirDashboardDesktop(),
     ),
-    GetPage(name: AppRoutes.kasirbayar, page: () => PaymentPage()),
+    GetPage(name: AppRoutes.kasirbayar, page: () => KasirPembayaranDesktop()),
     GetPage(name: AppRoutes.kasirprint, page: () => KasirSelesaiDesktop()),
-    GetPage(
-      name: AppRoutes.transactionDetail,
-      page: () => DetailScreen(data: Get.arguments),
-    ),
+    GetPage(name: AppRoutes.transactionDetail, page: () => DetailScreen()),
     GetPage(name: AppRoutes.riwayatdesk, page: () => KasirRiwayatDesktop()),
-    GetPage(name: AppRoutes.kelolaprodukdashboard, page: () => KasirKelolaDashboard()),
+    GetPage(
+      name: AppRoutes.kelolaprodukdashboard,
+      page: () => KasirKelolaDashboard(),
+    ),
   ];
 }

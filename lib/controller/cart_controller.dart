@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/riwayat_controller.dart';
 import 'package:tugas_akhir/api%20service/api_service.dart';
 import 'package:intl/intl.dart';
+import '../routes/routes.dart';
 
 class CartController extends GetxController {
   final textController = TextEditingController();
@@ -113,6 +114,15 @@ class CartController extends GetxController {
       await prosesKeApi();
       clearCart();
       Get.offAllNamed('/navbar');
+    }
+  }
+  void handleSelesaiActionDashboard(bool isFromHistory) async {
+    if (isFromHistory) {
+      Get.back();
+    } else {
+      await prosesKeApi();
+      clearCart();
+      Get.offAllNamed(AppRoutes.kasirboarddesk);
     }
   }
 

@@ -36,19 +36,19 @@ class DesktopNavigationDrawer extends StatelessWidget {
               ],
             ),
           ),
-          _buildDrawerItem(
+          buildDrawerItem(
             context,
             icon: Icons.home,
             label: 'Dashboard',
             route: AppRoutes.kasirboarddesk,
           ),
-          _buildDrawerItem(
+          buildDrawerItem(
             context,
             icon: Icons.inventory,
             label: 'Kelola Produk',
             route: AppRoutes.kelolaprodukdashboard,
           ),
-          _buildDrawerItem(
+          buildDrawerItem(
             context,
             icon: Icons.history,
             label: 'Riwayat',
@@ -60,7 +60,7 @@ class DesktopNavigationDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerItem(
+  Widget buildDrawerItem(
     BuildContext context, {
     required IconData icon,
     required String label,

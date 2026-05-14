@@ -5,8 +5,8 @@ import '../../../controller/cart_controller.dart';
 import '../../widget mobile/cart_item.dart';
 import 'package:intl/intl.dart'; // 1. Tambahkan import ini
 
-class CartPanelDesktop extends StatelessWidget {
-  const CartPanelDesktop({super.key});
+class CartPanel extends StatelessWidget {
+  const CartPanel({super.key});
 
   @override
   Widget build(BuildContext context) {

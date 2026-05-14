@@ -1,25 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/kelola_controller.dart';
-import 'package:tugas_akhir/widget/widget%20desktop/dashboard/desktop_navigation_drawer.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
+import 'package:tugas_akhir/widget/widget desktop/kelola/product_card_kelola.dart';
 
 class KasirKelolaDashboard extends StatelessWidget {
-  final KelolaProdukController controller = Get.put(KelolaProdukController());
-  final currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
-
+  const KasirKelolaDashboard({super.key});
+ 
   @override
   Widget build(BuildContext context) {
+    final KelolaProdukController kelolaProdukController = Get.put(KelolaProdukController());
+ 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5F2),
       drawer: const DesktopNavigationDrawer(),
       appBar: AppBar(
         title: const Text(
-          "Kelola Produk",
+          'Kelola Produk',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFE89336),
@@ -27,21 +24,21 @@ class KasirKelolaDashboard extends StatelessWidget {
         elevation: 0,
         actions: [
           IconButton(
-            onPressed: () => controller.fetchData(),
+            onPressed: kelolaProdukController.fetchData,
             icon: const Icon(Icons.refresh, color: Colors.white),
           ),
         ],
       ),
       body: Column(
         children: [
-          // --- Search Bar ---
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: TextField(
-              onChanged: (value) => controller.searchQuery.value = value,
+              onChanged: (value) => kelolaProdukController.searchQuery.value = value,
               decoration: InputDecoration(
-                hintText: "Cari Produk...",
-                prefixIcon: const Icon(Icons.search, color: Color(0xFFE89336)),
+                hintText: 'Cari Produk...',
+                prefixIcon:
+                    const Icon(Icons.search, color: Color(0xFFE89336)),
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
@@ -56,144 +53,31 @@ class KasirKelolaDashboard extends StatelessWidget {
               ),
             ),
           ),
-
-          // --- List Produk Reaktif ---
           Expanded(
             child: Obx(() {
-              if (controller.isLoading.value) {
+              if (kelolaProdukController.isLoading.value) {
                 return const Center(
-                  child: CircularProgressIndicator(color: Color(0xFFE89336)),
+                  child: CircularProgressIndicator(
+                    color: Color(0xFFE89336),
+                  ),
                 );
               }
-
-              if (controller.filteredProducts.isEmpty) {
+              if (kelolaProdukController.filteredProducts.isEmpty) {
                 return const Center(
                   child: Text(
-                    "Produk tidak ditemukan",
+                    'Produk tidak ditemukan',
                     style: TextStyle(color: Colors.grey),
                   ),
                 );
               }
-
               return RefreshIndicator(
-                onRefresh: () => controller.fetchData(),
+                onRefresh: kelolaProdukController.fetchData,
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: controller.filteredProducts.length,
+                  itemCount: kelolaProdukController.filteredProducts.length,
                   itemBuilder: (context, index) {
-                    final produk = controller.filteredProducts[index];
-
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(12),
-                        leading: Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            // Perbaikan logika Image: model terbaru Anda name & image tidak nullable
-                            child: produk.image.isNotEmpty
-                                ? Image.network(
-                                    produk.image,
-                                    width: 60,
-                                    height: 60,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Icon(
-                                      Icons.broken_image,
-                                      color: Colors.grey,
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.image,
-                                    size: 30,
-                                    color: Colors.grey,
-                                  ),
-                          ),
-                        ),
-                        title: Text(
-                          produk.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Logika Diskon
-                              if ((produk.discount ?? 0) > 0) ...[
-                                // Harga Asli (Dicoret)
-                                Text(
-                                  currencyFormatter.format(produk.price),
-                                  style: const TextStyle(
-                                    decoration: TextDecoration.lineThrough,
-                                    color: Colors.grey,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                // Harga Setelah Diskon
-                                Text(
-                                  currencyFormatter.format(
-                                    produk.priceAfterDiscount,
-                                  ),
-                                  style: const TextStyle(
-                                    color: Colors
-                                        .green, // Warna hijau untuk harga promo
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ] else ...[
-                                // Jika tidak ada diskon, tampilkan harga normal saja
-                                Text(
-                                  currencyFormatter.format(produk.price),
-                                  style: const TextStyle(
-                                    color: Color(0xFFE89336),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: 2),
-                              Text(
-                                "Stok: ${produk.stock} ${produk.satuan} | ${produk.jenis.toUpperCase()}",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        trailing: ElevatedButton(
-                          onPressed: () =>
-                              controller.showEditForm(context, produk),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue.shade600,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text("Edit"),
-                        ),
-                      ),
-                    );
+                    final produk = kelolaProdukController.filteredProducts[index];
+                    return ProductCardKelola(ctrl: kelolaProdukController, produk: produk);
                   },
                 ),
               );

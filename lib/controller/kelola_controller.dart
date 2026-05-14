@@ -3,7 +3,7 @@ import 'package:tugas_akhir/api%20service/api_service.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:tugas_akhir/controller/dashboard_Mobile_controller.dart';
+import 'package:tugas_akhir/controller/dashboard_controller.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 

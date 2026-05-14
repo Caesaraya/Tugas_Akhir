@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/dashboard_Mobile_controller.dart';
+import 'package:tugas_akhir/controller/dashboard_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/search_bar.dart';
 import 'package:tugas_akhir/widget/widget mobile/section_header.dart';
 import 'package:tugas_akhir/widget/widget%20mobile/product_card.dart';
@@ -49,7 +49,7 @@ class KasirDashboardMobile extends StatelessWidget {
                       ),
                     ),
                     const Text(
-                      "Mau pesan roti apa hari ini?",
+                      "Mau pesan apa hari ini?",
                       style: TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     const SizedBox(height: 20),
