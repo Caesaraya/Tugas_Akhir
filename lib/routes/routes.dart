@@ -3,6 +3,7 @@ class AppRoutes {
   //desktop
   static const String kelolaprodukdesk = '/kelolaprodukdesk';
   static const String kelolabahandesk = '/kelolabahandesk';
+  static const String kelolaresepdesk = '/kelolaresepdesk';
   //mobile
   static const String kelolaProdukMob = '/kelolaProdukmobile';
   static const String kelolaBahanMob = '/kelolaBahanMobile';

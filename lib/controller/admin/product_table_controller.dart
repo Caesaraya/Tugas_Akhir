@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:tugas_akhir/widget/admin/dialogs/edit_product_dialog.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/product/edit_product_dialog.dart';
 
 import '../../api service/api_service.dart';
 import '../../models/product.dart';

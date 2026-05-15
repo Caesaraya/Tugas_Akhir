@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
-import 'package:tugas_akhir/widget/admin/dialogs/insert_bahan_baku_dialog.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/bahan/insert_bahan_baku_dialog.dart';
 import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 

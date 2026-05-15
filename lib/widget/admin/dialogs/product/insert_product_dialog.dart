@@ -2,7 +2,7 @@ import 'dart:io'; // Pastikan import ini ada untuk membaca File gambar
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../controller/admin/product_table_controller.dart';
+import '../../../../controller/admin/product_table_controller.dart';
 
 class InsertProductDialog extends StatelessWidget {
   InsertProductDialog({super.key});

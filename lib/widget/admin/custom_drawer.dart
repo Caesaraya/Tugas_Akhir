@@ -42,6 +42,16 @@ class AppDrawer extends StatelessWidget {
                 navC.changePage(1, AppRoutes.kelolabahandesk);
               },
             ),
+
+            // Menu Kelola Resep
+            ListTile(
+              leading: const Icon(Icons.restaurant_menu),
+              title: const Text("Kelola Resep"),
+              selected: navC.selectedIndex.value == 2,
+              onTap: () {
+                navC.changePage(2, AppRoutes.kelolaresepdesk);
+              },
+            ),
           ],
         ),
       ),

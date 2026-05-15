@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../controller/admin/bahan_baku_table_controller.dart';
+import '../../../../controller/admin/bahan_baku_table_controller.dart';
 
 class InsertBahanBakuDialog extends StatelessWidget {
   InsertBahanBakuDialog({super.key});

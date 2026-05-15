@@ -12,11 +12,16 @@ class Resep {
   });
 
   factory Resep.fromJson(Map<String, dynamic> json) {
+    // Debugging: cetak isi JSON jika Anda ragu apa nama key-nya
+    // print("Isi JSON Resep: $json");
+
     return Resep(
       id: json['id'],
       namaResep: json['nama_resep'] ?? '',
       deskripsi: json['deskripsi'] ?? '',
-      bahan: json['bahan'] != null 
+      // Coba ganti 'bahan' dengan key yang sesuai dari API,
+      // misal json['details'] atau json['resep_details'] jika 'bahan' tidak bekerja.
+      bahan: json['bahan'] != null
           ? (json['bahan'] as List).map((e) => DetailResep.fromJson(e)).toList()
           : [],
     );
@@ -74,13 +79,23 @@ class DetailResep {
       id: json['id'],
       resepId: json['resep_id'],
       bahanId: json['bahan_id'] ?? 0,
-      jumlahBahan: (json['jumlah_bahan'] ?? 0).toDouble(),
+      // Perbaikan di sini: Gunakan helper function untuk handling String/Double
+      jumlahBahan: _toDouble(json['jumlah_bahan']),
       namaBahan: json['nama_bahan'],
       merk: json['merk'],
       satuan: json['satuan'],
-      hargaSatuan: json['harga_satuan']?.toDouble(),
-      totalHargaBahan: json['total_harga_bahan']?.toDouble(),
+      hargaSatuan: _toDouble(json['harga_satuan']),
+      totalHargaBahan: _toDouble(json['total_harga_bahan']),
     );
+  }
+
+  // Tambahkan helper function ini di luar class atau di dalam class sebagai static
+  static double _toDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 
   Map<String, dynamic> toJson() {

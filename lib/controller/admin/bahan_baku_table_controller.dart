@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/widget/admin/dialogs/edit_bahan_baku_dialog.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/bahan/edit_bahan_baku_dialog.dart';
 
 import '../../api service/api_service.dart';
 import '../../models/bahan_baku.dart';

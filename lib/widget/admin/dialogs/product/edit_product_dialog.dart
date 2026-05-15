@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../controller/admin/product_table_controller.dart';
-import '../../../models/product.dart';
+import '../../../../controller/admin/product_table_controller.dart';
+import '../../../../models/product.dart';
 
 class EditProductDialog extends StatelessWidget {
   final Product product;

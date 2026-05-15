@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../controller/admin/bahan_baku_table_controller.dart';
-import '../../../models/bahan_baku.dart';
+import '../../../../controller/admin/bahan_baku_table_controller.dart';
+import '../../../../models/bahan_baku.dart';
 
 class EditBahanBakuDialog extends StatelessWidget {
   final BahanBaku bahan;
