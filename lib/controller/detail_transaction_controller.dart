@@ -46,10 +46,13 @@ class TransactionDetailController extends GetxController {
  
 
   String namaProduk(Map<String, dynamic> item) =>
-      item['nama_produk']?.toString() ??
-      item['name']?.toString() ??
-      item['produk']?.toString() ??
-      'Produk';
+    item['nama_produk']?.toString() ??
+    item['name']?.toString() ??
+    item['produk']?.toString() ??
+    item['product_name']?.toString() ??
+    item['nama']?.toString() ??
+    item['title']?.toString() ??
+    'Produk';
  
   double hargaAsli(Map<String, dynamic> item) =>
       double.tryParse(item['price']?.toString() ?? '0') ?? 0;

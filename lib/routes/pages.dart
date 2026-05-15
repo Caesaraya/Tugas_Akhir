@@ -16,6 +16,7 @@ import 'package:tugas_akhir/page/mobile/keranjang_mobile.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/riwayat_mobile.dart';
 import 'package:tugas_akhir/page/mobile/Kelolaproduk_mobile.dart';
+import 'package:tugas_akhir/page/mobile/transaction_detail_mobile.dart';
 
 import 'routes.dart';
 
@@ -43,6 +44,7 @@ class AppPages {
     GetPage(name: AppRoutes.navbar, page: () => NavbarPage()),
     GetPage(name: AppRoutes.riwayat, page: () => RiwayatMobile()),
     GetPage(name: AppRoutes.kelolaProduk, page: () => KelolaProdukPage()),
+    GetPage(name: AppRoutes.transactionDetailMobile, page: () => TransactionDetailMobile()),
     //desktop
     //kasir
     GetPage(

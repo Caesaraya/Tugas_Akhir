@@ -5,8 +5,8 @@ import 'package:tugas_akhir/widget/widget desktop/detail_transaction/product_til
 import 'package:tugas_akhir/widget/widget desktop/detail_transaction/row.dart';
 
  
-class DetailScreen extends StatelessWidget {
-  const DetailScreen({super.key});
+class TransactionDetailMobile extends StatelessWidget {
+  const TransactionDetailMobile({super.key});
  
   @override
   Widget build(BuildContext context) {

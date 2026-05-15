@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tugas_akhir/controller/desktop/detail_transaction_controller.dart';
+import 'package:tugas_akhir/controller/detail_transaction_controller.dart';
 
 class ProductTile extends StatelessWidget {
   final TransactionDetailController transactionDetailController ;

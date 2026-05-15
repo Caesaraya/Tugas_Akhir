@@ -73,13 +73,15 @@ class RiwayatMobile extends StatelessWidget {
               child: ListTile(
                 onTap: () {
                   Get.toNamed(
-                    AppRoutes.sukses,
+                    AppRoutes.transactionDetailMobile,
                     arguments: {
-                      'total': trx['total_harga'],
-                      'bayar': trx['jumlah_bayar'],
+                      'id': trx['id'],
+                      'tanggal': trx['tanggal'],
+                      'total_harga': trx['total_harga'],
+                      'jumlah_bayar': trx['jumlah_bayar'],
                       'kembalian': trx['kembalian'],
-                      'metode': trx['metode_pembayaran'],
-                      'isFromHistory': true,
+                      'metode_pembayaran': trx['metode_pembayaran'],
+                      'items': trx['items'], // PENTING
                     },
                   );
                 },
