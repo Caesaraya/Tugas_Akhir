@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../controller/mobile/dashboard_Mobile_controller.dart';
-import '../../widget mobile/search_bar.dart';
+import 'package:tugas_akhir/controller/dashboard_controller.dart';
+import 'package:tugas_akhir/widget/widget%20mobile/dashboard/search_bar.dart';
 
 class AppBarDesktop extends StatelessWidget {
   final String title;
@@ -20,7 +20,7 @@ class AppBarDesktop extends StatelessWidget {
     final DashboardController controller = Get.put(DashboardController());
 
     return Container(
-      color: Colors.orange,
+    color: const Color(0xFFE89336),
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [

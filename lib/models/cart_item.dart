@@ -15,7 +15,9 @@ class CartItem {
 
  
   double get total {
-    double finalPrice = (price - discount).toDouble();
-    return finalPrice * qty;
+  double hargaAsli = price.toDouble();
+  double hargaSetelahDiskon =
+      (hargaAsli - (hargaAsli * (discount / 100))).roundToDouble();
+  return hargaSetelahDiskon * qty;
   }
 }

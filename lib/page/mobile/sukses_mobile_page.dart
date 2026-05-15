@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/mobile/cart_controller.dart';
+import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/success_widgets.dart';
 import 'package:intl/intl.dart';
 
@@ -15,7 +15,6 @@ class SuksesMobilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = controller.getSuksesData(Get.arguments);
     final bool isFromHistory = data['isHistory'] == 'true';
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -42,20 +41,15 @@ class SuksesMobilePage extends StatelessWidget {
           children: [
             SuccessHeader(),
             const SizedBox(height: 40),
-
-            // HAPUS tanda "!" agar daftar item muncul di keduanya,
-            // atau biarkan tampil tanpa syarat jika ingin selalu muncul.
             const SizedBox(height: 10),
             Expanded(
               child: ListView.builder(
-                // Jika dari riwayat, ambil dari data['items'], jika transaksi baru ambil dari controller
                 itemCount: isFromHistory
                     ? (data['items'] != null
                           ? (data['items'] as List).length
                           : 0)
                     : controller.cartItems.length,
                 itemBuilder: (context, index) {
-                  // Ambil data item
                   final dynamic item = isFromHistory
                       ? (data['items'] as List)[index]
                       : controller.cartItems[index];
@@ -63,12 +57,9 @@ class SuksesMobilePage extends StatelessWidget {
                   String itemName;
                   int itemQty;
                   double displayPrice;
-
                   if (isFromHistory) {
                     final Map<String, dynamic> itemMap =
                         item as Map<String, dynamic>;
-
-                    // Sesuaikan dengan model TransactionDetailModel Anda
                     itemName = itemMap['name'] ?? "Produk";
                     itemQty =
                         int.tryParse(
@@ -83,7 +74,6 @@ class SuksesMobilePage extends StatelessWidget {
                         ) ??
                         0.0;
                   } else {
-                    // Logika untuk transaksi baru (dari keranjang)
                     itemName = item.name;
                     itemQty = item.qty;
                     displayPrice =
@@ -120,7 +110,6 @@ class SuksesMobilePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
             InfoRow(label: "Total Tagihan", value: data['total']!),
             InfoRow(label: data['label']!, value: data['bayar']!),
             const Divider(thickness: 1.5, height: 30),

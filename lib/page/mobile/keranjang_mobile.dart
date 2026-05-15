@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/mobile/cart_controller.dart';
+import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/payment_method.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
@@ -9,14 +9,11 @@ import 'package:intl/intl.dart';
 
 class KeranjangMobilePage extends StatelessWidget {
   final CartController cartController = Get.put(CartController());
-  
-  // Formatter untuk format Rupiah dengan titik
   final currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID', 
-    symbol: 'Rp ', 
-    decimalDigits: 0
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
   );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,11 +67,10 @@ class KeranjangMobilePage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                            // KODE BARU (BENAR)
-Text(
-  "${item.qty} X  |  ${currencyFormatter.format((item.price - (item.price * (item.discount / 100))) * item.qty)}",
-  style: const TextStyle(fontSize: 14),
-),
+                              Text(
+                                "${item.qty} X  |  ${currencyFormatter.format((item.price - (item.price * (item.discount / 100))) * item.qty)}",
+                                style: const TextStyle(fontSize: 14),
+                              ),
                             ],
                           ),
                         ),
@@ -82,7 +78,9 @@ Text(
                           children: [
                             IconButton(
                               onPressed: item.qty > 1
-                                  ? () => cartController.decreaseQty(item.productId)
+                                  ? () => cartController.decreaseQty(
+                                      item.productId,
+                                    )
                                   : null,
                               icon: Icon(
                                 Icons.remove_circle_outline,
@@ -110,8 +108,10 @@ Text(
                                 DeleteValidation.show(
                                   productName: item.name,
                                   onConfirm: () {
-                                    cartController.removeFromCart(item.productId);
-                                    Get.back(); 
+                                    cartController.removeFromCart(
+                                      item.productId,
+                                    );
+                                    Get.back();
                                     Get.snackbar(
                                       "Berhasil",
                                       "${item.name} dihapus",
@@ -142,7 +142,7 @@ Text(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(30), 
+                  topLeft: Radius.circular(30),
                   topRight: Radius.circular(30),
                 ),
                 boxShadow: [
@@ -168,8 +168,7 @@ Text(
                           style: TextStyle(color: Colors.grey, fontSize: 14),
                         ),
                         Text(
-                          // UBAH DISINI: Format Subtotal
-                        currencyFormatter.format(cartController.subtotal),
+                          currencyFormatter.format(cartController.subtotal),
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
@@ -177,31 +176,36 @@ Text(
                         ),
                       ],
                     ),
-                  Obx(() => cartController.totalDiscount > 0 
-    ? Column(
-        children: [
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                "Potongan Diskon",
-                style: TextStyle(color: Colors.red, fontSize: 14),
-              ),
-              Text(
-                "- ${currencyFormatter.format(cartController.totalDiscount)}",
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ],
-      )
-    : const SizedBox.shrink(),
-  ),
+                    Obx(
+                      () => cartController.totalDiscount > 0
+                          ? Column(
+                              children: [
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "Potongan Diskon",
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      "- ${currencyFormatter.format(cartController.totalDiscount)}",
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
+                    ),
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Divider(thickness: 1),
@@ -232,7 +236,9 @@ Text(
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE89336), // Menggunakan warna oranye bakery
+                          backgroundColor: const Color(
+                            0xFFE89336,
+                          ), // Menggunakan warna oranye bakery
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../models/product.dart';
+import 'package:tugas_akhir/models/product.dart';
 import 'package:intl/intl.dart';
 
 class ProductCardDesktop extends StatelessWidget {
@@ -31,7 +31,6 @@ class ProductCardDesktop extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// GAMBAR
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
@@ -46,8 +45,6 @@ class ProductCardDesktop extends StatelessWidget {
                 ),
               ),
             ),
-
-            /// INFORMASI PRODUK
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -60,8 +57,6 @@ class ProductCardDesktop extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                   const SizedBox(height: 2),
-                  
-                  // LOGIKA DISKON: Menampilkan harga asli dicoret jika ada diskon
                   if (product.discount > 0)
                     Row(
                       children: [
@@ -84,8 +79,6 @@ class ProductCardDesktop extends StatelessWidget {
                         ),
                       ],
                     ),
-
-                  // Harga Setelah Diskon (Harga Utama)
                   Text(
                     currencyFormat.format(product.priceAfterDiscount), 
                     style: const TextStyle(
@@ -94,10 +87,7 @@ class ProductCardDesktop extends StatelessWidget {
                       fontSize: 14,
                     ),
                   ),
-
                   const SizedBox(height: 4),
-
-                  /// FIX OVERFLOW
                   Row(
                     children: [
                       Expanded(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ReceiptRowItem extends StatelessWidget {
   final String title;
@@ -48,6 +49,8 @@ class ReceiptProductRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final formatter = NumberFormat.decimalPattern('id');
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -57,7 +60,7 @@ class ReceiptProductRow extends StatelessWidget {
           Text("x$qty", style: const TextStyle(fontSize: 14)),
           const SizedBox(width: 12),
           Text(
-            "Rp ${totalPrice.toStringAsFixed(0)}",
+            "Rp ${formatter.format(totalPrice)}",
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
         ],

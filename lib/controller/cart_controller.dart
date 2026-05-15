@@ -2,9 +2,10 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
-import 'package:tugas_akhir/controller/mobile/riwayat_controller.dart';
+import 'package:tugas_akhir/controller/riwayat_controller.dart';
 import 'package:tugas_akhir/api%20service/api_service.dart';
 import 'package:intl/intl.dart';
+import 'package:tugas_akhir/routes/routes.dart';
 
 class CartController extends GetxController {
   final textController = TextEditingController();
@@ -19,10 +20,6 @@ class CartController extends GetxController {
     decimalDigits: 0,
   );
 
-  // ==========================================
-  // LOGIKA KERANJANG & TRANSAKSI
-  // ==========================================
-
   void addToCart(Product product) {
     var existingItem = cartItems.firstWhereOrNull(
       (item) => item.productId == product.id,
@@ -36,7 +33,7 @@ class CartController extends GetxController {
           productId: product.id,
           name: product.name,
           price: product.price,
-          discount: product.discount, // Ini berisi angka persen (misal: 12)
+          discount: product.discount,
           qty: 1,
         ),
       );
@@ -115,6 +112,15 @@ class CartController extends GetxController {
       Get.offAllNamed('/navbar');
     }
   }
+  void handleSelesaiActionDashboard(bool isFromHistory) async {
+    if (isFromHistory) {
+      Get.back();
+    } else {
+      await prosesKeApi();
+      clearCart();
+      Get.offAllNamed(AppRoutes.kasirboarddesk);
+    }
+  }
 
   Future<void> prosesKeApi() async {
     if (cartItems.isNotEmpty) {
@@ -140,29 +146,20 @@ class CartController extends GetxController {
       }
     }
   }
-
-  // ==========================================
-  // PERBAIKAN GETTERS (LOGIKA DISKON PERSEN)
-  // ==========================================
-  
-  // Total Harga Akhir (Setelah Diskon)
   double get totalPrice {
     return cartItems.fold(0, (sum, item) {
       double hargaAsli = item.price.toDouble();
       double persenDiskon = (item.discount ?? 0).toDouble();
-      
-      // Hitung harga setelah diskon: Harga - (Harga * (Persen/100))
-      // Gunakan .round() agar tidak muncul angka desimal seperti .988
       double hargaSetelahDiskon = (hargaAsli - (hargaAsli * (persenDiskon / 100))).roundToDouble();
       
       return sum + (hargaSetelahDiskon * item.qty);
     });
   }
 
-  // Subtotal (Harga asli sebelum diskon)
+ 
   double get subtotal => cartItems.fold(0, (sum, item) => sum + (item.price * item.qty));
 
-  // Selisih antara harga asli dan harga diskon
+
   double get totalDiscount => subtotal - totalPrice;
 
   double get kembalian => inputUang.value > totalPrice ? inputUang.value - totalPrice : 0.0;

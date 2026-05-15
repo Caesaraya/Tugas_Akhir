@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
-import '../../controller/mobile/cart_controller.dart';
-import '../../controller/mobile/payment_controller.dart';
-import '../../widget/widget desktop/dashboard/app_bar_desktop.dart';
-import '../../widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
-import '../../widget/widget desktop/dashboard/komponen_nota.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/succes.dart';
+import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/app_bar_desktop.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/komponen_nota.dart';
 
 class KasirSelesaiDesktop extends StatelessWidget {
   const KasirSelesaiDesktop({super.key});
-
   @override
   Widget build(BuildContext context) {
-    final CartController cartController = Get.find<CartController>();
-    final PaymentController paymentController = Get.find<PaymentController>();
-
+    final cart = Get.find<CartController>();
     return Scaffold(
       drawer: const DesktopNavigationDrawer(currentRoute: AppRoutes.kasirprint),
       body: Column(
@@ -28,10 +25,10 @@ class KasirSelesaiDesktop extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black54,
-                      offset: const Offset(0, 6),
+                      offset: Offset(0, 6),
                       blurRadius: 18,
                       spreadRadius: 1,
                     ),
@@ -41,124 +38,79 @@ class KasirSelesaiDesktop extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.check,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    const Center(
-                      child: Text(
-                        "Sukses!",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                      ),
-                    ),
-
+                    SuccessBadge(),
                     const SizedBox(height: 24),
-
                     const Text(
-                      "Detail Pembelian",
+                      'Detail Pembelian',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    Obx(
-                      () => cartController.cartItems.isEmpty
-                          ? const Text("Tidak ada produk yang dibeli.")
-                          : Column(
-                              children: cartController.cartItems
-                                  .map(
-                                    (item) => ReceiptProductRow(
-                                      name: item.name,
-                                      qty: item.qty,
-                                      unitPrice: (item.price - item.discount)
-                                          .toDouble(),
-                                      totalPrice:
-                                          item.qty.toDouble() *
-                                          (item.price - item.discount)
-                                              .toDouble(),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                    ),
-
+                    Obx(() {
+                      if (cart.cartItems.isEmpty) {
+                        return const Text('Tidak ada produk yang dibeli.');
+                      }
+                      return Column(
+                        children: cart.cartItems.map((item) {
+                          final double hargaAsli = item.price.toDouble();
+                          final double persen = (item.discount ?? 0).toDouble();
+                          final double hargaDiskon =
+                              (hargaAsli - (hargaAsli * persen / 100))
+                                  .roundToDouble();
+                          return ReceiptProductRow(
+                            name: item.name,
+                            qty: item.qty,
+                            unitPrice: hargaDiskon,
+                            totalPrice: hargaDiskon * item.qty,
+                          );
+                        }).toList(),
+                      );
+                    }),
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 16),
-
                     Obx(
                       () => ReceiptRowItem(
-                        title: "Total Tagihan",
-                        value:
-                            "Rp ${cartController.totalPrice.toStringAsFixed(0)}",
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    const SizedBox(height: 12),
-                    Obx(
-                      () => ReceiptRowItem(
-                        title: "Jumlah Dibayar",
-                        value: paymentController.input.value.isEmpty
-                            ? "Rp 0"
-                            : "Rp ${paymentController.input.value}",
+                        title: 'Total Tagihan',
+                        value: cart.currencyFormatter.format(cart.totalPrice),
                       ),
                     ),
                     const SizedBox(height: 12),
                     Obx(
                       () => ReceiptRowItem(
-                        title: "Kembalian",
-                        value: paymentController.input.value.isEmpty
-                            ? "Rp 0"
-                            : "Rp ${_calculateChange(cartController.totalPrice, paymentController.input.value)}",
+                        title: 'Jumlah Dibayar',
+                        value: cart.paymentDisplayValueFormatted,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Obx(
+                      () => ReceiptRowItem(
+                        title: 'Kembalian',
+                        value: cart.kembalianDisplayFormatted,
                       ),
                     ),
                     Obx(
                       () => ReceiptRowItem(
-                        title: "Metode Pembayaran",
-                        value: paymentController.methodLabel,
+                        title: 'Metode Pembayaran',
+                        value: cart.paymentMethodLabel,
                       ),
                     ),
-
                     const SizedBox(height: 24),
                     Row(
                       children: [
                         ReceiptActionButton(
-                          label: "Print Nota",
+                          label: 'Print Nota',
                           onPressed: () {},
                           backgroundColor: Colors.grey[400]!,
                           textColor: Colors.black,
                         ),
                         const SizedBox(width: 16),
                         ReceiptActionButton(
-                          label: "Selesai",
-                          onPressed: () async {
-                            // Simpan transaksi ke API
-                            await cartController.prosesKeApi();
-                            // Bersihkan keranjang setelah simpan
-                            cartController.clearCart();
-                            // Navigasi kembali ke dashboard
-                            Get.offAllNamed(AppRoutes.kasirboarddesk);
-                          },
+                          label: 'Selesai',
+                          onPressed: () =>
+                              cart.handleSelesaiActionDashboard(false),
                           backgroundColor: Colors.orange,
                         ),
                       ],
@@ -171,11 +123,5 @@ class KasirSelesaiDesktop extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  static String _calculateChange(double totalPrice, String input) {
-    final paid = double.tryParse(input.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-    final change = paid - totalPrice;
-    return change > 0 ? change.toStringAsFixed(0) : '0';
   }
 }

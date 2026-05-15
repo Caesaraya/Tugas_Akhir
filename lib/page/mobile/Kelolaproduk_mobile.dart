@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tugas_akhir/controller/mobile/kelola_controller.dart';
+import 'package:tugas_akhir/controller/kelola_controller.dart';
 
 class KelolaProdukPage extends StatelessWidget {
   final KelolaProdukController controller = Get.put(KelolaProdukController());
@@ -10,7 +10,6 @@ class KelolaProdukPage extends StatelessWidget {
     symbol: 'Rp ',
     decimalDigits: 0,
   );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +31,6 @@ class KelolaProdukPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // --- Search Bar ---
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
@@ -54,8 +52,6 @@ class KelolaProdukPage extends StatelessWidget {
               ),
             ),
           ),
-
-          // --- List Produk Reaktif ---
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
@@ -63,7 +59,6 @@ class KelolaProdukPage extends StatelessWidget {
                   child: CircularProgressIndicator(color: Color(0xFFE89336)),
                 );
               }
-
               if (controller.filteredProducts.isEmpty) {
                 return const Center(
                   child: Text(
@@ -72,7 +67,6 @@ class KelolaProdukPage extends StatelessWidget {
                   ),
                 );
               }
-
               return RefreshIndicator(
                 onRefresh: () => controller.fetchData(),
                 child: ListView.builder(
@@ -80,7 +74,6 @@ class KelolaProdukPage extends StatelessWidget {
                   itemCount: controller.filteredProducts.length,
                   itemBuilder: (context, index) {
                     final produk = controller.filteredProducts[index];
-
                     return Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       elevation: 2,
@@ -98,7 +91,6 @@ class KelolaProdukPage extends StatelessWidget {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            // Perbaikan logika Image: model terbaru Anda name & image tidak nullable
                             child: produk.image.isNotEmpty
                                 ? Image.network(
                                     produk.image,
@@ -131,9 +123,7 @@ class KelolaProdukPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Logika Diskon
                               if ((produk.discount ?? 0) > 0) ...[
-                                // Harga Asli (Dicoret)
                                 Text(
                                   currencyFormatter.format(produk.price),
                                   style: const TextStyle(
@@ -142,20 +132,18 @@ class KelolaProdukPage extends StatelessWidget {
                                     fontSize: 12,
                                   ),
                                 ),
-                                // Harga Setelah Diskon
                                 Text(
                                   currencyFormatter.format(
                                     produk.priceAfterDiscount,
                                   ),
                                   style: const TextStyle(
                                     color: Colors
-                                        .green, // Warna hijau untuk harga promo
+                                        .green,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
                                   ),
                                 ),
                               ] else ...[
-                                // Jika tidak ada diskon, tampilkan harga normal saja
                                 Text(
                                   currencyFormatter.format(produk.price),
                                   style: const TextStyle(

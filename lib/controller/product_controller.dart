@@ -24,21 +24,18 @@ class ProductController extends GetxController {
       products.assignAll(fetched);
     } catch (e) {
       print("Error fetch products: $e");
-      // Fallback ke dummy data jika API gagal
      
     } finally {
       isLoading(false);
     }
   }
 
-  // --- LOGIC FILTER ---
   List<Product> get filteredProducts {
-    // Gunakan .where secara beruntun agar lebih efisien
+   
     return products.where((p) {
-      // Filter Stok Habis
-      bool matchStock = isFilteringOutOfStock.value ? p.stock == 0 : true;
       
-      // Filter Pencarian (Nama atau Barcode)
+      bool matchStock = isFilteringOutOfStock.value ? p.stock == 0 : true;
+    
       bool matchSearch = searchQuery.value.isEmpty || 
           p.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
           p.barcode.contains(searchQuery.value);
@@ -47,7 +44,6 @@ class ProductController extends GetxController {
     }).toList();
   }
 
-  // --- PAGINATION ---
   int get totalFilteredCount => filteredProducts.length;
 
   int get totalPages => (totalFilteredCount / pageSize).ceil().clamp(1, 999);
@@ -60,12 +56,11 @@ class ProductController extends GetxController {
     return filteredProducts.sublist(start, end);
   }
 
-  // --- ACTIONS ---
   void updateProductLocally(int id, Product updatedProduct) {
     final index = products.indexWhere((p) => p.id == id);
     if (index != -1) {
       products[index] = updatedProduct;
-      products.refresh(); // PENTING: Memastikan GetX menyadari perubahan isi list
+      products.refresh();
     }
   }
 
@@ -89,10 +84,10 @@ class ProductController extends GetxController {
     }
   }
   
-  // Tambahan: Helper untuk cek apakah produk punya resep
+ 
   bool hasRecipe(Product product) => product.resepId != null;
 
-  // Method standar lainnya (updateSearchQuery, nextPage, dll) tetap sama
+
   void updateSearchQuery(String query) {
     searchQuery.value = query;
     currentPage.value = 1;

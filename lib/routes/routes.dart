@@ -19,6 +19,7 @@ class AppRoutes {
   static const String sukses = '/sukses';
   static const String riwayat = '/riwayat';
   static const String kelolaProduk = '/kelolaProduk';
+  static const String login = '/login';
   //desktop
   static const String kasirboarddesk = '/KasirBoardDesk';
   static const String kasirbayar = '/KasirBayar';
@@ -26,4 +27,5 @@ class AppRoutes {
   static const String riwayatdesk = '/riwayatdesk';
   static const String kalkulatordesk = '/kalkulatordesk';
   static const String transactionDetail = '/transactionDetail';
+  static const String kelolaprodukdashboard = '/kelolaprodukdashboard';
 }

@@ -3,7 +3,7 @@ import 'package:tugas_akhir/api%20service/api_service.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:tugas_akhir/controller/mobile/dashboard_Mobile_controller.dart';
+import 'package:tugas_akhir/controller/dashboard_controller.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
@@ -69,7 +69,6 @@ class KelolaProdukController extends GetxController {
     super.onClose();
   }
 
-  // Fungsi untuk memilih gambar dari galeri
   Future<void> pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -78,7 +77,6 @@ class KelolaProdukController extends GetxController {
   }
 
   void showEditForm(BuildContext context, Product product) {
-    // Reset gambar pilihan sebelumnya
     selectedImage.value = null;
 
     nameController.text = product.name;
@@ -99,6 +97,41 @@ class KelolaProdukController extends GetxController {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Obx(
+                () => GestureDetector(
+                  onTap: pickImage,
+                  child: Container(
+                    height: 120,
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 15),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey[400]!),
+                    ),
+                    child: selectedImage.value != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(
+                              selectedImage.value!,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : (product.image.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    product.image,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (c, e, s) =>
+                                        const Icon(Icons.image, size: 50),
+                                  ),
+                                )
+                              : const Icon(Icons.add_a_photo, size: 50)),
+                  ),
+                ),
+              ),
+
               // --- PREVIEW GAMBAR ---
               Obx(
                 () => GestureDetector(
@@ -234,7 +267,6 @@ class KelolaProdukController extends GetxController {
       Get.back();
       isLoading(true);
 
-      // Gunakan API Multipart untuk update
       final success = await ApiService.updateProductWithImage(
         id: oldProduct.id,
         name: nameController.text,
@@ -243,9 +275,9 @@ class KelolaProdukController extends GetxController {
         stock: int.tryParse(stockController.text) ?? 0,
         jenis: jenisController.text,
         satuan: satuanController.text,
-        barcode: oldProduct.barcode, // Mengambil barcode lama
-        resepId: oldProduct.resepId, // Mengambil resepId lama
-        imageFile: selectedImage.value, // File baru jika ada
+        barcode: oldProduct.barcode,
+        resepId: oldProduct.resepId,
+        imageFile: selectedImage.value,
       );
 
       if (success) {

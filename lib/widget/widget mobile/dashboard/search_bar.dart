@@ -6,7 +6,7 @@ class MySearchBar extends StatelessWidget {
 
   const MySearchBar({
     super.key,
-    this.hintText = "Cari roti favoritmu...",
+    this.hintText = "Cari menu favoritmu...",
     this.onChanged,
   });
 
@@ -32,7 +32,6 @@ class MySearchBar extends StatelessWidget {
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(color: Colors.brown.shade200, width: 1.5),
         ),
-        // Menambahkan sedikit bayangan agar terlihat menyatu dengan tema kartu
         enabled: true,
       ),
     );

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/widget/widget%20desktop/dashboard/desktop_navigation_drawer.dart';
-import '../../controller/mobile/dashboard_Mobile_controller.dart';
-import '../../controller/mobile/cart_controller.dart'; // Menggunakan controller kamu
-import '../../widget/widget desktop/dashboard/product_list_desktop.dart';
-import '../../widget/widget desktop/dashboard/app_bar_desktop.dart';
-import '../../widget/widget desktop/dashboard/cart_panel_desktop.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
+import 'package:tugas_akhir/controller/dashboard_controller.dart';
+import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/product_list_desktop.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/app_bar_desktop.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/cart_panel.dart';
 
 class KasirDashboardDesktop extends StatelessWidget {
   KasirDashboardDesktop({super.key});
@@ -20,7 +20,6 @@ class KasirDashboardDesktop extends StatelessWidget {
       if (controller.categories.isEmpty) {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
       }
-
       return DefaultTabController(
         length: controller.categories.length,
         child: Scaffold(
@@ -28,22 +27,18 @@ class KasirDashboardDesktop extends StatelessWidget {
           drawer: const DesktopNavigationDrawer(),
           body: Row(
             children: [
-              /// BAGIAN KIRI: Katalog Produk (Dibuat lebih lebar)
               Expanded(
-                flex: 7, // Memberi ruang lebih besar untuk produk
+                flex: 7,
                 child: Column(
                   children: [
                     AppBarDesktop(
                       onMenuTap: () => scaffoldKey.currentState?.openDrawer(),
-                      
                     ),
-
-                    /// TAB KATEGORI: Bisa digeser ke kanan (Scrollable)
                     Container(
                       alignment: Alignment.centerLeft,
                       color: Colors.white,
                       child: TabBar(
-                        isScrollable: true, // SOLUSI: Agar jenis bisa digeser ke kanan
+                        isScrollable: true,
                         tabAlignment: TabAlignment.start,
                         indicatorColor: Colors.orange,
                         labelColor: Colors.orange,
@@ -56,8 +51,6 @@ class KasirDashboardDesktop extends StatelessWidget {
                             .toList(),
                       ),
                     ),
-
-                    /// LIST PRODUK: Ukuran tetap mungil
                     Expanded(
                       child: ProductListDesktop(
                         onProductTap: (product) => cartController.addToCart(product),
@@ -68,8 +61,8 @@ class KasirDashboardDesktop extends StatelessWidget {
               ),
               VerticalDivider(width: 1, color: Colors.grey[300]),
               const Expanded(
-                flex: 3, // Panel keranjang tetap di posisinya
-                child: CartPanelDesktop(),
+                flex: 3,
+                child: CartPanel(),
               ),
             ],
           ),

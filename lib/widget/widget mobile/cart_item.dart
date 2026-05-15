@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
-import 'package:intl/intl.dart'; // 1. Tambahkan import ini
+import 'package:intl/intl.dart';
 
 class CartTile extends StatelessWidget {
   final CartItem item;
@@ -18,14 +18,11 @@ class CartTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 2. Tambahkan formatter ribuan
     final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
       decimalDigits: 0,
     );
-
-    // Hitung nominal hemat berdasarkan persen
     double nominalHemat = (item.price * (item.discount / 100));
 
     return Container(
@@ -45,8 +42,6 @@ class CartTile extends StatelessWidget {
       child: Row(
         children: [
           const SizedBox(width: 12),
-
-          // Info Produk
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,12 +53,10 @@ class CartTile extends StatelessWidget {
                     fontSize: 16,
                   ),
                 ),
-                // 3. Gunakan currencyFormat untuk harga
                 Text(
                   currencyFormat.format(item.price),
                   style: TextStyle(color: Colors.grey[600], fontSize: 13),
                 ),
-                // 4. Gunakan currencyFormat untuk nominal hemat
                 if (item.discount > 0)
                   Text(
                     "Hemat ${currencyFormat.format(nominalHemat)}",

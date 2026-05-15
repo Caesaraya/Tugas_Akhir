@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/mobile/cart_controller.dart';
+import 'package:tugas_akhir/controller/cart_controller.dart';
 
 class PaymentMethodSection extends StatelessWidget {
   final CartController controller = Get.find();
@@ -15,18 +15,13 @@ class PaymentMethodSection extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         const SizedBox(height: 12),
-        
-        // Pilihan Cash
         Obx(() => _buildPaymentItem(
           title: "Tunai / Cash",
           icon: Icons.money_outlined,
           value: "cash",
           isSelected: controller.selectedPayment.value == "cash",
         )),
-
         const SizedBox(height: 8),
-
-        // Pilihan Virtual Account
         Obx(() => _buildPaymentItem(
           title: "Virtual Account",
           icon: Icons.account_balance_wallet_outlined,

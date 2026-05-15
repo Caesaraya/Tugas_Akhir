@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // WAJIB ADA untuk FilteringTextInputFormatter
+import 'package:flutter/services.dart';
 
 class KalkulatorInput extends StatelessWidget {
   final TextEditingController controller;
   final Function(String) onChanged;
-  // TAMBAHKAN DUA BARIS INI:
+
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
 
@@ -12,8 +12,8 @@ class KalkulatorInput extends StatelessWidget {
     super.key,
     required this.controller,
     required this.onChanged,
-    this.keyboardType, // Tambahkan di constructor
-    this.inputFormatters, // Tambahkan di constructor
+    this.keyboardType, 
+    this.inputFormatters,
   });
 
   @override
@@ -21,7 +21,6 @@ class KalkulatorInput extends StatelessWidget {
     return TextField(
       controller: controller,
       onChanged: onChanged,
-      // PASANG DI TEXTFIELD:
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       
@@ -35,7 +34,7 @@ class KalkulatorInput extends StatelessWidget {
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide.none,
         ),
-        prefixText: "Rp ", // Biar otomatis ada tulisan Rp di depan input
+        prefixText: "Rp ", 
         prefixStyle: const TextStyle(color: Colors.grey, fontSize: 20),
       ),
     );
