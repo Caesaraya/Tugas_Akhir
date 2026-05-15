@@ -1,10 +1,9 @@
-// lib/models/bahan_baku.dart
 class BahanBaku {
   final int? id;
   final String namaBahan;
   final String merk;
   final String satuan;
-  final int stok;
+  final double stok;
   final double hargaSatuan;
   final double? totalHarga;
   final DateTime? createdAt;
@@ -21,16 +20,30 @@ class BahanBaku {
   });
 
   factory BahanBaku.fromJson(Map<String, dynamic> json) {
+    // Fungsi kecil untuk mengubah apapun (String/int/double) menjadi double
+    double castToDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
     return BahanBaku(
-      id: _parseInt(json['id']),
-      namaBahan: json['nama_bahan']?.toString() ?? '',
-      merk: json['merk']?.toString() ?? '',
-      satuan: json['satuan']?.toString() ?? '',
-      stok: _parseInt(json['stok']) ?? 0,
-      hargaSatuan: _parseDouble(json['harga_satuan']) ?? 0.0,
-      totalHarga: _parseDouble(json['total_harga']),
+      id: json['id'],
+      namaBahan: json['nama_bahan'] ?? '',
+      merk: json['merk'] ?? '',
+      satuan: json['satuan'] ?? '',
+
+      // Gunakan fungsi bantuan tadi untuk semua field angka
+      stok: castToDouble(json['stok']),
+      hargaSatuan: castToDouble(json['harga_satuan']),
+      totalHarga: json['total_harga'] != null
+          ? castToDouble(json['total_harga'])
+          : null,
+
       createdAt: json['created_at'] != null
-          ? DateTime.tryParse(json['created_at'].toString())
+          ? DateTime.parse(json['created_at'])
           : null,
     );
   }
@@ -53,7 +66,7 @@ class BahanBaku {
     String? namaBahan,
     String? merk,
     String? satuan,
-    int? stok,
+    double? stok,
     double? hargaSatuan,
     double? totalHarga,
     DateTime? createdAt,
@@ -68,20 +81,5 @@ class BahanBaku {
       totalHarga: totalHarga ?? this.totalHarga,
       createdAt: createdAt ?? this.createdAt,
     );
-  }
-
-  // ── Safe parsers — menangani String, int, double, dan null sekaligus ───────
-  static int? _parseInt(dynamic value) {
-    if (value == null) return null;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    return int.tryParse(value.toString());
-  }
-
-  static double? _parseDouble(dynamic value) {
-    if (value == null) return null;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    return double.tryParse(value.toString());
   }
 }

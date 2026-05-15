@@ -23,7 +23,7 @@ class BahanBakuTable extends StatelessWidget {
               TableHeaderCell(title: "Nama Bahan", width: 150),
               TableHeaderCell(title: "Merk", width: 100),
               TableHeaderCell(title: "Satuan", width: 80),
-              TableHeaderCell(title: "Stok", width: 60),
+              TableHeaderCell(title: "Stok", width: 80),
               TableHeaderCell(title: "Harga Satuan", width: 120),
               // Tambahan Kolom Total Harga
               TableHeaderCell(title: "Total Harga", width: 120),
@@ -39,7 +39,7 @@ class BahanBakuTable extends StatelessWidget {
                 TableRowCell(text: item.namaBahan, width: 150),
                 TableRowCell(text: item.merk, width: 100),
                 TableRowCell(text: item.satuan, width: 80),
-                TableRowCell(text: item.stok.toString(), width: 60),
+                TableRowCell(text: item.stok.toString(), width: 80),
                 TableRowCell(
                   text: "Rp ${item.hargaSatuan.toStringAsFixed(0)}",
                   width: 120,

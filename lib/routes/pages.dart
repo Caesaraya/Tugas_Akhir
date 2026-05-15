@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/bindings/admin/admin_binding.dart';
 import 'package:tugas_akhir/page/admin/kelola_bahan_desktop.dart';
 import 'package:tugas_akhir/page/admin/kelola_produk_desktop.dart';
+import 'package:tugas_akhir/page/admin/mobile/kelola_bahan_baku_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/kelola_produk_mobile.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_dashboard_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_pembayaran_desktop.dart';
@@ -37,6 +38,11 @@ class AppPages {
     GetPage(
       name: AppRoutes.kelolaProdukMob,
       page: () => ProductListPage(),
+      binding: AdminBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.kelolaBahanMob,
+      page: () => BahanBakuListPage(),
       binding: AdminBinding(),
     ),
     //media query

@@ -5,6 +5,7 @@ class AppRoutes {
   static const String kelolabahandesk = '/kelolabahandesk';
   //mobile
   static const String kelolaProdukMob = '/kelolaProdukmobile';
+  static const String kelolaBahanMob = '/kelolaBahanMobile';
   //media query
   static const String mediaQuery = '/mediaQuery';
   //===KASIR===

@@ -98,7 +98,7 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
           namaBahan: namaC.text,
           merk: merkC.text,
           satuan: satuanC.text,
-          stok: int.parse(stokC.text),
+          stok: double.parse(stokC.text),
           hargaSatuan: double.parse(hargaC.text),
         ),
       );
@@ -144,7 +144,7 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
           namaBahan: namaC.text,
           merk: merkC.text,
           satuan: satuanC.text,
-          stok: int.parse(stokC.text),
+          stok: double.parse(stokC.text),
           hargaSatuan: double.parse(hargaC.text),
         ),
       );
