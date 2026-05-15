@@ -9,6 +9,7 @@ import 'package:tugas_akhir/page/desktop/Kasir_kelola_dashboard.dart';
 import 'package:tugas_akhir/page/desktop/transaction_detail_desktop.dart';
 import 'package:tugas_akhir/page/media_query.dart';
 import 'package:tugas_akhir/page/mobile/Kasir_dashboard_mobile.dart';
+import 'package:tugas_akhir/page/mobile/login_page.dart';
 import 'package:tugas_akhir/page/mobile/navbar_page.dart';
 import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
 import 'package:tugas_akhir/page/mobile/keranjang_mobile.dart';
@@ -38,6 +39,7 @@ class AppPages {
     GetPage(name: AppRoutes.kalkulator, page: () => KalkulatorCashPage()),
     GetPage(name: AppRoutes.sukses, page: () => SuksesMobilePage()),
     GetPage(name: AppRoutes.keranjang, page: () => KeranjangMobilePage()),
+    GetPage(name: AppRoutes.login, page: () => LoginPage()),
     GetPage(name: AppRoutes.navbar, page: () => NavbarPage()),
     GetPage(name: AppRoutes.riwayat, page: () => RiwayatMobile()),
     GetPage(name: AppRoutes.kelolaProduk, page: () => KelolaProdukPage()),

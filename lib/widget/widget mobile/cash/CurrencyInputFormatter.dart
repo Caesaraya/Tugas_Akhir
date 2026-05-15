@@ -4,14 +4,15 @@ import 'package:intl/intl.dart';
 class CurrencyInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     if (newValue.selection.baseOffset == 0) {
       return newValue;
     }
 
-
-    double value = double.parse(newValue.text.replaceAll(RegExp(r'[^0-9]'), ''));
-    
+    double value =
+        double.tryParse(newValue.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
     final formatter = NumberFormat.currency(
       locale: 'id_ID',
       symbol: '',

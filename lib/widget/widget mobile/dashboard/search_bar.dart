@@ -6,7 +6,7 @@ class MySearchBar extends StatelessWidget {
 
   const MySearchBar({
     super.key,
-    this.hintText = "Cari roti favoritmu...",
+    this.hintText = "Cari menu favoritmu...",
     this.onChanged,
   });
 
