@@ -1,29 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
-import 'package:tugas_akhir/models/bahan_baku.dart';
-import 'package:tugas_akhir/widget/admin/bahan/mobile/bahan_baku_item_card.dart';
-import 'package:tugas_akhir/widget/admin/bahan/mobile/bahan_baku_list_header.dart';
-import 'package:tugas_akhir/widget/admin/bahan/mobile/bahan_baku_pagination_footer.dart';
+import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
+import 'package:tugas_akhir/widget/admin/produk/mobile/product_item_card.dart';
+import 'package:tugas_akhir/widget/admin/produk/mobile/product_list_header.dart';
+import 'package:tugas_akhir/widget/admin/mobile_admin_drawer.dart';
+import 'package:tugas_akhir/widget/admin/produk/mobile/product_pagination_footer.dart';
 
-class BahanBakuListPage extends StatelessWidget {
-  final controller = Get.put(BahanBakuTableController());
+class ProductListPage extends StatelessWidget {
+  final controller = Get.find<ProductTableController>();
   final formatCurrency = NumberFormat.currency(
     locale: 'id',
     symbol: 'Rp ',
     decimalDigits: 0,
   );
 
-  BahanBakuListPage({super.key});
+  ProductListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const MobileAdminDrawer(),
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: const Text(
-          'Kelola Bahan Baku',
+          'Daftar Produk',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -32,7 +33,7 @@ class BahanBakuListPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          BahanBakuListHeader(controller: controller),
+          ProductListHeader(controller: controller),
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
@@ -40,9 +41,7 @@ class BahanBakuListPage extends StatelessWidget {
               }
 
               if (controller.paginatedList.isEmpty) {
-                return const Center(
-                  child: Text('Data bahan baku tidak ditemukan'),
-                );
+                return const Center(child: Text('Data produk tidak ditemukan'));
               }
 
               return RefreshIndicator(
@@ -53,9 +52,9 @@ class BahanBakuListPage extends StatelessWidget {
                   separatorBuilder: (context, index) =>
                       const SizedBox(height: 10),
                   itemBuilder: (context, index) {
-                    final item = controller.paginatedList[index];
-                    return BahanBakuItemCard(
-                      item: item,
+                    final product = controller.paginatedList[index];
+                    return ProductItemCard(
+                      product: product,
                       controller: controller,
                       formatCurrency: formatCurrency,
                     );
@@ -64,7 +63,7 @@ class BahanBakuListPage extends StatelessWidget {
               );
             }),
           ),
-          BahanBakuPaginationFooter(controller: controller),
+          ProductPaginationFooter(controller: controller),
         ],
       ),
     );

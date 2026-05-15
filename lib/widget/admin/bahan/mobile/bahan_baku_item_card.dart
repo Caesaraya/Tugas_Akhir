@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
 import 'package:tugas_akhir/models/bahan_baku.dart';
-import 'package:tugas_akhir/page/admin/mobile/bahan_baku_detail_page.dart';
+import 'package:tugas_akhir/page/admin/mobile/bahanbaku/bahan_baku_detail_page.dart';
 
 class BahanBakuItemCard extends StatelessWidget {
   final BahanBaku item;

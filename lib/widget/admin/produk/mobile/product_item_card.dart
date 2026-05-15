@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
 import 'package:tugas_akhir/models/product.dart';
-import 'package:tugas_akhir/page/admin/mobile/product_detail_page.dart';
+import 'package:tugas_akhir/page/admin/mobile/produk/product_detail_page.dart';
 
 class ProductItemCard extends StatelessWidget {
   final Product product;

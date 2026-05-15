@@ -1,10 +1,11 @@
 import 'package:get/get.dart';
 import 'package:tugas_akhir/bindings/admin/admin_binding.dart';
-import 'package:tugas_akhir/page/admin/kelola_bahan_desktop.dart';
-import 'package:tugas_akhir/page/admin/kelola_produk_desktop.dart';
-import 'package:tugas_akhir/page/admin/kelola_resep_desktop.dart';
-import 'package:tugas_akhir/page/admin/mobile/kelola_bahan_baku_mobile.dart';
-import 'package:tugas_akhir/page/admin/mobile/kelola_produk_mobile.dart';
+import 'package:tugas_akhir/page/admin/desktop/kelola_bahan_desktop.dart';
+import 'package:tugas_akhir/page/admin/desktop/kelola_produk_desktop.dart';
+import 'package:tugas_akhir/page/admin/desktop/kelola_resep_desktop.dart';
+import 'package:tugas_akhir/page/admin/mobile/bahanbaku/kelola_bahan_baku_mobile.dart';
+import 'package:tugas_akhir/page/admin/mobile/produk/kelola_produk_mobile.dart';
+import 'package:tugas_akhir/page/admin/mobile/resep/kelola_resep_mobile.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_dashboard_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_pembayaran_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_selesai_desktop.dart';
@@ -49,6 +50,11 @@ class AppPages {
     GetPage(
       name: AppRoutes.kelolaBahanMob,
       page: () => BahanBakuListPage(),
+      binding: AdminBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.kelolaResepMob,
+      page: () => KelolaResepMobilePage(),
       binding: AdminBinding(),
     ),
     //media query

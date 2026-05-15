@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/page/admin/mobile/resep/detail_resep_page.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/resep/detail_resep_dialog.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/resep/edit_resep_dialog.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/resep/insert_resep_dialogs.dart';
@@ -236,6 +237,7 @@ class ResepTableController extends BaseTableController<Resep> {
               backgroundColor: Colors.green,
               colorText: Colors.white,
             );
+            Get.back(); // Kembali ke halaman utama setelah hapus
             fetchData();
           }
         } catch (e) {
@@ -243,5 +245,21 @@ class ResepTableController extends BaseTableController<Resep> {
         }
       },
     );
+  }
+
+  void goToDetailMobile(Resep resep) async {
+    try {
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+      Resep detail = await ApiService.getDetailResep(resep.id!);
+      _updateItemInList(detail); // Update data tabel utama
+      Get.back();
+      Get.to(() => DetailResepMobilePage(resep: detail));
+    } catch (e) {
+      Get.back();
+      Get.snackbar("Error", e.toString());
+    }
   }
 }

@@ -25,7 +25,6 @@ class BahanBakuListHeader extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           ToolbarButton(
-            title: 'Tambah',
             icon: Icons.add,
             color: const Color(0xFF5D4037),
             onTap: () => Get.dialog(InsertBahanBakuDialog()),
