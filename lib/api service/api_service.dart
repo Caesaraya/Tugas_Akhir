@@ -896,95 +896,57 @@ class ApiService {
     }
   }
 
-  // ========================
-  // USER APIS
-  // ========================
-  static Future<List<User>> getAllUsers() async {
-    try {
-      final response = await http
-          .get(
-            Uri.parse("$baseUrl/api/users"),
-            headers: {"Connection": "close"},
-          )
-          .timeout(const Duration(seconds: 10));
+ // ========================
+// USER APIS
+// ========================
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return (data['data'] as List)
-            .map((e) => User.fromJson(e))
-            .toList();
-      } else {
-        throw Exception("Failed to load users");
-      }
-    } catch (e) {
-      throw Exception("Gagal memuat users: $e");
+// LOGIN
+static Future<Map<String, dynamic>> login({
+  required String email,
+  required String password,
+}) async {
+  try {
+    final response = await http
+        .post(
+          Uri.parse("$baseUrl/api/users/login"),
+          headers: headers,
+          body: jsonEncode({
+            "email": email,
+            "password": password,
+          }),
+        )
+        .timeout(const Duration(seconds: 10));
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data['success']) {
+      return data['user'];
+    } else {
+      throw Exception(data['message']);
     }
+  } catch (e) {
+    throw Exception("Login gagal: $e");
   }
+}
 
-  static Future<User> getUserById(int id) async {
-    try {
-      final response = await http
-          .get(
-            Uri.parse("$baseUrl/api/users/$id"),
-            headers: {"Connection": "close"},
-          )
-          .timeout(const Duration(seconds: 10));
+static Future<List<User>> getAllUsers() async {
+  try {
+    final response = await http
+        .get(
+          Uri.parse("$baseUrl/api/users"),
+          headers: {"Connection": "close"},
+        )
+        .timeout(const Duration(seconds: 10));
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return User.fromJson(data['data']);
-      } else {
-        throw Exception("Failed to load user");
-      }
-    } catch (e) {
-      throw Exception("Gagal memuat user: $e");
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return (data['data'] as List)
+          .map((e) => User.fromJson(e))
+          .toList();
+    } else {
+      throw Exception("Failed to load users");
     }
-  }
-
-  static Future<bool> createUser(User user) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse("$baseUrl/api/users"),
-            headers: headers,
-            body: jsonEncode(user.toJson()),
-          )
-          .timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal membuat user: $e");
-    }
-  }
-
-  static Future<bool> updateUser(User user) async {
-    try {
-      final response = await http
-          .put(
-            Uri.parse("$baseUrl/api/users/${user.id}"),
-            headers: headers,
-            body: jsonEncode(user.toJson()),
-          )
-          .timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal update user: $e");
-    }
-  }
-
-  static Future<bool> deleteUser(int id) async {
-    try {
-      final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/users/$id"),
-            headers: headers,
-          )
-          .timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal hapus user: $e");
-    }
+  } catch (e) {
+    throw Exception("Gagal memuat users: $e");
   }
 }

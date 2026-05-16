@@ -13,26 +13,43 @@ class User {
     this.password,
   });
 
+  // ========================
+  // FROM JSON
+  // ========================
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'],
-      name: json['name'] ?? '',
-      email: json['email'] ?? '',
-      role: json['role'] ?? '',
-      password: json['password'],
+      id: json['id'] is int
+          ? json['id']
+          : int.tryParse(json['id'].toString()),
+
+      name: json['name']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+
+      // otomatis uppercase biar aman
+      role: json['role']?.toString().toUpperCase() ?? '',
+
+      password: json['password']?.toString(),
     );
   }
 
+  // ========================
+  // TO JSON
+  // ========================
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'name': name,
       'email': email,
       'role': role,
+
+      // password hanya dikirim kalau ada
       if (password != null) 'password': password,
     };
   }
 
+  // ========================
+  // COPY WITH
+  // ========================
   User copyWith({
     int? id,
     String? name,
@@ -49,7 +66,20 @@ class User {
     );
   }
 
-  bool get isAdmin => role.toUpperCase() == 'ADMIN';
-  bool get isKasir => role.toUpperCase() == 'KASIR';
-  bool get isOwner => role.toUpperCase() == 'OWNER';
+  // ========================
+  // ROLE CHECK
+  // ========================
+  bool get isAdmin => role == "ADMIN";
+
+  bool get isKasir => role == "KASIR";
+
+  bool get isOwner => role == "OWNER";
+
+  // ========================
+  // DEBUG PRINT
+  // ========================
+  @override
+  String toString() {
+    return 'User(id: $id, name: $name, email: $email, role: $role)';
+  }
 }
