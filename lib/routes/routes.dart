@@ -1,4 +1,7 @@
 class AppRoutes {
+  //===LOGIN===
+  static const String login = '/login';
+  static const String logindesk = '/logindesktop';
   //===ADMIN===
   //desktop
   static const String kelolaprodukdesk = '/kelolaprodukdesk';
@@ -19,7 +22,6 @@ class AppRoutes {
   static const String sukses = '/sukses';
   static const String riwayat = '/riwayat';
   static const String kelolaProduk = '/kelolaProduk';
-  static const String login = '/login';
   //desktop
   static const String kasirboarddesk = '/KasirBoardDesk';
   static const String kasirbayar = '/KasirBayar';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tugas_akhir/page/desktop/Kasir_dashboard_desktop.dart';
-import 'package:tugas_akhir/page/mobile/navbar_page.dart';
+import 'package:tugas_akhir/page/login/desktop_login_page.dart';
+import 'package:tugas_akhir/page/login/login_page.dart';
 
 class DashboardWrapper extends StatelessWidget {
   const DashboardWrapper({super.key});
@@ -11,9 +11,9 @@ class DashboardWrapper extends StatelessWidget {
 
     // breakpoint: tablet dianggap desktop
     if (width >= 600) {
-      return KasirDashboardDesktop();
+      return DesktopLoginPage();
     } else {
-      return NavbarPage();
+      return LoginPage();
     }
   }
 }
