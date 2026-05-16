@@ -336,7 +336,7 @@ class CartController extends GetxController {
     await Printing.layoutPdf(onLayout: (format) async => pdf.save());
     clearCart();
 
-Get.offAllNamed(AppRoutes.kasirboarddesk);
+Get.offAllNamed(AppRoutes.navbar);
   }
 
   double get totalPrice {
