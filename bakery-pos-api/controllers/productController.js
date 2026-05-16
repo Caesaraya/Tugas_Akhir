@@ -64,7 +64,7 @@ function isDefaultImage(imageName) {
 // BUILD IMAGE URL
 // ========================
 function buildImageUrl(product) {
-  const baseUrl = "https://oafishly-noncontagious-cali.ngrok-free.dev";
+  const baseUrl = "https://porthole-popcorn-winter.ngrok-free.dev";
 
   if (!product.image) {
     return `${baseUrl}/images/${getImageByJenis(product.jenis)}`;

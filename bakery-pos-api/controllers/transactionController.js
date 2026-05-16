@@ -5,7 +5,7 @@ const db = require("../config/db");
 // ========================
 function buildImageUrl(image) {
   const baseUrl =
-    "https://oafishly-noncontagious-cali.ngrok-free.dev";
+    "https://porthole-popcorn-winter.ngrok-free.dev";
 
   if (!image) return null;
 
