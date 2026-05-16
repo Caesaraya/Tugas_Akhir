@@ -5,15 +5,15 @@ import 'package:tugas_akhir/widget/login/login_button.dart';
 import 'package:tugas_akhir/widget/login/login_divider.dart';
 import 'package:tugas_akhir/widget/login/login_email.dart';
 import 'package:tugas_akhir/widget/login/login_password.dart';
- 
+
 /// Pure UI — semua logika ada di [LoginController].
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
     final LoginController ctrl = Get.put(LoginController());
- 
+
     return Scaffold(
       backgroundColor: const Color(0xFFE89336),
       body: Column(
@@ -32,10 +32,7 @@ class LoginPage extends StatelessWidget {
             flex: 6,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 32,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(

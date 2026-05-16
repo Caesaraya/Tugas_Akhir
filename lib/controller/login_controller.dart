@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/api service/api_service.dart';
 import 'package:tugas_akhir/models/user.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 
@@ -10,23 +11,6 @@ class LoginController extends GetxController {
   var isPasswordVisible = false.obs;
   var isLoading = false.obs;
 
-  // Data tiruan / mock API sesuai dengan struktur Model User
-  static final User kasirUser = User(
-    id: 1,
-    name: 'Kasir',
-    email: 'kasir@gmail.com',
-    password: '123',
-    role: 'KASIR',
-  );
-
-  static final User adminUser = User(
-    id: 2,
-    name: 'Admin Toko',
-    email: 'admin@gmail.com',
-    password: '123',
-    role: 'ADMIN',
-  );
-
   final Rx<User?> currentUser = Rx<User?>(null);
 
   void togglePasswordVisibility() {
@@ -34,7 +18,7 @@ class LoginController extends GetxController {
   }
 
   // Menambahkan parameter isDesktop untuk membedakan asal login
-  void login({required bool isDesktop}) {
+  Future<void> login({required bool isDesktop}) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
@@ -45,21 +29,23 @@ class LoginController extends GetxController {
 
     isLoading.value = true;
 
-    // Simulasi hit API (Nanti bagian ini tinggal diganti dengan HTTP request/Dio)
-    Future.delayed(const Duration(milliseconds: 800), () {
-      isLoading.value = false;
+    try {
+      final responseData = await ApiService.login(
+        email: email,
+        password: password,
+      );
 
-      // Pengecekan data login disesuaikan dengan data model
-      if (email == kasirUser.email && password == kasirUser.password) {
-        currentUser.value = kasirUser;
-        _handleNavigation(kasirUser, isDesktop);
-      } else if (email == adminUser.email && password == adminUser.password) {
-        currentUser.value = adminUser;
-        _handleNavigation(adminUser, isDesktop);
-      } else {
-        showError('Email atau password salah');
-      }
-    });
+      final user = User.fromJson(responseData);
+      currentUser.value = user;
+      _handleNavigation(user, isDesktop);
+    } catch (error) {
+      final message = error is Exception
+          ? error.toString().replaceFirst('Exception: ', '')
+          : 'Login gagal. Silakan coba lagi.';
+      showError(message);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Fungsi internal untuk mengarahkan navigasi berdasarkan user dan platform

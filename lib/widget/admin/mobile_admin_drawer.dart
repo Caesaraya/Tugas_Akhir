@@ -52,6 +52,7 @@ class MobileAdminDrawer extends StatelessWidget {
             routeName: AppRoutes.kelolaResepMob,
             selected: currentRoute == AppRoutes.kelolaResepMob,
           ),
+          const Divider(),
         ],
       ),
     );

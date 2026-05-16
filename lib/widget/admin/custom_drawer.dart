@@ -52,6 +52,7 @@ class AppDrawer extends StatelessWidget {
                 navC.changePage(2, AppRoutes.kelolaresepdesk);
               },
             ),
+            const Divider(),
           ],
         ),
       ),

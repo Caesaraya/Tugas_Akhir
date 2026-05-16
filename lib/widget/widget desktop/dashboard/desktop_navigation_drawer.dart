@@ -54,7 +54,7 @@ class DesktopNavigationDrawer extends StatelessWidget {
             label: 'Riwayat',
             route: AppRoutes.riwayatdesk,
           ),
-       
+          const Divider(),
         ],
       ),
     );
