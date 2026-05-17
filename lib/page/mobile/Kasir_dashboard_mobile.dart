@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/dashboard_controller.dart';
+import 'package:tugas_akhir/widget/widget mobile/kasir_mobile_drawer.dart';
 import 'package:tugas_akhir/widget/widget%20mobile/dashboard/search_bar.dart';
 import 'package:tugas_akhir/widget/widget%20mobile/dashboard/section_header.dart';
 import 'package:tugas_akhir/widget/widget%20mobile/dashboard/dashboard_produk_grid.dart';
@@ -12,17 +13,19 @@ class KasirDashboardMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(DashboardController());
+    final ctrl = Get.find<DashboardController>();
 
     return Obx(
       () => DefaultTabController(
         length: ctrl.categories.length,
         child: Scaffold(
+          drawer: const KasirMobileDrawer(),
           backgroundColor: const Color(0xFFFDFBFA),
           appBar: AppBar(
-            title: const Text('Dashboard Kasir'),
-            backgroundColor: const Color(0xFFE89336),
+            backgroundColor: Colors.transparent,
             elevation: 0,
+            centerTitle: false,
+            iconTheme: const IconThemeData(color: Colors.black87),
           ),
           body: SafeArea(
             child: RefreshIndicator(

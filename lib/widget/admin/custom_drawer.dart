@@ -3,59 +3,101 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import '../../controller/admin/navigation_controller.dart';
 
-class AppDrawer extends StatelessWidget {
-  AppDrawer({super.key});
+class AdminSidebar extends StatelessWidget {
+  AdminSidebar({super.key});
 
   final NavigationController navC = Get.find();
+  final Color accentColor = const Color(0xFF26C6DA);
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
+    return Container(
+      width: 280,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          right: BorderSide(color: Colors.grey.shade300, width: 1),
+        ),
+      ),
       child: Obx(
-        () => ListView(
-          padding: EdgeInsets.zero,
+        () => Column(
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text(
-                "Admin Panel 🚀",
-                style: TextStyle(fontSize: 24, color: Colors.white),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              decoration: BoxDecoration(color: accentColor),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Rumah Lezzaaa',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Admin Panel 🚀',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ],
               ),
             ),
-
-            // Menu Kelola Produk
-            ListTile(
-              leading: const Icon(Icons.shopping_bag),
-              title: const Text("Kelola Produk"),
-              selected: navC.selectedIndex.value == 0,
-              onTap: () {
-                navC.changePage(0, AppRoutes.kelolaprodukdesk);
-              },
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  _buildSidebarItem(
+                    icon: Icons.shopping_bag,
+                    title: 'Kelola Produk',
+                    selected: navC.selectedIndex.value == 0,
+                    onTap: () => navC.changePage(0, AppRoutes.kelolaprodukdesk),
+                  ),
+                  _buildSidebarItem(
+                    icon: Icons.inventory,
+                    title: 'Kelola Bahan',
+                    selected: navC.selectedIndex.value == 1,
+                    onTap: () => navC.changePage(1, AppRoutes.kelolabahandesk),
+                  ),
+                  _buildSidebarItem(
+                    icon: Icons.restaurant_menu,
+                    title: 'Kelola Resep',
+                    selected: navC.selectedIndex.value == 2,
+                    onTap: () => navC.changePage(2, AppRoutes.kelolaresepdesk),
+                  ),
+                  const Divider(),
+                ],
+              ),
             ),
-
-            // Menu Kelola Bahan
-            ListTile(
-              leading: const Icon(Icons.inventory),
-              title: const Text("Kelola Bahan"),
-              selected: navC.selectedIndex.value == 1,
-              onTap: () {
-                navC.changePage(1, AppRoutes.kelolabahandesk);
-              },
-            ),
-
-            // Menu Kelola Resep
-            ListTile(
-              leading: const Icon(Icons.restaurant_menu),
-              title: const Text("Kelola Resep"),
-              selected: navC.selectedIndex.value == 2,
-              onTap: () {
-                navC.changePage(2, AppRoutes.kelolaresepdesk);
-              },
-            ),
-            const Divider(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSidebarItem({
+    required IconData icon,
+    required String title,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: selected ? const Color(0xFF26C6DA) : Colors.grey[700],
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+          color: selected ? const Color(0xFF26C6DA) : Colors.grey[900],
+        ),
+      ),
+      selected: selected,
+      selectedTileColor: const Color(0xFFE1F5FE),
+      onTap: onTap,
     );
   }
 }

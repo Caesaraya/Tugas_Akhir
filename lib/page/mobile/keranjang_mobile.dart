@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/widget/widget mobile/kasir_mobile_drawer.dart';
 import 'package:tugas_akhir/widget/widget mobile/payment_method.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
@@ -8,7 +9,7 @@ import 'package:tugas_akhir/widget/widget mobile/delete_validation.dart';
 import 'package:intl/intl.dart';
 
 class KeranjangMobilePage extends StatelessWidget {
-  final CartController cartController = Get.put(CartController());
+  final CartController cartController = Get.find<CartController>();
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
@@ -17,6 +18,7 @@ class KeranjangMobilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const KasirMobileDrawer(),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(

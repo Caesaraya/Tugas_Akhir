@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/bahan/edit_bahan_baku_dialog.dart';
 
 import '../../api service/api_service.dart';
@@ -9,6 +10,20 @@ import '../../controller/admin/table/base_table_controller.dart';
 class BahanBakuTableController extends BaseTableController<BahanBaku> {
   BahanBakuTableController() {
     itemsPerPage = 10;
+    // Format harga saat input
+    hargaC.addListener(() {
+      final raw = hargaC.text;
+      final clean = raw.replaceAll(RegExp(r'[^0-9]'), '');
+      if (clean.isEmpty) return;
+      final value = double.tryParse(clean) ?? 0;
+      final formatted = currencyFormatter.format(value);
+      if (formatted != raw) {
+        hargaC.value = TextEditingValue(
+          text: formatted,
+          selection: TextSelection.collapsed(offset: formatted.length),
+        );
+      }
+    });
   }
 
   final namaC = TextEditingController();
@@ -16,6 +31,11 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
   final stokC = TextEditingController();
   final satuanC = TextEditingController();
   final hargaC = TextEditingController();
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   // State untuk sort bolak-balik
   var isAscending = true.obs;
@@ -99,7 +119,9 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
           merk: merkC.text,
           satuan: satuanC.text,
           stok: double.parse(stokC.text),
-          hargaSatuan: double.parse(hargaC.text),
+          hargaSatuan: double.parse(
+            hargaC.text.replaceAll(RegExp(r'[^0-9]'), ''),
+          ),
         ),
       );
 
@@ -130,7 +152,7 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     merkC.text = bahan.merk;
     satuanC.text = bahan.satuan;
     stokC.text = bahan.stok.toString();
-    hargaC.text = bahan.hargaSatuan.toString();
+    hargaC.text = currencyFormatter.format(bahan.hargaSatuan);
 
     // Panggil dialog (UI dibuat terpisah seperti Insert dialog)
     Get.dialog(EditBahanBakuDialog(bahan: bahan));
@@ -145,7 +167,9 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
           merk: merkC.text,
           satuan: satuanC.text,
           stok: double.parse(stokC.text),
-          hargaSatuan: double.parse(hargaC.text),
+          hargaSatuan: double.parse(
+            hargaC.text.replaceAll(RegExp(r'[^0-9]'), ''),
+          ),
         ),
       );
 

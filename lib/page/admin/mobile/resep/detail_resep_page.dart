@@ -1,6 +1,7 @@
 // lib/views/mobile/detail_resep_mobile_page.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/utils/currency.dart';
 import 'package:tugas_akhir/controller/admin/resep_table_controller.dart';
 import 'package:tugas_akhir/models/resep.dart';
 import 'resep_form_mobile_page.dart';
@@ -65,7 +66,7 @@ class DetailResepMobilePage extends StatelessWidget {
                     title: Text(b.namaBahan ?? 'Bahan #${b.bahanId}'),
                     subtitle: Text("${b.merk} • ${b.jumlahBahan} ${b.satuan}"),
                     trailing: Text(
-                      "Rp ${b.totalHargaBahan?.toStringAsFixed(0)}",
+                      formatRupiah(b.totalHargaBahan ?? 0),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.green,

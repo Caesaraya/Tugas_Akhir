@@ -9,7 +9,7 @@ import 'package:tugas_akhir/widget/admin/mobile_admin_drawer.dart';
 import 'package:tugas_akhir/widget/admin/bahan/mobile/bahan_baku_pagination_footer.dart';
 
 class BahanBakuListPage extends StatelessWidget {
-  final controller = Get.put(BahanBakuTableController());
+  final controller = Get.find<BahanBakuTableController>();
   final formatCurrency = NumberFormat.currency(
     locale: 'id',
     symbol: 'Rp ',

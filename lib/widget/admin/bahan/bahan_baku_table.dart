@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
 import 'package:tugas_akhir/widget/admin/table/table_action_button.dart';
 import 'package:tugas_akhir/widget/admin/table/table_header_cell.dart';
@@ -10,6 +11,11 @@ class BahanBakuTable extends StatelessWidget {
   BahanBakuTable({super.key});
 
   final ctrl = Get.put(BahanBakuTableController());
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -41,15 +47,14 @@ class BahanBakuTable extends StatelessWidget {
                 TableRowCell(text: item.satuan, width: 80),
                 TableRowCell(text: item.stok.toString(), width: 80),
                 TableRowCell(
-                  text: "Rp ${item.hargaSatuan.toStringAsFixed(0)}",
+                  text: currencyFormatter.format(item.hargaSatuan),
                   width: 120,
                 ),
 
                 // Menampilkan Total Harga (Mengambil dari model)
                 TableRowCell(
-                  text: "Rp ${item.totalHarga?.toStringAsFixed(0) ?? '0'}",
+                  text: currencyFormatter.format(item.totalHarga ?? 0),
                   width: 120,
-                  // Memberi warna berbeda agar menonjol
                 ),
 
                 TableRowCell(

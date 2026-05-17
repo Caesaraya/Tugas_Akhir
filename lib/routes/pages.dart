@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:tugas_akhir/bindings/admin/admin_binding.dart';
+import 'package:tugas_akhir/bindings/bindings.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_bahan_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_produk_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_resep_desktop.dart';
@@ -32,64 +32,119 @@ class AppPages {
     GetPage(
       name: AppRoutes.kelolaprodukdesk,
       page: () => KelolaProdukDeskPage(),
-      binding: AdminBinding(),
+      binding: AppBinding(),
     ),
     GetPage(
       name: AppRoutes.kelolabahandesk,
       page: () => BahanBakuScreen(),
-      binding: AdminBinding(),
+      binding: AppBinding(),
     ),
     GetPage(
       name: AppRoutes.kelolaresepdesk,
       page: () => KelolaResepDeskPage(),
-      binding: AdminBinding(),
+      binding: AppBinding(),
     ),
     //mobile
     GetPage(
       name: AppRoutes.kelolaProdukMob,
       page: () => ProductListPage(),
-      binding: AdminBinding(),
+      binding: AppBinding(),
     ),
     GetPage(
       name: AppRoutes.kelolaBahanMob,
       page: () => BahanBakuListPage(),
-      binding: AdminBinding(),
+      binding: AppBinding(),
     ),
     GetPage(
       name: AppRoutes.kelolaResepMob,
       page: () => KelolaResepMobilePage(),
-      binding: AdminBinding(),
+      binding: AppBinding(),
     ),
     //media query
-    GetPage(name: AppRoutes.mediaQuery, page: () => DashboardWrapper()),
+    GetPage(
+      name: AppRoutes.mediaQuery,
+      page: () => DashboardWrapper(),
+      binding: AppBinding(),
+    ),
     //===KASIR===
     //mobile
     GetPage(
       name: AppRoutes.dashboardMobile,
       page: () => KasirDashboardMobile(),
+      binding: AppBinding(),
     ),
-    GetPage(name: AppRoutes.kalkulator, page: () => KalkulatorCashPage()),
-    GetPage(name: AppRoutes.sukses, page: () => SuksesMobilePage()),
-    GetPage(name: AppRoutes.keranjang, page: () => KeranjangMobilePage()),
-    GetPage(name: AppRoutes.navbar, page: () => NavbarPage()),
-    GetPage(name: AppRoutes.riwayat, page: () => RiwayatMobile()),
-    GetPage(name: AppRoutes.kelolaProduk, page: () => KelolaProdukPage()),
+    GetPage(
+      name: AppRoutes.kalkulator,
+      page: () => KalkulatorCashPage(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.sukses,
+      page: () => SuksesMobilePage(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.keranjang,
+      page: () => KeranjangMobilePage(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.navbar,
+      page: () => NavbarPage(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.riwayat,
+      page: () => RiwayatMobile(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.kelolaProduk,
+      page: () => KelolaProdukPage(),
+      binding: AppBinding(),
+    ),
     //desktop
     //kasir
     GetPage(
       name: AppRoutes.kasirboarddesk,
       page: () => KasirDashboardDesktop(),
+      binding: AppBinding(),
     ),
-    GetPage(name: AppRoutes.kasirbayar, page: () => KasirPembayaranDesktop()),
-    GetPage(name: AppRoutes.kasirprint, page: () => KasirSelesaiDesktop()),
-    GetPage(name: AppRoutes.transactionDetail, page: () => DetailScreen()),
-    GetPage(name: AppRoutes.riwayatdesk, page: () => KasirRiwayatDesktop()),
+    GetPage(
+      name: AppRoutes.kasirbayar,
+      page: () => KasirPembayaranDesktop(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.kasirprint,
+      page: () => KasirSelesaiDesktop(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.transactionDetail,
+      page: () => DetailScreen(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.riwayatdesk,
+      page: () => KasirRiwayatDesktop(),
+      binding: AppBinding(),
+    ),
     GetPage(
       name: AppRoutes.kelolaprodukdashboard,
       page: () => KasirKelolaDashboard(),
+      binding: AppBinding(),
     ),
     //===LOGIN===
-    GetPage(name: AppRoutes.login, page: () => LoginPage()),
-    GetPage(name: AppRoutes.logindesk, page: () => DesktopLoginPage()),
+    GetPage(
+      name: AppRoutes.login,
+      page: () => LoginPage(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.logindesk,
+      page: () => DesktopLoginPage(),
+      binding: AppBinding(),
+    ),
   ];
 }

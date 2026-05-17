@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/kelola_controller.dart';
+import 'package:tugas_akhir/widget/widget mobile/kasir_mobile_drawer.dart';
 
 class KelolaProdukPage extends StatelessWidget {
-  final KelolaProdukController controller = Get.put(KelolaProdukController());
+  final KelolaProdukController controller = Get.find<KelolaProdukController>();
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
@@ -13,6 +14,7 @@ class KelolaProdukPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const KasirMobileDrawer(),
       backgroundColor: const Color(0xFFF8F5F2),
       appBar: AppBar(
         title: const Text(
@@ -137,8 +139,7 @@ class KelolaProdukPage extends StatelessWidget {
                                     produk.priceAfterDiscount,
                                   ),
                                   style: const TextStyle(
-                                    color: Colors
-                                        .green,
+                                    color: Colors.green,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
                                   ),

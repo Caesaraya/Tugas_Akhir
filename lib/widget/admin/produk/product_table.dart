@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:tugas_akhir/widget/admin/table/table_header_cell.dart';
 import 'package:tugas_akhir/widget/admin/table/table_pagination.dart';
 import 'package:tugas_akhir/widget/admin/table/table_row_cell.dart';
@@ -14,6 +15,11 @@ class ProductTable extends StatelessWidget {
   ProductTable({super.key});
 
   final ctrl = Get.put(ProductTableController());
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -44,9 +50,15 @@ class ProductTable extends StatelessWidget {
               children: [
                 TableRowCell(text: item.id.toString(), width: 60),
                 TableRowCell(text: item.name, width: 150),
-                TableRowCell(text: 'Rp ${item.price}', width: 100),
+                TableRowCell(
+                  text: currencyFormatter.format(item.price),
+                  width: 100,
+                ),
                 TableRowCell(text: '${item.discount}%', width: 60),
-                TableRowCell(text: 'Rp ${item.priceAfterDiscount}', width: 100),
+                TableRowCell(
+                  text: currencyFormatter.format(item.priceAfterDiscount),
+                  width: 100,
+                ),
                 TableRowCell(text: item.stock.toString(), width: 60),
                 TableRowCell(text: item.jenis, width: 90),
                 TableRowCell(text: item.satuan, width: 60),

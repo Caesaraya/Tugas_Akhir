@@ -10,7 +10,7 @@ import 'package:tugas_akhir/widget/widget desktop/dashboard/cart_panel.dart';
 class KasirDashboardDesktop extends StatelessWidget {
   KasirDashboardDesktop({super.key});
 
-  final DashboardController controller = Get.put(DashboardController());
+  final DashboardController controller = Get.find<DashboardController>();
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final CartController cartController = Get.find<CartController>();
 
@@ -44,7 +44,9 @@ class KasirDashboardDesktop extends StatelessWidget {
                         labelColor: Colors.orange,
                         unselectedLabelColor: Colors.grey,
                         onTap: (index) {
-                          controller.applyFilter(category: controller.categories[index]);
+                          controller.applyFilter(
+                            category: controller.categories[index],
+                          );
                         },
                         tabs: controller.categories
                             .map((jenis) => Tab(text: jenis.toUpperCase()))
@@ -53,17 +55,15 @@ class KasirDashboardDesktop extends StatelessWidget {
                     ),
                     Expanded(
                       child: ProductListDesktop(
-                        onProductTap: (product) => cartController.addToCart(product),
+                        onProductTap: (product) =>
+                            cartController.addToCart(product),
                       ),
                     ),
                   ],
                 ),
               ),
               VerticalDivider(width: 1, color: Colors.grey[300]),
-              const Expanded(
-                flex: 3,
-                child: CartPanel(),
-              ),
+              const Expanded(flex: 3, child: CartPanel()),
             ],
           ),
         ),

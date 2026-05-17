@@ -4,13 +4,13 @@ import 'package:tugas_akhir/controller/desktop/detail_transaction_controller.dar
 import 'package:tugas_akhir/widget/widget desktop/detail_transaction/product_tile.dart';
 import 'package:tugas_akhir/widget/widget desktop/detail_transaction/row.dart';
 
- 
 class DetailScreen extends StatelessWidget {
   const DetailScreen({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
-    final TransactionDetailController detailController = Get.put(TransactionDetailController());
+    final TransactionDetailController detailController =
+        Get.find<TransactionDetailController>();
     return Scaffold(
       appBar: AppBar(title: const Text('Detail Transaksi')),
       body: Padding(
@@ -34,13 +34,20 @@ class DetailScreen extends StatelessWidget {
                       itemCount: detailController.items.length,
                       itemBuilder: (context, index) {
                         final item = detailController.items[index];
-                        return ProductTile(transactionDetailController: detailController, item: item);
+                        return ProductTile(
+                          transactionDetailController: detailController,
+                          item: item,
+                        );
                       },
                     ),
             ),
             const Divider(thickness: 1.5),
             const SizedBox(height: 8),
-            SummaryRow(label: 'Total:', value: detailController.totalFormatted, isBold: true),
+            SummaryRow(
+              label: 'Total:',
+              value: detailController.totalFormatted,
+              isBold: true,
+            ),
             SummaryRow(label: 'Bayar:', value: detailController.bayarFormatted),
             SummaryRow(
               label: 'Kembalian:',

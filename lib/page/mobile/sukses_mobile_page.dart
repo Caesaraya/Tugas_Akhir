@@ -5,7 +5,7 @@ import 'package:tugas_akhir/widget/widget mobile/success_widgets.dart';
 import 'package:intl/intl.dart';
 
 class SuksesMobilePage extends StatelessWidget {
-  final CartController controller = Get.put(CartController());
+  final CartController controller = Get.find<CartController>();
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',

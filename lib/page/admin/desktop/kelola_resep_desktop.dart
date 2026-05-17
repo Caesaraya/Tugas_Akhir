@@ -21,55 +21,60 @@ class KelolaResepDeskPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: AppDrawer(), // Sesuai dengan referensi file
-      appBar: AppBar(
-        title: const Text('Kelola Resep - Rumah Lezzaaa'),
-        backgroundColor: const Color(0xFF26C6DA), // Sesuai file
-      ),
-      backgroundColor: const Color(0xFFF4F6F9), // Sesuai file
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                // Search bar untuk mencari resep
-                TableSearchBar(controller: ctrl.searchC, hint: 'Cari resep...'),
-                const SizedBox(width: 20),
-
-                // Tombol Tambah Resep
-                ToolbarButton(
-                  title: 'Insert Resep',
-                  icon: Icons.add,
-                  color: Colors.cyan,
-                  onTap: () {
-                    Get.dialog(InsertResepDialog()); // Buat dialog ini nantinya
-                  },
-                ),
-                const SizedBox(width: 12),
-
-                // Tombol Refresh Data
-                ToolbarButton(
-                  title: "Refresh",
-                  icon: Icons.refresh,
-                  color: Colors.green,
-                  onTap: () {
-                    ctrl.fetchData();
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Memanggil ResepTable yang baru dibuat
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: ResepTable(),
+      backgroundColor: const Color(0xFFF4F6F9),
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AdminSidebar(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      // Search bar untuk mencari resep
+                      TableSearchBar(
+                        controller: ctrl.searchC,
+                        hint: 'Cari resep...',
+                      ),
+                      const SizedBox(width: 20),
+                      // Tombol Tambah Resep
+                      ToolbarButton(
+                        title: 'Insert Resep',
+                        icon: Icons.add,
+                        color: Colors.cyan,
+                        onTap: () {
+                          Get.dialog(
+                            InsertResepDialog(),
+                          ); // Buat dialog ini nantinya
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      // Tombol Refresh Data
+                      ToolbarButton(
+                        title: "Refresh",
+                        icon: Icons.refresh,
+                        color: Colors.green,
+                        onTap: () {
+                          ctrl.fetchData();
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Memanggil ResepTable yang baru dibuat
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: ResepTable(),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

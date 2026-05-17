@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/product/edit_product_dialog.dart';
@@ -13,6 +14,20 @@ import '../../controller/admin/table/base_table_controller.dart';
 class ProductTableController extends BaseTableController<Product> {
   ProductTableController() {
     itemsPerPage = 35;
+    // Format harga saat user mengetik di field harga
+    priceC.addListener(() {
+      final raw = priceC.text;
+      final clean = raw.replaceAll(RegExp(r'[^0-9]'), '');
+      if (clean.isEmpty) return;
+      final value = int.tryParse(clean) ?? 0;
+      final formatted = currencyFormatter.format(value);
+      if (formatted != raw) {
+        priceC.value = TextEditingValue(
+          text: formatted,
+          selection: TextSelection.collapsed(offset: formatted.length),
+        );
+      }
+    });
   }
 
   final nameC = TextEditingController();
@@ -25,6 +40,11 @@ class ProductTableController extends BaseTableController<Product> {
   final Rx<File?> selectedImage = Rx<File?>(null);
 
   final picker = ImagePicker();
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   @override
   Future<void> fetchData() async {
@@ -119,7 +139,7 @@ class ProductTableController extends BaseTableController<Product> {
 
       await ApiService.createProductWithImage(
         name: nameC.text,
-        price: int.parse(priceC.text),
+        price: int.parse(priceC.text.replaceAll(RegExp(r'[^0-9]'), '')),
         discount: int.parse(discountC.text),
         stock: int.parse(stockC.text),
         jenis: jenisC.text,
@@ -156,7 +176,7 @@ class ProductTableController extends BaseTableController<Product> {
   // Method untuk membuka dialog dan mengisi form dengan data yang sudah ada
   void openEditDialog(Product product) {
     nameC.text = product.name;
-    priceC.text = product.price.toString();
+    priceC.text = currencyFormatter.format(product.price);
     discountC.text = product.discount.toString();
     stockC.text = product.stock.toString();
     jenisC.text = product.jenis;
@@ -178,7 +198,7 @@ class ProductTableController extends BaseTableController<Product> {
       await ApiService.updateProductWithImage(
         id: product.id,
         name: nameC.text,
-        price: int.parse(priceC.text),
+        price: int.parse(priceC.text.replaceAll(RegExp(r'[^0-9]'), '')),
         discount: int.parse(discountC.text),
         stock: int.parse(stockC.text),
         jenis: jenisC.text,

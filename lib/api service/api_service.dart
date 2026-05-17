@@ -14,7 +14,7 @@ import 'package:tugas_akhir/models/user.dart';
 
 class ApiService {
   static const String baseUrl =
-      "https://oafishly-noncontagious-cali.ngrok-free.dev";
+      "https://porthole-popcorn-winter.ngrok-free.dev";
 
   // ========================
   // COMMON HEADERS

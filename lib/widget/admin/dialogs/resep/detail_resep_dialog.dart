@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../models/resep.dart';
+import 'package:tugas_akhir/utils/currency.dart';
 
 class DetailResepDialog extends StatelessWidget {
   final Resep resep;
@@ -171,7 +172,7 @@ class DetailResepDialog extends StatelessWidget {
                                   DataCell(Text(item.satuan ?? '-')),
                                   DataCell(
                                     Text(
-                                      'Rp ${item.totalHargaBahan?.toStringAsFixed(0) ?? "0"}',
+                                      formatRupiah(item.totalHargaBahan ?? 0),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w500,
                                       ),
