@@ -85,17 +85,24 @@ class ReceiptActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TAMBAHKAN WIDGET EXPANDED DI SINI SEBAGAI PEMBUNGKUS UTAMA
     return Expanded(
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(borderRadius),
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
           ),
         ),
-        child: Text(label, style: TextStyle(color: textColor)),
       ),
     );
   }

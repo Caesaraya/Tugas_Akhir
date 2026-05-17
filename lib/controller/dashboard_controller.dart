@@ -8,16 +8,14 @@ class DashboardController extends GetxController {
   var productList = <Product>[].obs;
   var filteredList = <Product>[].obs;
 
-  // ─── Pagination ───────────────────────────────────────────────────────────
   var displayedList = <Product>[].obs;
   static const int _pageSize = 6;
-  var _currentPage = 1;
+  var currentPage = 1;
 
   var categories = <String>[].obs;
   var selectedCategory = 'Semua'.obs;
   var lastQuery = ''.obs;
 
-  // ─── Apakah masih ada produk yang belum dimuat ────────────────────────────
   bool get hasMore => displayedList.length < filteredList.length;
 
   @override
@@ -25,8 +23,6 @@ class DashboardController extends GetxController {
     fetchProducts();
     super.onInit();
   }
-
-  // ─── Fetch dari API ───────────────────────────────────────────────────────
   Future<void> fetchProducts() async {
     try {
       isLoading(true);
@@ -68,7 +64,6 @@ class DashboardController extends GetxController {
     }
   }
 
-  // ─── Filter + reset pagination ────────────────────────────────────────────
   void applyFilter({String? query, String? category}) {
     if (query != null) lastQuery.value = query;
     if (category != null) selectedCategory.value = category;
@@ -87,21 +82,18 @@ class DashboardController extends GetxController {
 
     filteredList.assignAll(temp);
 
-    // Reset pagination setiap kali filter berubah
-    _currentPage = 1;
+    currentPage = 1;
     displayedList.assignAll(filteredList.take(_pageSize).toList());
   }
 
-  // ─── Muat 6 produk berikutnya ─────────────────────────────────────────────
   Future<void> loadMore() async {
     if (!hasMore || isLoadingMore.value) return;
 
     isLoadingMore(true);
 
-    // Delay kecil agar loading indicator sempat tampil
     await Future.delayed(const Duration(milliseconds: 400));
 
-    _currentPage++;
+    currentPage++;
     final nextItems = filteredList
         .skip(displayedList.length)
         .take(_pageSize)
@@ -111,7 +103,6 @@ class DashboardController extends GetxController {
     isLoadingMore(false);
   }
 
-  // ─── Helper harga akhir ───────────────────────────────────────────────────
   double getFinalPrice(Product product) =>
       product.priceAfterDiscount.toDouble();
 }

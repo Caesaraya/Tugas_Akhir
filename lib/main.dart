@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:tugas_akhir/bindings/bindings.dart';
 import 'package:tugas_akhir/bindings/cart_binding.dart';
 import 'package:tugas_akhir/routes/pages.dart';
 import 'package:tugas_akhir/routes/routes.dart';
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF4F6F9),
         appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF26C6DA)),
       ),
-      initialBinding: CartBinding(),
+      initialBinding: AppBinding(), // <<< PASANG DI SINI SECARA GLOBAL
       initialRoute: AppRoutes.mediaQuery,
       getPages: AppPages.pages,
     );

@@ -6,13 +6,15 @@ import 'package:tugas_akhir/widget/widget desktop/detail_transaction/product_til
 import 'package:tugas_akhir/widget/widget desktop/detail_transaction/row.dart';
 import 'package:tugas_akhir/widget/widget desktop/dashboard/komponen_nota.dart';
 
-class DetailScreen extends StatelessWidget {
-  const DetailScreen({super.key});
+class TransactionDetailMobile extends StatelessWidget {
+  const TransactionDetailMobile({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final TransactionDetailController detailController =
-        Get.find<TransactionDetailController>();
+    final TransactionDetailController detailController = Get.put(
+      TransactionDetailController(),
+      tag: 'mobile',
+    );
     final CartController cartController = Get.find<CartController>();
 
     return Scaffold(
@@ -59,12 +61,10 @@ class DetailScreen extends StatelessWidget {
               color: Colors.green,
             ),
             const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ReceiptActionButton(
-                label: 'Print Nota',
-                onPressed: () => cartController.printFromDetail(detailController),
-              ),
+
+            ReceiptActionButton(
+              label: 'Print Nota',
+              onPressed: () => cartController.printFromDetail(detailController),
             ),
           ],
         ),

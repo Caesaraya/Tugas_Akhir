@@ -13,7 +13,6 @@ class KelolaProdukController extends GetxController {
   var isLoading = false.obs;
   var searchQuery = "".obs;
 
-  // Image Picker & File State
   final ImagePicker _picker = ImagePicker();
   var selectedImage = Rx<File?>(null);
 
@@ -132,42 +131,6 @@ class KelolaProdukController extends GetxController {
                 ),
               ),
 
-              // --- PREVIEW GAMBAR ---
-              Obx(
-                () => GestureDetector(
-                  onTap: pickImage,
-                  child: Container(
-                    height: 120,
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 15),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey[400]!),
-                    ),
-                    child: selectedImage.value != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.file(
-                              selectedImage.value!,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : (product.image.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    product.image,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (c, e, s) =>
-                                        const Icon(Icons.image, size: 50),
-                                  ),
-                                )
-                              : const Icon(Icons.add_a_photo, size: 50)),
-                  ),
-                ),
-              ),
-
               buildTextField(nameController, "Nama Produk"),
               const SizedBox(height: 12),
               buildTextField(
@@ -194,7 +157,6 @@ class KelolaProdukController extends GetxController {
         actions: [
           TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
           ElevatedButton(
-            // Kirim seluruh objek product agar kita punya data ID dan image lama
             onPressed: () => updateProduct(product),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE89336),

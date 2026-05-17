@@ -17,12 +17,13 @@ class AppRoutes {
   //===KASIR===
   //mobile
   static const String dashboardMobile = '/dashboardMobile';
-  static const String navbar = '/navbar';
   static const String kalkulator = '/kalkulator';
   static const String keranjang = '/keranjang';
   static const String sukses = '/sukses';
   static const String riwayat = '/riwayat';
   static const String kelolaProduk = '/kelolaProduk';
+  static const String kasirmobiledrawer = '/kasirmobiledrawer';
+  static const String transactionDetailMobile = '/transactionDetailMobile';
   //desktop
   static const String kasirboarddesk = '/KasirBoardDesk';
   static const String kasirbayar = '/KasirBayar';

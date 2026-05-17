@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:tugas_akhir/controller/desktop/detail_transaction_controller.dart';
+import 'package:tugas_akhir/controller/detail_transaction_controller.dart';
 
 class ProductTile extends StatelessWidget {
-  final TransactionDetailController transactionDetailController ;
+  final TransactionDetailController transactionDetailController;
   final Map<String, dynamic> item;
- 
-   ProductTile({required this.transactionDetailController, required this.item});
- 
+
+  ProductTile({required this.transactionDetailController, required this.item});
+
   @override
   Widget build(BuildContext context) {
     final bool diskon = transactionDetailController.hasDiscount(item);
- 
+
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(
@@ -22,7 +22,9 @@ class ProductTile extends StatelessWidget {
           Text('Qty: ${transactionDetailController.qty(item)} | '),
           if (diskon) ...[
             Text(
-              transactionDetailController.currencyFormatter.format(transactionDetailController.hargaAsli(item)),
+              transactionDetailController.currencyFormatter.format(
+                transactionDetailController.hargaAsli(item),
+              ),
               style: const TextStyle(
                 decoration: TextDecoration.lineThrough,
                 color: Colors.red,
@@ -31,7 +33,9 @@ class ProductTile extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              transactionDetailController.currencyFormatter.format(transactionDetailController.hargaSetelahDiskon(item)),
+              transactionDetailController.currencyFormatter.format(
+                transactionDetailController.hargaSetelahDiskon(item),
+              ),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -40,7 +44,9 @@ class ProductTile extends StatelessWidget {
             ),
           ] else ...[
             Text(
-              transactionDetailController.currencyFormatter.format(transactionDetailController.hargaAsli(item)),
+              transactionDetailController.currencyFormatter.format(
+                transactionDetailController.hargaAsli(item),
+              ),
               style: const TextStyle(fontSize: 12),
             ),
           ],

@@ -16,6 +16,10 @@ class TransactionDetailController extends GetxController {
   void onInit() {
     super.onInit();
     data = Get.arguments as Map<String, dynamic>? ?? {};
+     if (data['items'] != null && (data['items'] as List).isNotEmpty) {
+    print('DEBUG item keys: ${data['items'][0].keys.toList()}');
+    print('DEBUG item data: ${data['items'][0]}');
+  }
   }
  
 
@@ -46,10 +50,13 @@ class TransactionDetailController extends GetxController {
  
 
   String namaProduk(Map<String, dynamic> item) =>
-      item['nama_produk']?.toString() ??
-      item['name']?.toString() ??
-      item['produk']?.toString() ??
-      'Produk';
+    item['nama_produk']?.toString() ??
+    item['name']?.toString() ??
+    item['produk']?.toString() ??
+    item['product_name']?.toString() ??
+    item['nama']?.toString() ??
+    item['title']?.toString() ??
+    'Produk';
  
   double hargaAsli(Map<String, dynamic> item) =>
       double.tryParse(item['price']?.toString() ?? '0') ?? 0;

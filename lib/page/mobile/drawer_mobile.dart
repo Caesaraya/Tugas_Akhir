@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/navbar_controller.dart';
+import 'package:tugas_akhir/controller/login_controller.dart';
+import 'package:tugas_akhir/routes/routes.dart';
+import 'package:tugas_akhir/widget/widget mobile/drawer/drawer_item.dart';
 
 class KasirMobileDrawer extends StatelessWidget {
   const KasirMobileDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final NavbarController navbarController = Get.put(NavbarController());
+    final KasirMobileDrawer kasirMobileDrawer = Get.put(KasirMobileDrawer());
 
     return Drawer(
       child: SafeArea(
@@ -42,77 +44,34 @@ class KasirMobileDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            _buildDrawerItem(
-              context,
+            DrawerItem(
               icon: Icons.home,
               title: 'Beranda',
-              index: 0,
-              selected: navbarController.currentIndex.value == 0,
+              route: AppRoutes.dashboardMobile,
             ),
-            _buildDrawerItem(
-              context,
-              icon: Icons.shopping_cart,
-              title: 'Keranjang',
-              index: 1,
-              selected: navbarController.currentIndex.value == 1,
-            ),
-            _buildDrawerItem(
-              context,
+            DrawerItem(
               icon: Icons.history,
               title: 'Riwayat',
-              index: 2,
-              selected: navbarController.currentIndex.value == 2,
+              route: AppRoutes.riwayat,
             ),
-            _buildDrawerItem(
-              context,
+            DrawerItem(
               icon: Icons.inventory,
               title: 'Kelola Produk',
-              index: 3,
-              selected: navbarController.currentIndex.value == 3,
+              route: AppRoutes.kelolaProduk,
             ),
             const Spacer(),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.logout, color: Colors.black87),
-              title: const Text('Keluar'),
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
               onTap: () {
                 Navigator.pop(context);
-                Get.offAllNamed('/login');
+                Get.find<LoginController>().logout();
               },
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildDrawerItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required int index,
-    required bool selected,
-  }) {
-    final NavbarController navbarController = Get.find<NavbarController>();
-
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: selected ? const Color(0xFFE89336) : Colors.black54,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: selected ? const Color(0xFFE89336) : Colors.black87,
-          fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
-        ),
-      ),
-      selected: selected,
-      selectedTileColor: const Color(0xFFE89336).withOpacity(0.12),
-      onTap: () {
-        Navigator.pop(context);
-        navbarController.changePage(index);
-      },
     );
   }
 }

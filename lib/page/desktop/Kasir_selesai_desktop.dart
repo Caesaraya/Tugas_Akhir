@@ -9,6 +9,7 @@ import 'package:tugas_akhir/widget/widget desktop/dashboard/komponen_nota.dart';
 
 class KasirSelesaiDesktop extends StatelessWidget {
   const KasirSelesaiDesktop({super.key});
+
   @override
   Widget build(BuildContext context) {
     final cart = Get.find<CartController>();
@@ -21,6 +22,7 @@ class KasirSelesaiDesktop extends StatelessWidget {
             child: Center(
               child: Container(
                 width: 520,
+                height: 700,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
@@ -35,7 +37,6 @@ class KasirSelesaiDesktop extends StatelessWidget {
                   ],
                 ),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SuccessBadge(),
@@ -48,29 +49,43 @@ class KasirSelesaiDesktop extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Obx(() {
-                      if (cart.cartItems.isEmpty) {
-                        return const Text('Tidak ada produk yang dibeli.');
-                      }
-                      return Column(
-                        children: cart.cartItems.map((item) {
-                          final double hargaAsli = item.price.toDouble();
-                          final double persen = (item.discount ?? 0).toDouble();
-                          final double hargaDiskon =
-                              (hargaAsli - (hargaAsli * persen / 100))
-                                  .roundToDouble();
-                          return ReceiptProductRow(
-                            name: item.name,
-                            qty: item.qty,
-                            unitPrice: hargaDiskon,
-                            totalPrice: hargaDiskon * item.qty,
+
+                    // Area daftar produk belanjaan (Scrollable)
+                    Expanded(
+                      child: Obx(() {
+                        if (cart.cartItems.isEmpty) {
+                          return const Center(
+                            child: Text('Tidak ada produk yang dibeli.'),
                           );
-                        }).toList(),
-                      );
-                    }),
+                        }
+                        return ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: cart.cartItems.length,
+                          itemBuilder: (context, index) {
+                            final item = cart.cartItems[index];
+                            final double hargaAsli = item.price.toDouble();
+                            final double persen = (item.discount ?? 0)
+                                .toDouble();
+                            final double hargaDiskon =
+                                (hargaAsli - (hargaAsli * persen / 100))
+                                    .roundToDouble();
+
+                            return ReceiptProductRow(
+                              name: item.name,
+                              qty: item.qty,
+                              unitPrice: hargaDiskon,
+                              totalPrice: hargaDiskon * item.qty,
+                            );
+                          },
+                        );
+                      }),
+                    ),
+
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 16),
+
+                    // Rincian Pembayaran
                     Obx(
                       () => ReceiptRowItem(
                         title: 'Total Tagihan',
@@ -98,20 +113,22 @@ class KasirSelesaiDesktop extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
+
+                    // Baris Tombol Aksi (Sudah aman karena ReceiptActionButton menggunakan Expanded)
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         ReceiptActionButton(
                           label: 'Print Nota',
-                          onPressed: () {},
-                          backgroundColor: Colors.grey[400]!,
-                          textColor: Colors.black,
+                          backgroundColor: Colors.blueGrey,
+                          onPressed: () => cart.generateAndPrintPdf(),
                         ),
                         const SizedBox(width: 16),
                         ReceiptActionButton(
                           label: 'Selesai',
+                          backgroundColor: Colors.orange,
                           onPressed: () =>
                               cart.handleSelesaiActionDashboard(false),
-                          backgroundColor: Colors.orange,
                         ),
                       ],
                     ),

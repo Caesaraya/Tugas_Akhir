@@ -3,15 +3,6 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 
-/// Halaman splash — tampil sebentar sambil [LoginController.onInit]
-/// mengecek sesi tersimpan di background.
-///
-/// Alur:
-/// - Ada sesi  → [LoginController._checkSession] navigasi otomatis ke dashboard
-/// - Tidak ada → splash redirect ke [AppRoutes.login] setelah delay
-///
-/// Layout desktop/mobile ditangani oleh MediaQuery di dalam [LoginPage],
-/// bukan di sini.
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 

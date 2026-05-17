@@ -1,44 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:tugas_akhir/controller/login_controller.dart';
-import 'package:tugas_akhir/routes/routes.dart';
+import 'package:tugas_akhir/page/login/desktop_login_page.dart';
+import 'package:tugas_akhir/page/login/login_page.dart';
 
-class DashboardWrapper extends StatefulWidget {
+class DashboardWrapper extends StatelessWidget {
   const DashboardWrapper({super.key});
 
   @override
-  State<DashboardWrapper> createState() => _DashboardWrapperState();
-}
-
-class _DashboardWrapperState extends State<DashboardWrapper> {
-  bool _initialized = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      _initialized = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _restoreOrRedirect();
-      });
-    }
-  }
-
-  Future<void> _restoreOrRedirect() async {
-    final width = MediaQuery.of(context).size.width;
-    final isDesktop = width >= 600;
+  Widget build(BuildContext context) {
     final loginController = Get.find<LoginController>();
 
-    final restored = await loginController.restoreSession(isDesktop: isDesktop);
-    if (!restored) {
-      final route = isDesktop ? AppRoutes.logindesk : AppRoutes.login;
-      Get.offAllNamed(route);
-    }
-  }
+    // Gunakan FutureBuilder untuk mengecek sesi aktif saat aplikasi pertama kali dibuka
+    return FutureBuilder<bool>(
+      future: loginController.restoreSession(
+        // Berikan nilai default awal pengecekan desktop berdasarkan ukuran layar saat ini
+        isDesktop: MediaQuery.of(context).size.width >= 600,
+      ),
+      builder: (context, snapshot) {
+        // Tampilkan loading screen sementara memuat sesi data lokal (SharedPreferences)
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(color: Color(0xFF5D3A1A)),
+            ),
+          );
+        }
 
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox.shrink();
+        // Jika user ternyata SUDAH LOGIN (Sesi berhasil di-restore),
+        // fungsi restoreSession di LoginController akan otomatis mengarahkan ke dashboard utama.
+        // Kita cukup kembalikan widget kosong selama proses transisi rute tersebut.
+        if (snapshot.data == true) {
+          return const SizedBox.shrink();
+        }
+
+        // Jika user BELUM LOGIN (Sesi kosong), gunakan LayoutBuilder untuk memantau
+        // perubahan ukuran layar secara langsung (bisa bolak-balik diganti versinya).
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth >= 600) {
+              return DesktopLoginPage(); // Menampilkan UI Versi Desktop
+            } else {
+              return LoginPage(); // Menampilkan UI Versi Mobile
+            }
+          },
+        );
+      },
+    );
   }
 }

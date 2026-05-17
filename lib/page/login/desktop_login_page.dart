@@ -3,17 +3,15 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/login_controller.dart';
 
 class DesktopLoginPage extends StatelessWidget {
-  const DesktopLoginPage({super.key});
-
+  DesktopLoginPage({super.key});
+  final controller = Get.find<LoginController>();
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<LoginController>();
-
     return Scaffold(
       body: Stack(
         children: [
           // Overlay Putih Transparan (Opsional)
-          Container(color: Colors.white.withOpacity(0.2)),
+          Container(color: Colors.white54),
 
           Center(
             child: SingleChildScrollView(

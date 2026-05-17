@@ -6,14 +6,12 @@ import 'package:tugas_akhir/widget/login/login_divider.dart';
 import 'package:tugas_akhir/widget/login/login_email.dart';
 import 'package:tugas_akhir/widget/login/login_password.dart';
 
-/// Pure UI — semua logika ada di [LoginController].
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  LoginPage({super.key});
+  final LoginController ctrl = Get.find<LoginController>();
 
   @override
   Widget build(BuildContext context) {
-    final LoginController ctrl = Get.find<LoginController>();
-
     return Scaffold(
       backgroundColor: const Color(0xFFE89336),
       body: Column(

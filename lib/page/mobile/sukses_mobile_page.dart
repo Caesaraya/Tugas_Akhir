@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/succes.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
-import 'package:tugas_akhir/widget/widget mobile/success_widgets.dart';
+import 'package:tugas_akhir/widget/widget desktop/dashboard/komponen_nota.dart';
 import 'package:intl/intl.dart';
 
 class SuksesMobilePage extends StatelessWidget {
@@ -11,115 +12,112 @@ class SuksesMobilePage extends StatelessWidget {
     symbol: 'Rp ',
     decimalDigits: 0,
   );
+
+  SuksesMobilePage({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final data = controller.getSuksesData(Get.arguments);
-    final bool isFromHistory = data['isHistory'] == 'true';
+    final cart = Get.find<CartController>();
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          "Nota Transaksi",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
-          onPressed: () => controller.handleSelesaiAction(isFromHistory),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SuccessHeader(),
-            const SizedBox(height: 40),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: isFromHistory
-                    ? (data['items'] != null
-                          ? (data['items'] as List).length
-                          : 0)
-                    : controller.cartItems.length,
-                itemBuilder: (context, index) {
-                  final dynamic item = isFromHistory
-                      ? (data['items'] as List)[index]
-                      : controller.cartItems[index];
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SuccessBadge(),
+              const SizedBox(height: 24),
+              const Text(
+                'Detail Pembelian',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
 
-                  String itemName;
-                  int itemQty;
-                  double displayPrice;
-                  if (isFromHistory) {
-                    final Map<String, dynamic> itemMap =
-                        item as Map<String, dynamic>;
-                    itemName = itemMap['name'] ?? "Produk";
-                    itemQty =
-                        int.tryParse(
-                          itemMap['quantity']?.toString() ??
-                              itemMap['qty']?.toString() ??
-                              "0",
-                        ) ??
-                        0;
-                    displayPrice =
-                        double.tryParse(
-                          itemMap['subtotal']?.toString() ?? "0",
-                        ) ??
-                        0.0;
-                  } else {
-                    itemName = item.name;
-                    itemQty = item.qty;
-                    displayPrice =
-                        (item.price - (item.price * (item.discount / 100))) *
-                        item.qty;
+              // ✅ Ganti Container fixed width dengan Expanded
+              Expanded(
+                child: Obx(() {
+                  if (cart.cartItems.isEmpty) {
+                    return const Center(
+                      child: Text('Tidak ada produk yang dibeli.'),
+                    );
                   }
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            itemName,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ),
-                        Text(
-                          "Qty: $itemQty",
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        Text(
-                          " ${currencyFormatter.format(displayPrice)}",
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: cart.cartItems.map((item) {
+                        final double hargaAsli = item.price.toDouble();
+                        final double persen = (item.discount ?? 0).toDouble();
+                        final double hargaDiskon =
+                            (hargaAsli - (hargaAsli * persen / 100))
+                                .roundToDouble();
+                        return ReceiptProductRow(
+                          name: item.name,
+                          qty: item.qty,
+                          unitPrice: hargaDiskon,
+                          totalPrice: hargaDiskon * item.qty,
+                        );
+                      }).toList(),
                     ),
                   );
-                },
+                }),
               ),
-            ),
-            const SizedBox(height: 20),
-            InfoRow(label: "Total Tagihan", value: data['total']!),
-            InfoRow(label: data['label']!, value: data['bayar']!),
-            const Divider(thickness: 1.5, height: 30),
-            InfoRow(
-              label: "Kembalian",
-              value: data['kembalian']!,
-              isBold: true,
-            ),
-            const SizedBox(height: 50),
-          ],
+
+              const Divider(),
+              const SizedBox(height: 8),
+
+              Obx(() => ReceiptRowItem(
+                    title: 'Total Tagihan',
+                    value: cart.currencyFormatter.format(cart.totalPrice),
+                  )),
+              const SizedBox(height: 8),
+              Obx(() => ReceiptRowItem(
+                    title: 'Jumlah Dibayar',
+                    value: cart.paymentDisplayValueFormatted,
+                  )),
+              const SizedBox(height: 8),
+              Obx(() => ReceiptRowItem(
+                    title: 'Kembalian',
+                    value: cart.kembalianDisplayFormatted,
+                  )),
+              Obx(() => ReceiptRowItem(
+                    title: 'Metode Pembayaran',
+                    value: cart.paymentMethodLabel,
+                  )),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => cart.generateAndPrintPdf(),
+                      icon: const Icon(Icons.print_outlined, color: Colors.white),
+                      label: const Text('Print Nota',
+                          style: TextStyle(color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE89336),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => cart.handleSelesaiActionMobile(false),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text('Selesai',style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );

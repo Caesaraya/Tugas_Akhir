@@ -6,9 +6,9 @@ import 'package:tugas_akhir/widget/widget desktop/kelola/product_subtitle.dart';
 class ProductCardKelola extends StatelessWidget {
   final KelolaProdukController ctrl;
   final dynamic produk;
- 
+
   const ProductCardKelola({required this.ctrl, required this.produk});
- 
+
   @override
   Widget build(BuildContext context) {
     return Card(

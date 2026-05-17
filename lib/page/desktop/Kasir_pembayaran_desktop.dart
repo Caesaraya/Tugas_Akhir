@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/controller/desktop/payment_dashboard_controller.dart';
+import 'package:tugas_akhir/controller/payment_controller.dart';
 import 'package:tugas_akhir/widget/widget desktop/bayar/payment_method_widget.dart';
 import 'package:tugas_akhir/widget/widget desktop/bayar/calculator_keypad.dart';
 
@@ -9,8 +9,7 @@ class KasirPembayaranDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final PaymentDashboardController paymentDashboardController =
-        Get.find<PaymentDashboardController>();
+    final PaymentController paymentDashboardController = Get.find<PaymentController>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pembayaran'),

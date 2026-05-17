@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 
 class DesktopNavigationDrawer extends StatelessWidget {
@@ -55,6 +56,14 @@ class DesktopNavigationDrawer extends StatelessWidget {
             route: AppRoutes.riwayatdesk,
           ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Logout'),
+            onTap: () {
+              Navigator.pop(context);
+              Get.find<LoginController>().logout();
+            },
+          ),
         ],
       ),
     );

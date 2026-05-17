@@ -13,149 +13,81 @@ import 'package:tugas_akhir/page/desktop/Kasir_riwayat_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_kelola_dashboard.dart';
 import 'package:tugas_akhir/page/desktop/transaction_detail_desktop.dart';
 import 'package:tugas_akhir/page/login/desktop_login_page.dart';
-import 'package:tugas_akhir/page/login/splash_page.dart';
 import 'package:tugas_akhir/page/media_query.dart';
 import 'package:tugas_akhir/page/mobile/Kasir_dashboard_mobile.dart';
 import 'package:tugas_akhir/page/login/login_page.dart';
-import 'package:tugas_akhir/page/mobile/navbar_page.dart';
+import 'package:tugas_akhir/page/mobile/drawer_mobile.dart';
 import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
 import 'package:tugas_akhir/page/mobile/keranjang_mobile.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/riwayat_mobile.dart';
 import 'package:tugas_akhir/page/mobile/Kelolaproduk_mobile.dart';
+import 'package:tugas_akhir/page/mobile/transaction_detail_mobile.dart';
 
 import 'routes.dart';
 
+// ... semua import Anda tetap sama ...
+
 class AppPages {
   static final pages = [
-    //===ADMIN===
-    //desktop
-    GetPage(
-      name: AppRoutes.kelolaprodukdesk,
-      page: () => KelolaProdukDeskPage(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.kelolabahandesk,
-      page: () => BahanBakuScreen(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.kelolaresepdesk,
-      page: () => KelolaResepDeskPage(),
-      binding: AppBinding(),
-    ),
-    //mobile
-    GetPage(
-      name: AppRoutes.kelolaProdukMob,
-      page: () => ProductListPage(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.kelolaBahanMob,
-      page: () => BahanBakuListPage(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.kelolaResepMob,
-      page: () => KelolaResepMobilePage(),
-      binding: AppBinding(),
-    ),
-    //media query
-    GetPage(
-      name: AppRoutes.mediaQuery,
-      page: () => DashboardWrapper(),
-      binding: AppBinding(),
-    ),
-    //===KASIR===
-    //mobile
-    GetPage(
-      name: AppRoutes.dashboardMobile,
-      page: () => KasirDashboardMobile(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.kalkulator,
-      page: () => KalkulatorCashPage(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.sukses,
-      page: () => SuksesMobilePage(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.keranjang,
-      page: () => KeranjangMobilePage(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.navbar,
-      page: () => NavbarPage(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.riwayat,
-      page: () => RiwayatMobile(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.kelolaProduk,
-      page: () => KelolaProdukPage(),
-      binding: AppBinding(),
-    ),
-    //desktop
-    //kasir
-    GetPage(
-      name: AppRoutes.kasirboarddesk,
-      page: () => KasirDashboardDesktop(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.kasirbayar,
-      page: () => KasirPembayaranDesktop(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.kasirprint,
-      page: () => KasirSelesaiDesktop(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.transactionDetail,
-      page: () => DetailScreen(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.riwayatdesk,
-      page: () => KasirRiwayatDesktop(),
-      binding: AppBinding(),
-    ),
-    GetPage(
-      name: AppRoutes.kelolaprodukdashboard,
-      page: () => KasirKelolaDashboard(),
-      binding: AppBinding(),
-    ),
-    //===LOGIN===
+    // ── Login ──────────────────────────────────────────────────────────────
     GetPage(
       name: AppRoutes.login,
-      page: () => LoginPage(),
-      binding: AppBinding(),
+      page: () => LoginPage(), // Hapus properti binding
     ),
     GetPage(
       name: AppRoutes.logindesk,
-      page: () => DesktopLoginPage(),
-      binding: AppBinding(),
+      page: () => DesktopLoginPage(), // Hapus properti binding
     ),
     GetPage(
       name: AppRoutes.mediaQuery,
-      page: () => DashboardWrapper(),
-      binding: AppBinding(),
+      page: () => DashboardWrapper(), // Hapus properti binding
     ),
+
+    // ── Kasir Mobile ───────────────────────────────────────────────────────
     GetPage(
-      name: AppRoutes.splash,
-      page: () => SplashPage(),
-      binding: AppBinding(),
+      name: AppRoutes.dashboardMobile,
+      page: () => KasirDashboardMobile(),
+    ),
+    GetPage(name: AppRoutes.keranjang, page: () => KeranjangMobilePage()),
+    GetPage(name: AppRoutes.kalkulator, page: () => KalkulatorCashPage()),
+    GetPage(name: AppRoutes.sukses, page: () => SuksesMobilePage()),
+    GetPage(name: AppRoutes.riwayat, page: () => RiwayatMobile()),
+    GetPage(name: AppRoutes.kelolaProduk, page: () => KelolaProdukPage()),
+    GetPage(
+      name: AppRoutes.transactionDetailMobile,
+      page: () => TransactionDetailMobile(),
+    ),
+    GetPage(name: AppRoutes.kasirmobiledrawer, page: () => KasirMobileDrawer()),
+
+    // ── Kasir Desktop ──────────────────────────────────────────────────────
+    GetPage(
+      name: AppRoutes.kasirboarddesk,
+      page: () => KasirDashboardDesktop(),
+    ),
+    GetPage(name: AppRoutes.kasirbayar, page: () => KasirPembayaranDesktop()),
+    GetPage(name: AppRoutes.kasirprint, page: () => KasirSelesaiDesktop()),
+    GetPage(name: AppRoutes.riwayatdesk, page: () => KasirRiwayatDesktop()),
+    GetPage(
+      name: AppRoutes.kelolaprodukdashboard,
+      page: () => KasirKelolaDashboard(),
+    ),
+    GetPage(name: AppRoutes.transactionDetail, page: () => DetailScreen()),
+
+    // ── Admin Desktop ──────────────────────────────────────────────────────
+    GetPage(
+      name: AppRoutes.kelolaprodukdesk,
+      page: () => KelolaProdukDeskPage(),
+    ),
+    GetPage(name: AppRoutes.kelolabahandesk, page: () => BahanBakuScreen()),
+    GetPage(name: AppRoutes.kelolaresepdesk, page: () => KelolaResepDeskPage()),
+
+    // ── Admin Mobile ───────────────────────────────────────────────────────
+    GetPage(name: AppRoutes.kelolaProdukMob, page: () => ProductListPage()),
+    GetPage(name: AppRoutes.kelolaBahanMob, page: () => BahanBakuListPage()),
+    GetPage(
+      name: AppRoutes.kelolaResepMob,
+      page: () => KelolaResepMobilePage(),
     ),
   ];
 }
