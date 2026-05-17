@@ -6,11 +6,12 @@ import 'package:tugas_akhir/widget/widget desktop/kelola/product_card_kelola.dar
 
 class KasirKelolaDashboard extends StatelessWidget {
   const KasirKelolaDashboard({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
-    final KelolaProdukController kelolaProdukController = Get.put(KelolaProdukController());
- 
+    final KelolaProdukController kelolaProdukController =
+        Get.find<KelolaProdukController>();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5F2),
       drawer: const DesktopNavigationDrawer(),
@@ -34,11 +35,11 @@ class KasirKelolaDashboard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
-              onChanged: (value) => kelolaProdukController.searchQuery.value = value,
+              onChanged: (value) =>
+                  kelolaProdukController.searchQuery.value = value,
               decoration: InputDecoration(
                 hintText: 'Cari Produk...',
-                prefixIcon:
-                    const Icon(Icons.search, color: Color(0xFFE89336)),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFFE89336)),
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
@@ -57,9 +58,7 @@ class KasirKelolaDashboard extends StatelessWidget {
             child: Obx(() {
               if (kelolaProdukController.isLoading.value) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFFE89336),
-                  ),
+                  child: CircularProgressIndicator(color: Color(0xFFE89336)),
                 );
               }
               if (kelolaProdukController.filteredProducts.isEmpty) {
@@ -76,8 +75,12 @@ class KasirKelolaDashboard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: kelolaProdukController.filteredProducts.length,
                   itemBuilder: (context, index) {
-                    final produk = kelolaProdukController.filteredProducts[index];
-                    return ProductCardKelola(ctrl: kelolaProdukController, produk: produk);
+                    final produk =
+                        kelolaProdukController.filteredProducts[index];
+                    return ProductCardKelola(
+                      ctrl: kelolaProdukController,
+                      produk: produk,
+                    );
                   },
                 ),
               );

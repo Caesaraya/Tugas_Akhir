@@ -7,7 +7,7 @@ import 'package:tugas_akhir/widget/widget desktop/dashboard/desktop_navigation_d
 import 'package:tugas_akhir/widget/widget desktop/dashboard/transaction_card_desktop.dart';
 
 class KasirRiwayatDesktop extends StatelessWidget {
-  final RiwayatController riwayatController = Get.put(RiwayatController());
+  final RiwayatController riwayatController = Get.find<RiwayatController>();
   KasirRiwayatDesktop({super.key});
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class KasirRiwayatDesktop extends StatelessWidget {
                 padding: const EdgeInsets.all(20.0),
                 child: GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, 
+                    crossAxisCount: 3,
                     crossAxisSpacing: 20,
                     mainAxisSpacing: 20,
                     childAspectRatio: 1.5,

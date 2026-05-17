@@ -1,75 +1,91 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/api service/api_service.dart';
 import 'package:tugas_akhir/models/user.dart';
 import 'package:tugas_akhir/routes/routes.dart';
- 
+
 class LoginController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
- 
+
   var isPasswordVisible = false.obs;
   var isLoading = false.obs;
- 
-  // ─── Hardcode user kasir (sementara) ─────────────────────────────────────
-  static final User kasirUser = User(
-    id: 1,
-    name: 'Kasir',
-    email: 'kasir@gmail.com',
-    password: '123456',
-    role: 'KASIR',
-  );
- 
-  // ─── User yang sedang login (bisa diakses controller lain) ────────────────
+
   final Rx<User?> currentUser = Rx<User?>(null);
- 
-  // ─── Toggle visibility password ───────────────────────────────────────────
+
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
- 
-  // ─── Proses login ─────────────────────────────────────────────────────────
-  void login() {
+
+  // Menambahkan parameter isDesktop untuk membedakan asal login
+  Future<void> login({required bool isDesktop}) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
- 
+
     if (email.isEmpty || password.isEmpty) {
       showError('Email dan password tidak boleh kosong');
       return;
     }
- 
+
     isLoading.value = true;
- 
-    Future.delayed(const Duration(milliseconds: 800), () {
+
+    try {
+      final responseData = await ApiService.login(
+        email: email,
+        password: password,
+      );
+
+      final user = User.fromJson(responseData);
+      currentUser.value = user;
+      _handleNavigation(user, isDesktop);
+    } catch (error) {
+      final message = error is Exception
+          ? error.toString().replaceFirst('Exception: ', '')
+          : 'Login gagal. Silakan coba lagi.';
+      showError(message);
+    } finally {
       isLoading.value = false;
- 
-      if (email == kasirUser.email && password == kasirUser.password) {
-        currentUser.value = kasirUser;
-        navigateByRole(kasirUser.role);
-      } else {
-        showError('Email atau password salah');
-      }
-    });
-  }
- 
-  // ─── Navigasi berdasarkan role ────────────────────────────────────────────
-  void navigateByRole(String role) {
-    switch (role.toUpperCase()) {
-      case 'KASIR':
-        Get.offAllNamed(AppRoutes.navbar);
-        break;
-      default:
-        showError('Role tidak dikenali');
     }
   }
- 
-  // ─── Logout ───────────────────────────────────────────────────────────────
-  void logout() {
-    currentUser.value = null;
-    emailController.clear();
-    passwordController.clear();
-    Get.offAllNamed(AppRoutes.login);
+
+  // Fungsi internal untuk mengarahkan navigasi berdasarkan user dan platform
+  void _handleNavigation(User user, bool isDesktop) {
+    if (isDesktop) {
+      navigateByRoleDesktop(user.role);
+    } else {
+      navigateByRoleMobile(user.role);
+    }
   }
- 
+
+  // Navigasi Khusus Mobile
+  void navigateByRoleMobile(String role) {
+    switch (role.toUpperCase()) {
+      case 'KASIR':
+        Get.offAllNamed(AppRoutes.dashboardMobile); // Route utama kasir di mobile
+        break;
+      case 'ADMIN':
+        // Jika admin membuka mobile, arahkan ke halaman yang sesuai (atau samakan)
+        Get.offAllNamed(AppRoutes.kelolaProdukMob); // Route admin mobile
+        break;
+      default:
+        showError('Role tidak dikenali untuk perangkat mobile');
+    }
+  }
+
+  // Navigasi Khusus Desktop
+  void navigateByRoleDesktop(String role) {
+    switch (role.toUpperCase()) {
+      case 'ADMIN':
+        Get.offAllNamed(AppRoutes.kelolaprodukdesk); // Route admin desktop
+        break;
+      case 'KASIR':
+        // Jika kasir login di desktop, arahkan ke layout desktopnya (jika ada)
+        Get.offAllNamed(AppRoutes.kasirboarddesk);
+        break;
+      default:
+        showError('Role tidak dikenali untuk perangkat desktop');
+    }
+  }
 
   void showError(String message) {
     Get.snackbar(
@@ -81,7 +97,7 @@ class LoginController extends GetxController {
       margin: const EdgeInsets.all(10),
     );
   }
- 
+
   @override
   void onClose() {
     emailController.dispose();

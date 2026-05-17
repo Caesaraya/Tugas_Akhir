@@ -3,7 +3,7 @@ class BahanBaku {
   final String namaBahan;
   final String merk;
   final String satuan;
-  final int stok;
+  final double stok;
   final double hargaSatuan;
   final double? totalHarga;
   final DateTime? createdAt;
@@ -20,16 +20,30 @@ class BahanBaku {
   });
 
   factory BahanBaku.fromJson(Map<String, dynamic> json) {
+    // Fungsi kecil untuk mengubah apapun (String/int/double) menjadi double
+    double castToDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
     return BahanBaku(
       id: json['id'],
       namaBahan: json['nama_bahan'] ?? '',
       merk: json['merk'] ?? '',
       satuan: json['satuan'] ?? '',
-      stok: json['stok'] ?? 0,
-      hargaSatuan: (json['harga_satuan'] ?? 0).toDouble(),
-      totalHarga: json['total_harga']?.toDouble(),
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+
+      // Gunakan fungsi bantuan tadi untuk semua field angka
+      stok: castToDouble(json['stok']),
+      hargaSatuan: castToDouble(json['harga_satuan']),
+      totalHarga: json['total_harga'] != null
+          ? castToDouble(json['total_harga'])
+          : null,
+
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
           : null,
     );
   }
@@ -52,7 +66,7 @@ class BahanBaku {
     String? namaBahan,
     String? merk,
     String? satuan,
-    int? stok,
+    double? stok,
     double? hargaSatuan,
     double? totalHarga,
     DateTime? createdAt,

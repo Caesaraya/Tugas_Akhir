@@ -3,13 +3,13 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/payment_controller.dart';
 import 'package:tugas_akhir/widget/widget desktop/bayar/payment_method_widget.dart';
 import 'package:tugas_akhir/widget/widget desktop/bayar/calculator_keypad.dart';
- 
+
 class KasirPembayaranDesktop extends StatelessWidget {
   const KasirPembayaranDesktop({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
-    final PaymentController paymentController = Get.put(PaymentController());
+    final PaymentController paymentDashboardController = Get.find<PaymentController>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pembayaran'),
@@ -27,27 +27,37 @@ class KasirPembayaranDesktop extends StatelessWidget {
                 children: [
                   const Text('Total Tagihan'),
                   const SizedBox(height: 5),
-                  Obx(() => Text(
-                        paymentController.totalFormatted,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )),
+                  Obx(
+                    () => Text(
+                      paymentDashboardController.totalFormatted,
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   const Text('Metode Pembayaran'),
-                  Obx(() => PaymentMethodWidget(
-                        title: 'Cash',
-                        value: 'cash',
-                        selectedMethod: paymentController.selectedMethod.value,
-                        onChanged: paymentController.onPaymentMethodChanged,
-                      )),
-                  Obx(() => PaymentMethodWidget(
-                        title: 'QRIS',
-                        value: 'qris',
-                        selectedMethod: paymentController.selectedMethod.value,
-                        onChanged: paymentController.onPaymentMethodChanged,
-                      )),
+                  Obx(
+                    () => PaymentMethodWidget(
+                      title: 'Cash',
+                      value: 'cash',
+                      selectedMethod:
+                          paymentDashboardController.selectedMethod.value,
+                      onChanged:
+                          paymentDashboardController.onPaymentMethodChanged,
+                    ),
+                  ),
+                  Obx(
+                    () => PaymentMethodWidget(
+                      title: 'QRIS',
+                      value: 'qris',
+                      selectedMethod:
+                          paymentDashboardController.selectedMethod.value,
+                      onChanged:
+                          paymentDashboardController.onPaymentMethodChanged,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -60,16 +70,20 @@ class KasirPembayaranDesktop extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   child: Align(
                     alignment: Alignment.centerRight,
-                    child: Obx(() => Text(
-                          paymentController.inputFormatted,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )),
+                    child: Obx(
+                      () => Text(
+                        paymentDashboardController.inputFormatted,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                CalculatorKeypad(onButtonPressed: paymentController.onButtonPressed),
+                CalculatorKeypad(
+                  onButtonPressed: paymentDashboardController.onButtonPressed,
+                ),
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.all(10),
@@ -78,7 +92,7 @@ class KasirPembayaranDesktop extends StatelessWidget {
                       backgroundColor: Colors.deepOrange,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    onPressed: paymentController.processPayment,
+                    onPressed: paymentDashboardController.processPayment,
                     child: const Text(
                       'Bayar',
                       style: TextStyle(color: Colors.white, fontSize: 18),
@@ -93,4 +107,3 @@ class KasirPembayaranDesktop extends StatelessWidget {
     );
   }
 }
- 

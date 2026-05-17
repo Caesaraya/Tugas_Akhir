@@ -17,7 +17,11 @@ class KelolaProdukController extends GetxController {
   final ImagePicker _picker = ImagePicker();
   var selectedImage = Rx<File?>(null);
 
-  final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
 
   final nameController = TextEditingController();
   final priceController = TextEditingController();
@@ -30,7 +34,11 @@ class KelolaProdukController extends GetxController {
   void onInit() {
     super.onInit();
     fetchData();
-    debounce(searchQuery, (_) => runFilter(), time: const Duration(milliseconds: 500));
+    debounce(
+      searchQuery,
+      (_) => runFilter(),
+      time: const Duration(milliseconds: 500),
+    );
   }
 
   Future<void> fetchData() async {
@@ -40,7 +48,11 @@ class KelolaProdukController extends GetxController {
       products.assignAll(data);
       filteredProducts.assignAll(data);
     } catch (e) {
-      Get.snackbar("Error", "Gagal memuat produk: $e", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        "Error",
+        "Gagal memuat produk: $e",
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isLoading(false);
     }
@@ -77,45 +89,63 @@ class KelolaProdukController extends GetxController {
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Text("Edit Produk", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Edit Produk",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Obx(() => GestureDetector(
-                onTap: pickImage,
-                child: Container(
-                  height: 120,
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 15),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey[400]!),
+              Obx(
+                () => GestureDetector(
+                  onTap: pickImage,
+                  child: Container(
+                    height: 120,
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 15),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey[400]!),
+                    ),
+                    child: selectedImage.value != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(
+                              selectedImage.value!,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : (product.image.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    product.image,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (c, e, s) =>
+                                        const Icon(Icons.image, size: 50),
+                                  ),
+                                )
+                              : const Icon(Icons.add_a_photo, size: 50)),
                   ),
-                  child: selectedImage.value != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(selectedImage.value!, fit: BoxFit.cover),
-                        )
-                      : (product.image.isNotEmpty
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.network(
-                                product.image,
-                                fit: BoxFit.cover,
-                                errorBuilder: (c, e, s) => const Icon(Icons.image, size: 50),
-                              ),
-                            )
-                          : const Icon(Icons.add_a_photo, size: 50)),
                 ),
-              )),
-              
+              ),
+
               buildTextField(nameController, "Nama Produk"),
               const SizedBox(height: 12),
-              buildTextField(priceController, "Harga", isNumber: true, isPrice: true),
+              buildTextField(
+                priceController,
+                "Harga",
+                isNumber: true,
+                isPrice: true,
+              ),
               const SizedBox(height: 12),
-              buildTextField(discountPercentController, "Diskon (%)", isNumber: true),
+              buildTextField(
+                discountPercentController,
+                "Diskon (%)",
+                isNumber: true,
+              ),
               const SizedBox(height: 12),
               buildTextField(stockController, "Stok", isNumber: true),
               const SizedBox(height: 12),
@@ -130,7 +160,9 @@ class KelolaProdukController extends GetxController {
           ElevatedButton(
             // Kirim seluruh objek product agar kita punya data ID dan image lama
             onPressed: () => updateProduct(product),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE89336)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE89336),
+            ),
             child: const Text("Simpan", style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -139,7 +171,12 @@ class KelolaProdukController extends GetxController {
     );
   }
 
-  Widget buildTextField(TextEditingController controller, String label, {bool isNumber = false, bool isPrice = false}) {
+  Widget buildTextField(
+    TextEditingController controller,
+    String label, {
+    bool isNumber = false,
+    bool isPrice = false,
+  }) {
     return TextField(
       controller: controller,
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
@@ -168,19 +205,30 @@ class KelolaProdukController extends GetxController {
 
   Future<void> updateProduct(Product oldProduct) async {
     if (nameController.text.isEmpty || priceController.text.isEmpty) {
-      Get.snackbar("Validasi", "Nama dan Harga tidak boleh kosong",
-          backgroundColor: Colors.redAccent, colorText: Colors.white);
+      Get.snackbar(
+        "Validasi",
+        "Nama dan Harga tidak boleh kosong",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
       return;
     }
 
     try {
-      String cleanPriceText = priceController.text.replaceAll(RegExp(r'[^0-9]'), '');
-      int numericPrice = int.parse(cleanPriceText.isEmpty ? "0" : cleanPriceText);
+      String cleanPriceText = priceController.text.replaceAll(
+        RegExp(r'[^0-9]'),
+        '',
+      );
+      int numericPrice = int.parse(
+        cleanPriceText.isEmpty ? "0" : cleanPriceText,
+      );
 
-      String cleanDiscountText = discountPercentController.text.isEmpty ? "0" : discountPercentController.text;
+      String cleanDiscountText = discountPercentController.text.isEmpty
+          ? "0"
+          : discountPercentController.text;
       int discountPercent = int.tryParse(cleanDiscountText) ?? 0;
 
-      Get.back(); 
+      Get.back();
       isLoading(true);
 
       final success = await ApiService.updateProductWithImage(
@@ -197,21 +245,33 @@ class KelolaProdukController extends GetxController {
       );
 
       if (success) {
-        Get.snackbar("Sukses", "Produk berhasil diperbarui", 
-            backgroundColor: Colors.green, colorText: Colors.white);
-        
+        Get.snackbar(
+          "Sukses",
+          "Produk berhasil diperbarui",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+
         if (Get.isRegistered<DashboardController>()) {
           Get.find<DashboardController>().fetchProducts();
         }
-        
+
         fetchData();
       } else {
-        Get.snackbar("Gagal", "Gagal memperbarui produk", 
-            backgroundColor: Colors.red, colorText: Colors.white);
+        Get.snackbar(
+          "Gagal",
+          "Gagal memperbarui produk",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
-      Get.snackbar("Error", "Gagal memperbarui: $e",
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        "Error",
+        "Gagal memperbarui: $e",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading(false);
     }
@@ -221,9 +281,12 @@ class KelolaProdukController extends GetxController {
     if (searchQuery.isEmpty) {
       filteredProducts.assignAll(products);
     } else {
-      var result = products.where((p) => 
-        p.name.toLowerCase().contains(searchQuery.value.toLowerCase())
-      ).toList();
+      var result = products
+          .where(
+            (p) =>
+                p.name.toLowerCase().contains(searchQuery.value.toLowerCase()),
+          )
+          .toList();
       filteredProducts.assignAll(result);
     }
   }

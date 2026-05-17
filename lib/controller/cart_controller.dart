@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:pdf/pdf.dart';
+import 'package:tugas_akhir/controller/dashboard_controller.dart';
+import 'package:tugas_akhir/controller/detail_transaction_controller.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
@@ -121,7 +123,7 @@ class CartController extends GetxController {
     } else {
       await prosesKeApi();
       clearCart();
-      Get.offAllNamed('/navbar');
+      Get.offAllNamed('/dashboardMobile');
     }
   }
 
@@ -332,12 +334,113 @@ class CartController extends GetxController {
         },
       ),
     );
+await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+await prosesKeApi();
 
-    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
-    clearCart();
+clearCart();
 
-Get.offAllNamed(AppRoutes.navbar);
+if (Get.isRegistered<DashboardController>()) {
+  Get.find<DashboardController>().fetchProducts();
+}
+
+final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
+
+if (isDesktop) {
+  Get.offAllNamed(AppRoutes.kasirboarddesk);
+} else {
+  Get.offAllNamed(AppRoutes.dashboardMobile);
+}
   }
+
+  Future<void> printFromDetail(TransactionDetailController ctrl) async {
+  final pdf = pw.Document();
+
+  pdf.addPage(
+    pw.Page(
+      pageFormat: PdfPageFormat(80 * PdfPageFormat.mm, double.infinity, marginAll: 5),
+      build: (context) => pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Center(
+            child: pw.Text('TOKO LEZAAA',
+                style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+          ),
+          pw.Center(
+            child: pw.Text('Kudus, Jl Dr Lukmono Hadi No.50',
+                textAlign: pw.TextAlign.center,
+                style: const pw.TextStyle(fontSize: 9)),
+          ),
+          pw.SizedBox(height: 10),
+          pw.Text('Nota   : #${ctrl.transactionId}', style: const pw.TextStyle(fontSize: 10)),
+          pw.Text('Tanggal: ${ctrl.tanggal}', style: const pw.TextStyle(fontSize: 10)),
+          pw.Text('Metode : ${ctrl.methodLabel}', style: const pw.TextStyle(fontSize: 10)),
+          pw.Divider(),
+
+          // ✅ Pakai data dari detailController, bukan cartItems
+          ...ctrl.items.map((item) {
+            final String nama = ctrl.namaProduk(item);
+            final int quantity = ctrl.qty(item);
+            final double harga = ctrl.hargaSetelahDiskon(item);
+            final double total = harga * quantity;
+
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(nama, style: const pw.TextStyle(fontSize: 11)),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('$quantity x ${currencyFormatter.format(harga)}',
+                        style: const pw.TextStyle(fontSize: 10)),
+                    pw.Text(currencyFormatter.format(total),
+                        style: const pw.TextStyle(fontSize: 10)),
+                  ],
+                ),
+                if (ctrl.hasDiscount(item))
+                  pw.Text(
+                    'Diskon: ${currencyFormatter.format(ctrl.hargaAsli(item))} → ${currencyFormatter.format(harga)}',
+                    style: pw.TextStyle(fontSize: 8, fontStyle: pw.FontStyle.italic),
+                  ),
+                pw.SizedBox(height: 6),
+              ],
+            );
+          }),
+
+          pw.Divider(),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('Total', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              pw.Text(ctrl.totalFormatted, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ],
+          ),
+          pw.SizedBox(height: 4),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [pw.Text('Bayar'), pw.Text(ctrl.bayarFormatted)],
+          ),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [pw.Text('Kembalian'), pw.Text(ctrl.kembalianFormatted)],
+          ),
+          pw.SizedBox(height: 20),
+          pw.Center(
+            child: pw.Text('Terima Kasih',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          ),
+          pw.Center(
+            child: pw.Text('Powered by LEZZAAA POS',
+                style: const pw.TextStyle(fontSize: 8)),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+  
+}
+  
 
   double get totalPrice {
     return cartItems.fold(0, (sum, item) {

@@ -17,10 +17,12 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF26C6DA)),
+        scaffoldBackgroundColor: const Color(0xFFF4F6F9),
+        appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF26C6DA)),
       ),
       initialBinding: CartBinding(),
-      initialRoute: AppRoutes.navbar,
+      initialRoute: AppRoutes.mediaQuery,
       getPages: AppPages.pages,
     );
   }

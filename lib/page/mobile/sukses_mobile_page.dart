@@ -3,9 +3,16 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/widget/widget desktop/dashboard/succes.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget desktop/dashboard/komponen_nota.dart';
+import 'package:intl/intl.dart';
 
 class SuksesMobilePage extends StatelessWidget {
-  const SuksesMobilePage({super.key});
+  final CartController controller = Get.find<CartController>();
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
+  );
+   SuksesMobilePage({super.key});
   @override
   Widget build(BuildContext context) {
     final cart = Get.find<CartController>();

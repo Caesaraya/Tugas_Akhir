@@ -14,7 +14,7 @@ import 'package:tugas_akhir/models/user.dart';
 
 class ApiService {
   static const String baseUrl =
-      "https://oafishly-noncontagious-cali.ngrok-free.dev";
+      "https://porthole-popcorn-winter.ngrok-free.dev";
 
   // ========================
   // COMMON HEADERS
@@ -32,9 +32,7 @@ class ApiService {
       final response = await http
           .get(
             Uri.parse("$baseUrl/api/products"),
-            headers: {
-              "Connection": "close",
-            },
+            headers: {"Connection": "close"},
           )
           .timeout(const Duration(seconds: 10));
 
@@ -58,9 +56,7 @@ class ApiService {
       final response = await http
           .get(
             Uri.parse("$baseUrl/api/products/$id"),
-            headers: {
-              "Connection": "close",
-            },
+            headers: {"Connection": "close"},
           )
           .timeout(const Duration(seconds: 10));
 
@@ -95,9 +91,7 @@ class ApiService {
       );
 
       // Add headers
-      request.headers.addAll({
-        'Connection': 'close',
-      });
+      request.headers.addAll({'Connection': 'close'});
 
       // Add fields
       request.fields['name'] = name;
@@ -115,18 +109,21 @@ class ApiService {
       final imageBytes = await imageFile.readAsBytes();
       final imageExtension = imageFile.path.split('.').last.toLowerCase();
       final contentType = _getContentType(imageExtension);
-      
+
       request.files.add(
         http.MultipartFile.fromBytes(
           'image',
           imageBytes,
-          filename: 'product_${DateTime.now().millisecondsSinceEpoch}.$imageExtension',
+          filename:
+              'product_${DateTime.now().millisecondsSinceEpoch}.$imageExtension',
           contentType: http_parser.MediaType.parse(contentType),
         ),
       );
 
-      final response = await request.send().timeout(const Duration(seconds: 30));
-      
+      final response = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
+
       return response.statusCode == 200;
     } catch (e) {
       throw Exception("Gagal membuat produk dengan gambar: $e");
@@ -155,9 +152,7 @@ class ApiService {
       );
 
       // Add headers
-      request.headers.addAll({
-        'Connection': 'close',
-      });
+      request.headers.addAll({'Connection': 'close'});
 
       // Add fields
       request.fields['name'] = name;
@@ -176,19 +171,22 @@ class ApiService {
         final imageBytes = await imageFile.readAsBytes();
         final imageExtension = imageFile.path.split('.').last.toLowerCase();
         final contentType = _getContentType(imageExtension);
-        
+
         request.files.add(
           http.MultipartFile.fromBytes(
             'image',
             imageBytes,
-            filename: 'product_${DateTime.now().millisecondsSinceEpoch}.$imageExtension',
+            filename:
+                'product_${DateTime.now().millisecondsSinceEpoch}.$imageExtension',
             contentType: http_parser.MediaType.parse(contentType),
           ),
         );
       }
 
-      final response = await request.send().timeout(const Duration(seconds: 30));
-      
+      final response = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
+
       return response.statusCode == 200;
     } catch (e) {
       throw Exception("Gagal update produk dengan gambar: $e");
@@ -248,9 +246,7 @@ class ApiService {
   // ========================
   static Future<bool> updateProduct(Product product) async {
     try {
-      final url = Uri.parse(
-        "$baseUrl/api/products/${product.id}",
-      );
+      final url = Uri.parse("$baseUrl/api/products/${product.id}");
 
       final body = {
         "name": product.name,
@@ -265,11 +261,7 @@ class ApiService {
       };
 
       final response = await http
-          .put(
-            url,
-            headers: headers,
-            body: jsonEncode(body),
-          )
+          .put(url, headers: headers, body: jsonEncode(body))
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode == 200;
@@ -284,10 +276,7 @@ class ApiService {
   static Future<bool> deleteProduct(int id) async {
     try {
       final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/products/$id"),
-            headers: headers,
-          )
+          .delete(Uri.parse("$baseUrl/api/products/$id"), headers: headers)
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode == 200;
@@ -327,11 +316,7 @@ class ApiService {
       };
 
       final response = await http
-          .post(
-            url,
-            headers: headers,
-            body: jsonEncode(body),
-          )
+          .post(url, headers: headers, body: jsonEncode(body))
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode == 200;
@@ -348,9 +333,7 @@ class ApiService {
       final response = await http
           .get(
             Uri.parse("$baseUrl/api/transactions"),
-            headers: {
-              "Connection": "close",
-            },
+            headers: {"Connection": "close"},
           )
           .timeout(const Duration(seconds: 10));
 
@@ -367,18 +350,12 @@ class ApiService {
   // ========================
   // GET TRANSACTION DETAIL
   // ========================
-  static Future<Map<String, dynamic>> getTransactionDetail(
-    int id,
-  ) async {
+  static Future<Map<String, dynamic>> getTransactionDetail(int id) async {
     try {
       final response = await http
           .get(
-            Uri.parse(
-              "$baseUrl/api/transactions/$id",
-            ),
-            headers: {
-              "Connection": "close",
-            },
+            Uri.parse("$baseUrl/api/transactions/$id"),
+            headers: {"Connection": "close"},
           )
           .timeout(const Duration(seconds: 10));
 
@@ -472,10 +449,7 @@ class ApiService {
   static Future<bool> deleteBahanBaku(int id) async {
     try {
       final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/bahan-baku/$id"),
-            headers: headers,
-          )
+          .delete(Uri.parse("$baseUrl/api/bahan-baku/$id"), headers: headers)
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode == 200;
@@ -498,9 +472,7 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return (data['data'] as List)
-            .map((e) => Diskon.fromJson(e))
-            .toList();
+        return (data['data'] as List).map((e) => Diskon.fromJson(e)).toList();
       } else {
         throw Exception("Failed to load diskon");
       }
@@ -564,10 +536,7 @@ class ApiService {
   static Future<bool> deleteDiskon(int id) async {
     try {
       final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/diskon/$id"),
-            headers: headers,
-          )
+          .delete(Uri.parse("$baseUrl/api/diskon/$id"), headers: headers)
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode == 200;
@@ -653,10 +622,7 @@ class ApiService {
   static Future<bool> deleteSupplier(int id) async {
     try {
       final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/supplier/$id"),
-            headers: headers,
-          )
+          .delete(Uri.parse("$baseUrl/api/supplier/$id"), headers: headers)
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode == 200;
@@ -726,10 +692,7 @@ class ApiService {
   static Future<bool> deletePembelian(int id) async {
     try {
       final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/pembelian/$id"),
-            headers: headers,
-          )
+          .delete(Uri.parse("$baseUrl/api/pembelian/$id"), headers: headers)
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode == 200;
@@ -752,9 +715,7 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return (data['data'] as List)
-            .map((e) => Produksi.fromJson(e))
-            .toList();
+        return (data['data'] as List).map((e) => Produksi.fromJson(e)).toList();
       } else {
         throw Exception("Failed to load produksi");
       }
@@ -799,9 +760,7 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return (data['data'] as List)
-            .map((e) => Resep.fromJson(e))
-            .toList();
+        return (data['data'] as List).map((e) => Resep.fromJson(e)).toList();
       } else {
         throw Exception("Failed to load resep");
       }
@@ -844,10 +803,14 @@ class ApiService {
             body: jsonEncode({
               'nama_resep': resep.namaResep,
               'deskripsi': resep.deskripsi,
-              'bahan': resep.bahan?.map((e) => {
-                'bahan_id': e.bahanId,
-                'jumlah_bahan': e.jumlahBahan,
-              }).toList(),
+              'bahan': resep.bahan
+                  ?.map(
+                    (e) => {
+                      'bahan_id': e.bahanId,
+                      'jumlah_bahan': e.jumlahBahan,
+                    },
+                  )
+                  .toList(),
             }),
           )
           .timeout(const Duration(seconds: 10));
@@ -867,10 +830,14 @@ class ApiService {
             body: jsonEncode({
               'nama_resep': resep.namaResep,
               'deskripsi': resep.deskripsi,
-              'bahan': resep.bahan?.map((e) => {
-                'bahan_id': e.bahanId,
-                'jumlah_bahan': e.jumlahBahan,
-              }).toList(),
+              'bahan': resep.bahan
+                  ?.map(
+                    (e) => {
+                      'bahan_id': e.bahanId,
+                      'jumlah_bahan': e.jumlahBahan,
+                    },
+                  )
+                  .toList(),
             }),
           )
           .timeout(const Duration(seconds: 10));
@@ -884,10 +851,7 @@ class ApiService {
   static Future<bool> deleteResep(int id) async {
     try {
       final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/resep/$id"),
-            headers: headers,
-          )
+          .delete(Uri.parse("$baseUrl/api/resep/$id"), headers: headers)
           .timeout(const Duration(seconds: 10));
 
       return response.statusCode == 200;
@@ -899,6 +863,33 @@ class ApiService {
   // ========================
   // USER APIS
   // ========================
+
+  // LOGIN
+  static Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/users/login"),
+            headers: headers,
+            body: jsonEncode({"email": email, "password": password}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success']) {
+        return data['user'];
+      } else {
+        throw Exception(data['message']);
+      }
+    } catch (e) {
+      throw Exception("Login gagal: $e");
+    }
+  }
+
   static Future<List<User>> getAllUsers() async {
     try {
       final response = await http
@@ -910,81 +901,12 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return (data['data'] as List)
-            .map((e) => User.fromJson(e))
-            .toList();
+        return (data['data'] as List).map((e) => User.fromJson(e)).toList();
       } else {
         throw Exception("Failed to load users");
       }
     } catch (e) {
       throw Exception("Gagal memuat users: $e");
-    }
-  }
-
-  static Future<User> getUserById(int id) async {
-    try {
-      final response = await http
-          .get(
-            Uri.parse("$baseUrl/api/users/$id"),
-            headers: {"Connection": "close"},
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return User.fromJson(data['data']);
-      } else {
-        throw Exception("Failed to load user");
-      }
-    } catch (e) {
-      throw Exception("Gagal memuat user: $e");
-    }
-  }
-
-  static Future<bool> createUser(User user) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse("$baseUrl/api/users"),
-            headers: headers,
-            body: jsonEncode(user.toJson()),
-          )
-          .timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal membuat user: $e");
-    }
-  }
-
-  static Future<bool> updateUser(User user) async {
-    try {
-      final response = await http
-          .put(
-            Uri.parse("$baseUrl/api/users/${user.id}"),
-            headers: headers,
-            body: jsonEncode(user.toJson()),
-          )
-          .timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal update user: $e");
-    }
-  }
-
-  static Future<bool> deleteUser(int id) async {
-    try {
-      final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/users/$id"),
-            headers: headers,
-          )
-          .timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal hapus user: $e");
     }
   }
 }

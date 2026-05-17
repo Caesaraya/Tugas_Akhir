@@ -6,14 +6,12 @@ import 'package:tugas_akhir/widget/widget mobile/cash/kembalian.dart';
 import 'package:tugas_akhir/widget/widget mobile/cash/total_tagihan.dart';
 import 'package:tugas_akhir/widget/widget mobile/cash/uang_diterima.dart';
 
- 
-
 class KalkulatorCashPage extends StatelessWidget {
   const KalkulatorCashPage({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(KalkulatorController());
+    final ctrl = Get.find<KalkulatorController>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -38,10 +36,10 @@ class KalkulatorCashPage extends StatelessWidget {
                 children: [
                   TotalTagihanBox(ctrl: ctrl),
                   const SizedBox(height: 40),
- 
+
                   UangDiterimaInput(ctrl: ctrl),
                   const SizedBox(height: 60),
- 
+
                   KembalianDisplay(ctrl: ctrl),
                 ],
               ),

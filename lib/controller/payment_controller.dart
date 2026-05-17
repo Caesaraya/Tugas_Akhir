@@ -1,8 +1,8 @@
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/widget/widget%20mobile/delete_validation.dart';
  
 class PaymentController extends GetxController {
   var input = ''.obs;
@@ -10,36 +10,64 @@ class PaymentController extends GetxController {
  
   final CartController cartController = Get.find<CartController>();
  
-
-  static final currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
- 
-  static String formatRupiah(num value) => currencyFormatter.format(value);
- 
- 
+  // ─── Getter format currency — pakai CartController ────────────────────────
   String get totalFormatted =>
-      formatRupiah(cartController.totalPrice);
+      cartController.currencyFormatter.format(cartController.totalPrice);
  
-
   String get inputFormatted =>
-      formatRupiah(double.tryParse(input.value) ?? 0);
+      cartController.currencyFormatter.format(
+        double.tryParse(input.value) ?? 0,
+      );
  
-
+  String get subtotalFormatted =>
+      cartController.currencyFormatter.format(cartController.subtotal);
+ 
+  String get diskonFormatted =>
+      '- ${cartController.currencyFormatter.format(cartController.totalDiscount)}';
+ 
+  bool get hasDiskon => cartController.totalDiscount > 0;
+ 
+  String itemTotalFormatted(dynamic item) {
+    final double hargaAsli = item.price.toDouble();
+    final double persen = (item.discount ?? 0).toDouble();
+    final double hargaDiskon =
+        (hargaAsli - (hargaAsli * persen / 100)).roundToDouble();
+    return cartController.currencyFormatter.format(hargaDiskon * item.qty);
+  }
+ 
+  // ─── Getter payment ───────────────────────────────────────────────────────
   String get methodLabel => selectedMethod.value;
  
-
   double get paidAmount => double.tryParse(input.value) ?? 0;
  
-
   double get changeAmount {
     final change = paidAmount - cartController.totalPrice;
     return change > 0 ? change : 0;
   }
  
-
+  // ─── Aksi qty keranjang ───────────────────────────────────────────────────
+  void increaseQty(int productId) => cartController.increaseQty(productId);
+  void decreaseQty(int productId) => cartController.decreaseQty(productId);
+ 
+  void removeItem(dynamic item) {
+    DeleteValidation.show(
+      productName: item.name,
+      onConfirm: () {
+        cartController.removeFromCart(item.productId);
+        Get.back();
+        Get.snackbar(
+          'Berhasil',
+          '${item.name} dihapus',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.black87,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(15),
+        );
+      },
+    );
+  }
+ 
+  // ─── Input numpad (desktop) ───────────────────────────────────────────────
   void onButtonPressed(String value) {
     if (value == 'X') {
       if (input.value.isNotEmpty) {
@@ -55,11 +83,12 @@ class PaymentController extends GetxController {
     }
   }
  
+  // ─── Ganti metode pembayaran ──────────────────────────────────────────────
   void onPaymentMethodChanged(String? value) {
     if (value != null) selectedMethod.value = value;
   }
  
-
+  // ─── Proses bayar desktop → kasirprint ───────────────────────────────────
   void processPayment() {
     if (selectedMethod.value.isEmpty) {
       showWarning(
@@ -68,7 +97,6 @@ class PaymentController extends GetxController {
       );
       return;
     }
- 
     if (paidAmount < cartController.totalPrice) {
       showError('Pembayaran Gagal', 'Uang yang dimasukkan kurang!');
     } else {
@@ -78,7 +106,17 @@ class PaymentController extends GetxController {
     }
   }
  
-
+  // ─── Proses bayar mobile ──────────────────────────────────────────────────
+  void bayarSekarang() {
+    if (cartController.selectedPayment.value == 'cash') {
+      Get.toNamed(AppRoutes.kalkulator);
+    } else {
+      cartController.inputUang.value = cartController.totalPrice;
+      Get.toNamed(AppRoutes.sukses);
+    }
+  }
+ 
+  // ─── Snackbar helpers ─────────────────────────────────────────────────────
   void showWarning(String title, String msg) {
     Get.snackbar(
       title, msg,
@@ -88,7 +126,7 @@ class PaymentController extends GetxController {
       margin: const EdgeInsets.all(10),
     );
   }
-
+ 
   void showError(String title, String msg) {
     Get.snackbar(
       title, msg,

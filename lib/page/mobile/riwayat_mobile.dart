@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:tugas_akhir/page/mobile/drawer_mobile.dart';
+import 'package:tugas_akhir/utils/currency.dart';
 import 'package:tugas_akhir/controller/riwayat_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 
 class RiwayatMobile extends StatelessWidget {
-  final RiwayatController riwayatController = Get.put(RiwayatController());
+  final RiwayatController riwayatController = Get.find<RiwayatController>();
   RiwayatMobile({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const KasirMobileDrawer(),
       backgroundColor: const Color(0xFFF8F5F2),
       appBar: AppBar(
         title: const Text(
@@ -105,7 +108,7 @@ class RiwayatMobile extends StatelessWidget {
                   ],
                 ),
                 trailing: Text(
-                  "Rp ${double.parse(trx['total_harga']).toInt()}",
+                  formatRupiah(double.parse(trx['total_harga']).toInt()),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFE89336),
