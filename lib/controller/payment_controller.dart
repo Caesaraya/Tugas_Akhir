@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
-import 'package:tugas_akhir/widget/widget%20mobile/delete_validation.dart';
+import 'package:tugas_akhir/widget/widget%20mobile/keranjang/delete_validation.dart';
  
 class PaymentController extends GetxController {
   var input = ''.obs;
@@ -10,7 +10,6 @@ class PaymentController extends GetxController {
  
   final CartController cartController = Get.find<CartController>();
  
-  // ─── Getter format currency — pakai CartController ────────────────────────
   String get totalFormatted =>
       cartController.currencyFormatter.format(cartController.totalPrice);
  
@@ -35,7 +34,6 @@ class PaymentController extends GetxController {
     return cartController.currencyFormatter.format(hargaDiskon * item.qty);
   }
  
-  // ─── Getter payment ───────────────────────────────────────────────────────
   String get methodLabel => selectedMethod.value;
  
   double get paidAmount => double.tryParse(input.value) ?? 0;
@@ -45,7 +43,6 @@ class PaymentController extends GetxController {
     return change > 0 ? change : 0;
   }
  
-  // ─── Aksi qty keranjang ───────────────────────────────────────────────────
   void increaseQty(int productId) => cartController.increaseQty(productId);
   void decreaseQty(int productId) => cartController.decreaseQty(productId);
  
@@ -67,7 +64,6 @@ class PaymentController extends GetxController {
     );
   }
  
-  // ─── Input numpad (desktop) ───────────────────────────────────────────────
   void onButtonPressed(String value) {
     if (value == 'X') {
       if (input.value.isNotEmpty) {
@@ -83,12 +79,10 @@ class PaymentController extends GetxController {
     }
   }
  
-  // ─── Ganti metode pembayaran ──────────────────────────────────────────────
   void onPaymentMethodChanged(String? value) {
     if (value != null) selectedMethod.value = value;
   }
  
-  // ─── Proses bayar desktop → kasirprint ───────────────────────────────────
   void processPayment() {
     if (selectedMethod.value.isEmpty) {
       showWarning(
@@ -106,8 +100,8 @@ class PaymentController extends GetxController {
     }
   }
  
-  // ─── Proses bayar mobile ──────────────────────────────────────────────────
   void bayarSekarang() {
+    
     if (cartController.selectedPayment.value == 'cash') {
       Get.toNamed(AppRoutes.kalkulator);
     } else {
@@ -116,7 +110,6 @@ class PaymentController extends GetxController {
     }
   }
  
-  // ─── Snackbar helpers ─────────────────────────────────────────────────────
   void showWarning(String title, String msg) {
     Get.snackbar(
       title, msg,

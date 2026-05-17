@@ -10,7 +10,7 @@ class KelolaProdukPage extends StatelessWidget {
  
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(KelolaProdukController());
+    final KelolaProdukController kelolaProdukController = Get.put(KelolaProdukController());
  
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5F2),
@@ -31,15 +31,15 @@ class KelolaProdukPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: ctrl.fetchData,
+            onPressed: kelolaProdukController.fetchData,
             icon: const Icon(Icons.refresh, color: Colors.white),
           ),
         ],
       ),
       body: Column(
         children: [
-          KelolaProdukSearchBar(ctrl: ctrl),
-          Expanded(child: KelolaProdukList(ctrl: ctrl)),
+          KelolaProdukSearchBar(ctrl: kelolaProdukController),
+          Expanded(child: KelolaProdukList(ctrl: kelolaProdukController)),
         ],
       ),
     );

@@ -11,7 +11,7 @@ class KalkulatorCashPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.find<KalkulatorController>();
+    final KalkulatorController kalkulatorController = Get.find<KalkulatorController>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -34,20 +34,20 @@ class KalkulatorCashPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TotalTagihanBox(ctrl: ctrl),
+                  TotalTagihanBox(ctrl: kalkulatorController),
                   const SizedBox(height: 40),
 
-                  UangDiterimaInput(ctrl: ctrl),
+                  UangDiterimaInput(ctrl: kalkulatorController),
                   const SizedBox(height: 60),
 
-                  KembalianDisplay(ctrl: ctrl),
+                  KembalianDisplay(ctrl: kalkulatorController),
                 ],
               ),
             ),
           ),
           Padding(
             padding: const EdgeInsets.all(24),
-            child: KonfirmasiBayarButton(ctrl: ctrl),
+            child: KonfirmasiBayarButton(ctrl: kalkulatorController),
           ),
         ],
       ),

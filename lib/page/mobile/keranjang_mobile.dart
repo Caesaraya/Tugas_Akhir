@@ -11,8 +11,8 @@ class KeranjangMobilePage extends StatelessWidget {
  
   @override
   Widget build(BuildContext context) {
-    Get.find<CartController>();
-    final ctrl = Get.put(PaymentController());
+    final CartController cartController = Get.find<CartController>();
+    final PaymentController paymentController = Get.put(PaymentController());
  
     return Scaffold(
       backgroundColor: Colors.white,
@@ -26,7 +26,7 @@ class KeranjangMobilePage extends StatelessWidget {
         centerTitle: true,
       ),
       body: Obx(() {
-        if (ctrl.cartController.cartItems.isEmpty) {
+        if (cartController.cartItems.isEmpty) {
           return const Center(
             child: Text('Belum ada produk di keranjang'),
           );
@@ -39,14 +39,14 @@ class KeranjangMobilePage extends StatelessWidget {
                   horizontal: 16,
                   vertical: 10,
                 ),
-                itemCount: ctrl.cartController.cartItems.length,
+                itemCount: cartController.cartItems.length,
                 itemBuilder: (context, index) {
-                  final item = ctrl.cartController.cartItems[index];
-                  return KeranjangItemCard(ctrl: ctrl, item: item);
+                  final item = cartController.cartItems[index];
+                  return KeranjangItemCard(ctrl: paymentController, item: item);
                 },
               ),
             ),
-            KeranjangBottomPanel(ctrl: ctrl),
+            KeranjangBottomPanel(ctrl: paymentController),
           ],
         );
       }),

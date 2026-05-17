@@ -8,7 +8,7 @@ class KasirMobileDrawer extends StatelessWidget {
  
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.put(KasirMobileDrawer());
+    final KasirMobileDrawer kasirMobileDrawer = Get.put(KasirMobileDrawer());
  
     return Drawer(
       child: SafeArea(
@@ -60,11 +60,6 @@ class KasirMobileDrawer extends StatelessWidget {
             ),
             const Spacer(),
             const Divider(),
-            // ListTile(
-            //   leading: const Icon(Icons.logout, color: Colors.black87),
-            //   title: const Text('Keluar'),
-            //   onTap: ctrl.logout,
-            // ),
           ],
         ),
       ),

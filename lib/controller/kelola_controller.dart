@@ -13,7 +13,6 @@ class KelolaProdukController extends GetxController {
   var isLoading = false.obs;
   var searchQuery = "".obs;
 
-  // Image Picker & File State
   final ImagePicker _picker = ImagePicker();
   var selectedImage = Rx<File?>(null);
 
@@ -158,7 +157,6 @@ class KelolaProdukController extends GetxController {
         actions: [
           TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
           ElevatedButton(
-            // Kirim seluruh objek product agar kita punya data ID dan image lama
             onPressed: () => updateProduct(product),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE89336),

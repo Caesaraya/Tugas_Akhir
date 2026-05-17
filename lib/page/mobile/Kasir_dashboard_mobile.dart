@@ -15,11 +15,11 @@ class KasirDashboardMobile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.find<DashboardController>();
-    final cartCtrl = Get.find<CartController>();
+    final DashboardController dashboardController = Get.find<DashboardController>();
+    final CartController cartCtrl = Get.find<CartController>();
     return Obx(
       () => DefaultTabController(
-        length: ctrl.categories.length,
+        length: dashboardController.categories.length,
         child: Scaffold(
           drawer: const KasirMobileDrawer(),
           backgroundColor: const Color(0xFFFDFBFA),
@@ -73,7 +73,7 @@ class KasirDashboardMobile extends StatelessWidget {
           }),
           body: SafeArea(
             child: RefreshIndicator(
-              onRefresh: ctrl.fetchProducts,
+              onRefresh: dashboardController.fetchProducts,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -93,14 +93,14 @@ class KasirDashboardMobile extends StatelessWidget {
                     const DashboardGreeting(),
                     const SizedBox(height: 20),
                     MySearchBar(
-                      onChanged: (value) => ctrl.applyFilter(query: value),
+                      onChanged: (value) => dashboardController.applyFilter(query: value),
                     ),
                     const SizedBox(height: 10),
-                    DashboardCategoryTabs(ctrl: ctrl),
+                    DashboardCategoryTabs(ctrl: dashboardController),
                     const SizedBox(height: 10),
                     SectionHeader(title: 'Daftar Menu'),
                     const SizedBox(height: 10),
-                    DashboardProductGrid(ctrl: ctrl),
+                    DashboardProductGrid(ctrl: dashboardController),
                     const SizedBox(height: 30),
                   ],
                 ),

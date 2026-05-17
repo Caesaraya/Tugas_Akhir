@@ -17,7 +17,6 @@ class LoginController extends GetxController {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
 
-  // Menambahkan parameter isDesktop untuk membedakan asal login
   Future<void> login({required bool isDesktop}) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -48,7 +47,6 @@ class LoginController extends GetxController {
     }
   }
 
-  // Fungsi internal untuk mengarahkan navigasi berdasarkan user dan platform
   void _handleNavigation(User user, bool isDesktop) {
     if (isDesktop) {
       navigateByRoleDesktop(user.role);
@@ -57,29 +55,26 @@ class LoginController extends GetxController {
     }
   }
 
-  // Navigasi Khusus Mobile
   void navigateByRoleMobile(String role) {
     switch (role.toUpperCase()) {
       case 'KASIR':
-        Get.offAllNamed(AppRoutes.dashboardMobile); // Route utama kasir di mobile
+        Get.offAllNamed(AppRoutes.dashboardMobile);
         break;
       case 'ADMIN':
-        // Jika admin membuka mobile, arahkan ke halaman yang sesuai (atau samakan)
-        Get.offAllNamed(AppRoutes.kelolaProdukMob); // Route admin mobile
+   
+        Get.offAllNamed(AppRoutes.kelolaProdukMob);
         break;
       default:
         showError('Role tidak dikenali untuk perangkat mobile');
     }
   }
 
-  // Navigasi Khusus Desktop
   void navigateByRoleDesktop(String role) {
     switch (role.toUpperCase()) {
       case 'ADMIN':
-        Get.offAllNamed(AppRoutes.kelolaprodukdesk); // Route admin desktop
+        Get.offAllNamed(AppRoutes.kelolaprodukdesk);
         break;
       case 'KASIR':
-        // Jika kasir login di desktop, arahkan ke layout desktopnya (jika ada)
         Get.offAllNamed(AppRoutes.kasirboarddesk);
         break;
       default:

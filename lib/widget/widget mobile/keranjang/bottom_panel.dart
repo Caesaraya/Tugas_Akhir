@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/payment_controller.dart';
-import 'package:tugas_akhir/widget/widget mobile/payment_method.dart';
+import 'package:tugas_akhir/widget/widget%20mobile/keranjang/payment_method.dart';
 import 'package:tugas_akhir/widget/widget desktop/detail_transaction/row.dart';
 import 'package:get/get.dart';
 

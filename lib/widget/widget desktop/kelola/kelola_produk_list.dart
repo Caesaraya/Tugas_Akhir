@@ -31,7 +31,6 @@ class KelolaProdukList extends StatelessWidget {
           itemCount: ctrl.filteredProducts.length,
           itemBuilder: (context, index) {
             final produk = ctrl.filteredProducts[index];
-            // Pakai widget yang sama dengan desktop
             return ProductCardKelola(ctrl: ctrl, produk: produk);
           },
         ),

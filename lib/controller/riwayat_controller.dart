@@ -5,7 +5,7 @@ import 'package:tugas_akhir/api service/api_service.dart';
 class RiwayatController extends GetxController {
   var transactions = [].obs;
   var isLoading = true.obs;
-  var isLoadingDetail = false.obs; // ✅ loading per item
+  var isLoadingDetail = false.obs;
 
   @override
   void onInit() {
@@ -13,12 +13,10 @@ class RiwayatController extends GetxController {
     fetchHistory();
   }
 
-  // ✅ Hanya fetch list — 1 request saja
   void fetchHistory() async {
     try {
       isLoading(true);
       var data = await ApiService.getTransactions();
-      // Setiap item langsung punya items kosong dulu
       for (var trx in data) {
         trx['items'] = [];
       }
@@ -30,10 +28,9 @@ class RiwayatController extends GetxController {
     }
   }
 
-  // ✅ Fetch detail hanya saat user tap 1 item
+
 Future<void> fetchDetail(int id) async {
   try {
-    // Tampilkan loading dialog
     Get.dialog(
       const Center(child: CircularProgressIndicator()),
       barrierDismissible: false,
@@ -53,4 +50,21 @@ Future<void> fetchDetail(int id) async {
     if (Get.isDialogOpen ?? false) Get.back(); // tutup loading
   }
 }
+Future<void> navigateToDetail(Map<String, dynamic> trx, String route) async {
+    final id = int.parse(trx['id'].toString());
+    await fetchDetail(id);
+    final updatedTrx = transactions.firstWhere(
+      (t) => int.parse(t['id'].toString()) == id,
+      orElse: () => trx,
+    );
+    Get.toNamed(route, arguments: {
+      'id': updatedTrx['id'],
+      'tanggal': updatedTrx['tanggal'],
+      'total_harga': updatedTrx['total_harga'],
+      'jumlah_bayar': updatedTrx['jumlah_bayar'],
+      'kembalian': updatedTrx['kembalian'],
+      'metode_pembayaran': updatedTrx['metode_pembayaran'],
+      'items': updatedTrx['items'],
+    });
+  }
 }

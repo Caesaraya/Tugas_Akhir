@@ -343,6 +343,7 @@ if (Get.isRegistered<DashboardController>()) {
   Get.find<DashboardController>().fetchProducts();
 }
 
+
 final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
 
 if (isDesktop) {
@@ -438,7 +439,6 @@ if (isDesktop) {
   );
 
   await Printing.layoutPdf(onLayout: (format) async => pdf.save());
-  
 }
   
 
