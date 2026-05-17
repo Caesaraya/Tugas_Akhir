@@ -28,7 +28,7 @@ class _ProductFormPageState extends State<ProductFormPage> {
   String _selectedJenis = 'CAKE';
   bool _isLoading = false;
   File? _selectedImage;
-  final ImagePicker _imagePicker = ImagePicker();
+  final ImagePicker imagePicker = ImagePicker();
   bool _isImageLoading = false;
   Uint8List? _imageBytes;
 

@@ -25,7 +25,7 @@ class DashboardController extends GetxController {
       isLoading(true);
       errorMessage.value = "";
       var products = await ApiService.getProducts();
-      if (products != null) {
+      if (products.isNotEmpty) {
         productList.assignAll(products);
         // Extract unique jenis from products
         var uniqueCategories = productList.map((p) => p.jenis).toSet().toList();

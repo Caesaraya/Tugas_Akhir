@@ -1,0 +1,769 @@
+{
+  "info": {
+    "name": "Bakery POS API",
+    "description": "API Collection for Bakery POS System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://porthole-popcorn-winter.ngrok-free.dev",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Get all products from database"
+          }
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Product ID"
+                }
+              ]
+            },
+            "description": "Get specific product by ID"
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Roti Coklat",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "15000",
+                  "type": "text"
+                },
+                {
+                  "key": "discount",
+                  "value": "10",
+                  "type": "text"
+                },
+                {
+                  "key": "stock",
+                  "value": "50",
+                  "type": "text"
+                },
+                {
+                  "key": "jenis",
+                  "value": "BREAD",
+                  "type": "text"
+                },
+                {
+                  "key": "satuan",
+                  "value": "pcs",
+                  "type": "text"
+                },
+                {
+                  "key": "barcode",
+                  "value": "123456789",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Create new product with image upload"
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Roti Coklat Updated",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "18000",
+                  "type": "text"
+                },
+                {
+                  "key": "discount",
+                  "value": "15",
+                  "type": "text"
+                },
+                {
+                  "key": "stock",
+                  "value": "45",
+                  "type": "text"
+                },
+                {
+                  "key": "jenis",
+                  "value": "BREAD",
+                  "type": "text"
+                },
+                {
+                  "key": "satuan",
+                  "value": "pcs",
+                  "type": "text"
+                },
+                {
+                  "key": "barcode",
+                  "value": "123456789",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Product ID"
+                }
+              ]
+            },
+            "description": "Update existing product with optional image upload"
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Product ID"
+                }
+              ]
+            },
+            "description": "Delete product by ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Get All Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"]
+            },
+            "description": "Get all transactions from database"
+          }
+        },
+        {
+          "name": "Get Transaction Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Transaction ID"
+                }
+              ]
+            },
+            "description": "Get transaction detail with items"
+          }
+        },
+        {
+          "name": "Create Transaction",
+          "request": {
+            "method": "POST",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"total_harga\": 150000,\n  \"metode_pembayaran\": \"cash\",\n  \"jumlah_bayar\": 200000,\n  \"kembalian\": 50000,\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"qty\": 2,\n      \"price\": 25000,\n      \"subtotal\": 50000\n    },\n    {\n      \"product_id\": 2,\n      \"qty\": 1,\n      \"price\": 50000,\n      \"subtotal\": 50000\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions"]
+            },
+            "description": "Create new transaction with items"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bahan Baku",
+      "item": [
+        {
+          "name": "Get All Bahan Baku",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bahan-baku",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bahan-baku"]
+            },
+            "description": "Get all raw materials"
+          }
+        },
+        {
+          "name": "Create Bahan Baku",
+          "request": {
+            "method": "POST",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Tepung Terigu\",\n  \"stok\": 100,\n  \"satuan\": \"kg\",\n  \"harga_per_satuan\": 15000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bahan-baku",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bahan-baku"]
+            },
+            "description": "Create new raw material"
+          }
+        },
+        {
+          "name": "Update Bahan Baku",
+          "request": {
+            "method": "PUT",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Tepung Terigu Premium\",\n  \"stok\": 95,\n  \"satuan\": \"kg\",\n  \"harga_per_satuan\": 18000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bahan-baku/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bahan-baku", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Bahan Baku ID"
+                }
+              ]
+            },
+            "description": "Update raw material"
+          }
+        },
+        {
+          "name": "Delete Bahan Baku",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bahan-baku/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bahan-baku", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Bahan Baku ID"
+                }
+              ]
+            },
+            "description": "Delete raw material"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resep",
+      "item": [
+        {
+          "name": "Get All Resep",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/resep",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resep"]
+            },
+            "description": "Get all recipes"
+          }
+        },
+        {
+          "name": "Create Resep",
+          "request": {
+            "method": "POST",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produk_id\": 1,\n  \"bahan_baku_id\": 1,\n  \"jumlah\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/resep",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resep"]
+            },
+            "description": "Create new recipe"
+          }
+        },
+        {
+          "name": "Update Resep",
+          "request": {
+            "method": "PUT",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produk_id\": 1,\n  \"bahan_baku_id\": 1,\n  \"jumlah\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/resep/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resep", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Resep ID"
+                }
+              ]
+            },
+            "description": "Update recipe"
+          }
+        },
+        {
+          "name": "Delete Resep",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/resep/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resep", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Resep ID"
+                }
+              ]
+            },
+            "description": "Delete recipe"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Produksi",
+      "item": [
+        {
+          "name": "Get All Produksi",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produksi",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "produksi"]
+            },
+            "description": "Get all production records"
+          }
+        },
+        {
+          "name": "Create Produksi",
+          "request": {
+            "method": "POST",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produk_id\": 1,\n  \"tanggal\": \"2024-05-17\",\n  \"jumlah\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/produksi",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "produksi"]
+            },
+            "description": "Create new production record"
+          }
+        },
+        {
+          "name": "Update Produksi",
+          "request": {
+            "method": "PUT",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"produk_id\": 1,\n  \"tanggal\": \"2024-05-17\",\n  \"jumlah\": 15\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/produksi/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "produksi", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Produksi ID"
+                }
+              ]
+            },
+            "description": "Update production record"
+          }
+        },
+        {
+          "name": "Delete Produksi",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/produksi/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "produksi", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Produksi ID"
+                }
+              ]
+            },
+            "description": "Delete production record"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier",
+      "item": [
+        {
+          "name": "Get All Supplier",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/supplier",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "supplier"]
+            },
+            "description": "Get all suppliers"
+          }
+        },
+        {
+          "name": "Create Supplier",
+          "request": {
+            "method": "POST",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"PT Tepung Makmur\",\n  \"kontak\": \"08123456789\",\n  \"alamat\": \"Jl. Raya No. 123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/supplier",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "supplier"]
+            },
+            "description": "Create new supplier"
+          }
+        },
+        {
+          "name": "Update Supplier",
+          "request": {
+            "method": "PUT",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"PT Tepung Makmur Jaya\",\n  \"kontak\": \"081234567890\",\n  \"alamat\": \"Jl. Raya No. 456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/supplier/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "supplier", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Supplier ID"
+                }
+              ]
+            },
+            "description": "Update supplier"
+          }
+        },
+        {
+          "name": "Delete Supplier",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/supplier/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "supplier", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Supplier ID"
+                }
+              ]
+            },
+            "description": "Delete supplier"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Diskon",
+      "item": [
+        {
+          "name": "Get All Diskon",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/diskon",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "diskon"]
+            },
+            "description": "Get all discounts"
+          }
+        },
+        {
+          "name": "Create Diskon",
+          "request": {
+            "method": "POST",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Diskon Lebaran\",\n  \"persentase\": 20,\n  \"tanggal_mulai\": \"2024-05-01\",\n  \"tanggal_selesai\": \"2024-05-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/diskon",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "diskon"]
+            },
+            "description": "Create new discount"
+          }
+        },
+        {
+          "name": "Update Diskon",
+          "request": {
+            "method": "PUT",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Diskon Lebaran Special\",\n  \"persentase\": 25,\n  \"tanggal_mulai\": \"2024-05-01\",\n  \"tanggal_selesai\": \"2024-06-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/diskon/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "diskon", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Diskon ID"
+                }
+              ]
+            },
+            "description": "Update discount"
+          }
+        },
+        {
+          "name": "Delete Diskon",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/diskon/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "diskon", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "Diskon ID"
+                }
+              ]
+            },
+            "description": "Delete discount"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Get all users"
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"kasir1\",\n  \"password\": \"password123\",\n  \"role\": \"kasir\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Create new user"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"kasir1_updated\",\n  \"password\": \"newpassword123\",\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Update user"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1",
+                  "description": "User ID"
+                }
+              ]
+            },
+            "description": "Delete user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "API Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"]
+            },
+            "description": "Check if API is running"
+          }
+        }
+      ]
+    }
+  ]
+}
