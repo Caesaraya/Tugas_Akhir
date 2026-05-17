@@ -13,6 +13,7 @@ import 'package:tugas_akhir/page/desktop/Kasir_riwayat_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_kelola_dashboard.dart';
 import 'package:tugas_akhir/page/desktop/transaction_detail_desktop.dart';
 import 'package:tugas_akhir/page/login/desktop_login_page.dart';
+import 'package:tugas_akhir/page/login/splash_page.dart';
 import 'package:tugas_akhir/page/media_query.dart';
 import 'package:tugas_akhir/page/mobile/Kasir_dashboard_mobile.dart';
 import 'package:tugas_akhir/page/login/login_page.dart';
@@ -144,6 +145,16 @@ class AppPages {
     GetPage(
       name: AppRoutes.logindesk,
       page: () => DesktopLoginPage(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.mediaQuery,
+      page: () => DashboardWrapper(),
+      binding: AppBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.splash,
+      page: () => SplashPage(),
       binding: AppBinding(),
     ),
   ];

@@ -1,5 +1,6 @@
 class AppRoutes {
   //===LOGIN===
+  static const String splash = '/';
   static const String login = '/login';
   static const String logindesk = '/logindesktop';
   //===ADMIN===

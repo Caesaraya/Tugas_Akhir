@@ -64,6 +64,11 @@ class User {
     );
   }
 
+  bool get isValid {
+    final emailPattern = RegExp(r"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+    return name.isNotEmpty && emailPattern.hasMatch(email) && role.isNotEmpty;
+  }
+
   // ========================
   // ROLE CHECK
   // ========================

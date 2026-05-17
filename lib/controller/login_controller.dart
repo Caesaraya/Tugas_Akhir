@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tugas_akhir/api service/api_service.dart';
 import 'package:tugas_akhir/models/user.dart';
 import 'package:tugas_akhir/routes/routes.dart';
@@ -12,9 +15,51 @@ class LoginController extends GetxController {
   var isLoading = false.obs;
 
   final Rx<User?> currentUser = Rx<User?>(null);
+  static const String _userSessionKey = 'user_session';
 
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
+  }
+
+  Future<void> _saveSession(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userSessionKey, jsonEncode(user.toJson()));
+  }
+
+  Future<void> _clearSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_userSessionKey);
+    currentUser.value = null;
+  }
+
+  Future<bool> restoreSession({required bool isDesktop}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(_userSessionKey);
+      if (jsonString == null || jsonString.isEmpty) {
+        return false;
+      }
+
+      final data = jsonDecode(jsonString) as Map<String, dynamic>;
+      final user = User.fromJson(data);
+
+      if (!user.isValid) {
+        await _clearSession();
+        return false;
+      }
+
+      currentUser.value = user;
+      _handleNavigation(user, isDesktop);
+      return true;
+    } catch (_) {
+      await _clearSession();
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    await _clearSession();
+    Get.offAllNamed(AppRoutes.mediaQuery);
   }
 
   // Menambahkan parameter isDesktop untuk membedakan asal login
@@ -37,6 +82,7 @@ class LoginController extends GetxController {
 
       final user = User.fromJson(responseData);
       currentUser.value = user;
+      await _saveSession(user);
       _handleNavigation(user, isDesktop);
     } catch (error) {
       final message = error is Exception

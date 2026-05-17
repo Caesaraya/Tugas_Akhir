@@ -16,8 +16,7 @@ class LoginButton extends StatelessWidget {
         child: ElevatedButton(
           onPressed: loginCtrl.isLoading.value
               ? null
-              : () =>
-                    loginCtrl.login(isDesktop: false), // Set false untuk Mobile
+              : () => loginCtrl.login, // Set false untuk Mobile
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFE89336),
             disabledBackgroundColor: const Color(0xFFE89336),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import '../../controller/admin/navigation_controller.dart';
 
@@ -68,6 +69,14 @@ class AdminSidebar extends StatelessWidget {
                     onTap: () => navC.changePage(2, AppRoutes.kelolaresepdesk),
                   ),
                   const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: const Text('Logout'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Get.find<LoginController>().logout();
+                    },
+                  ),
                 ],
               ),
             ),
