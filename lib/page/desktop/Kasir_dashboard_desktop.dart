@@ -10,7 +10,7 @@ import 'package:tugas_akhir/widget/widget desktop/dashboard/cart_panel.dart';
 class KasirDashboardDesktop extends StatelessWidget {
   KasirDashboardDesktop({super.key});
 
-  final DashboardController controller = Get.find<DashboardController>();
+  final DashboardController controller = Get.put(DashboardController());
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final CartController cartController = Get.find<CartController>();
 

@@ -12,55 +12,28 @@ import 'package:tugas_akhir/controller/kelola_controller.dart';
 import 'package:tugas_akhir/controller/kalkulator_controller.dart';
 import 'package:tugas_akhir/controller/dashboard_controller.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
-import 'package:tugas_akhir/page/mobile/drawer_mobile.dart';
-
+ 
 class AppBinding extends Bindings {
   @override
   void dependencies() {
-    // Admin / table controllers
-    Get.lazyPut<ProductTableController>(
-      () => ProductTableController(),
-      fenix: true,
-    );
-    Get.lazyPut<BahanBakuTableController>(
-      () => BahanBakuTableController(),
-      fenix: true,
-    );
-    Get.lazyPut<ResepTableController>(
-      () => ResepTableController(),
-      fenix: true,
-    );
-    Get.lazyPut<NavigationController>(
-      () => NavigationController(),
-      fenix: true,
-    );
-
-    // Core app controllers
+    // ── Admin controllers ─────────────────────────────────────────────────
+    Get.lazyPut<ProductTableController>(() => ProductTableController(), fenix: true);
+    Get.lazyPut<BahanBakuTableController>(() => BahanBakuTableController(), fenix: true);
+    Get.lazyPut<ResepTableController>(() => ResepTableController(), fenix: true);
+    Get.lazyPut<NavigationController>(() => NavigationController(), fenix: true);
+ 
+    // ── Core controllers ──────────────────────────────────────────────────
     Get.put<LoginController>(LoginController(), permanent: true);
+    Get.lazyPut<CartController>(() => CartController(), fenix: true);
+    Get.lazyPut<DashboardController>(() => DashboardController(), fenix: true);
+    Get.lazyPut<PaymentController>(() => PaymentController(), fenix: true);
+    Get.lazyPut<KalkulatorController>(() => KalkulatorController(), fenix: true);
     Get.lazyPut<RiwayatController>(() => RiwayatController(), fenix: true);
     Get.lazyPut<ProductController>(() => ProductController(), fenix: true);
-
-    // HAPUS SALAH SATU PAYMENT CONTROLLER (Cukup sisakan satu ini saja)
-    Get.lazyPut<PaymentController>(() => PaymentController(), fenix: true);
-
-    Get.lazyPut<KelolaProdukController>(
-      () => KelolaProdukController(),
-      fenix: true,
-    );
-    Get.lazyPut<KalkulatorController>(
-      () => KalkulatorController(),
-      fenix: true,
-    );
-    Get.lazyPut<CartController>(() => CartController(), fenix: true);
-
-    // Desktop specific controllers
-    Get.lazyPut<TransactionDetailController>(
-      () => TransactionDetailController(),
-      fenix: true,
-    );
-
-    // Dashboard
-    Get.lazyPut<DashboardController>(() => DashboardController(), fenix: true);
-    Get.lazyPut<KasirMobileDrawer>(() => KasirMobileDrawer(), fenix: true);
+    Get.lazyPut<KelolaProdukController>(() => KelolaProdukController(), fenix: true);
+ 
+    // ── Desktop controllers ───────────────────────────────────────────────
+    Get.lazyPut<TransactionDetailController>(() => TransactionDetailController(), fenix: true);
+ 
   }
 }
