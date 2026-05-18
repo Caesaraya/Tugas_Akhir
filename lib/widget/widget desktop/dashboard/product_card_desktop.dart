@@ -8,7 +8,7 @@ class ProductCardDesktop extends StatelessWidget {
     symbol: 'Rp ',
     decimalDigits: 0,
   );
-  
+
   final Product product;
   final String tag;
   final VoidCallback? onTap;
@@ -33,7 +33,9 @@ class ProductCardDesktop extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
                 child: Image.network(
                   product.image,
                   width: double.infinity,
@@ -54,7 +56,10 @@ class ProductCardDesktop extends StatelessWidget {
                     product.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   if (product.discount > 0)
@@ -80,9 +85,9 @@ class ProductCardDesktop extends StatelessWidget {
                       ],
                     ),
                   Text(
-                    currencyFormat.format(product.priceAfterDiscount), 
+                    currencyFormat.format(product.priceAfterDiscount),
                     style: const TextStyle(
-                      color: Color(0xFFE89336), 
+                      color: Color(0xFFE89336),
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -95,13 +100,18 @@ class ProductCardDesktop extends StatelessWidget {
                           product.jenis.toUpperCase(),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.grey[500], fontSize: 9),
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 9,
+                          ),
                         ),
                       ),
                       Text(
-                        "Stok: ${product.stock}",
+                        "Stok: ${product.stock} ${product.satuan}",
                         style: TextStyle(
-                          color: product.stock < 10 ? Colors.red : Colors.black87,
+                          color: product.stock < 10
+                              ? Colors.red
+                              : Colors.black87,
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                         ),

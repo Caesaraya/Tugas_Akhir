@@ -6,9 +6,9 @@ import 'package:tugas_akhir/widget/widget%20mobile/dashboard/product_card.dart';
 
 class DashboardProductGrid extends StatelessWidget {
   final DashboardController ctrl;
- 
+
   const DashboardProductGrid({super.key, required this.ctrl});
- 
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -27,7 +27,7 @@ class DashboardProductGrid extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.65,
+              childAspectRatio: 0.60,
             ),
             itemCount: ctrl.displayedList.length,
             itemBuilder: (context, index) {

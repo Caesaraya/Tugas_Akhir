@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:tugas_akhir/bindings/bindings.dart';
-import 'package:tugas_akhir/bindings/cart_binding.dart';
 import 'package:tugas_akhir/routes/pages.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 

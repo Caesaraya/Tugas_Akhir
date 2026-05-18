@@ -16,7 +16,14 @@ class DetailScreen extends StatelessWidget {
     final CartController cartController = Get.find<CartController>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Detail Transaksi')),
+      appBar: AppBar(
+        title: const Text(
+          'Detail Transaksi',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: const Color(0xFFE89336),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -63,7 +70,8 @@ class DetailScreen extends StatelessWidget {
               width: double.infinity,
               child: ReceiptActionButton(
                 label: 'Print Nota',
-                onPressed: () => cartController.printFromDetail(detailController),
+                onPressed: () =>
+                    cartController.printFromDetail(detailController),
               ),
             ),
           ],

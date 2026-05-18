@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/payment_controller.dart';
-import 'package:collection/collection.dart';
-
 class KeranjangItemCard extends StatelessWidget {
   final PaymentController ctrl;
   final dynamic item;

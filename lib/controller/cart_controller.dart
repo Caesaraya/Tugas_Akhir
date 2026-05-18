@@ -116,25 +116,41 @@ class CartController extends GetxController {
     }
   }
 
-  void handleSelesaiActionMobile(bool isFromHistory) async {
-    if (isFromHistory) {
-      Get.back();
-    } else {
+  
+void handleSelesaiActionMobile(bool isFromHistory) async {
+  if (isFromHistory) {
+    Get.back();
+  } else {
+    try {
       await prosesKeApi();
-      clearCart();
-      Get.offAllNamed('/dashboardMobile');
+    } catch (e) {
+      debugPrint('prosesKeApi mobile error: $e');
     }
+    clearCart();
+    // Refresh dashboard agar stok langsung update
+    if (Get.isRegistered<DashboardController>()) {
+      Get.find<DashboardController>().fetchProducts();
+    }
+    Get.offAllNamed(AppRoutes.dashboardMobile);
   }
-
-  void handleSelesaiActionDashboard(bool isFromHistory) async {
-    if (isFromHistory) {
-      Get.back();
-    } else {
+}
+ 
+void handleSelesaiActionDashboard(bool isFromHistory) async {
+  if (isFromHistory) {
+    Get.back();
+  } else {
+    try {
       await prosesKeApi();
-      clearCart();
-      Get.offAllNamed(AppRoutes.kasirboarddesk);
+    } catch (e) {
+      debugPrint('prosesKeApi desktop error: $e');
     }
+    clearCart();
+    if (Get.isRegistered<DashboardController>()) {
+      Get.find<DashboardController>().fetchProducts();
+    }
+    Get.offAllNamed(AppRoutes.kasirboarddesk);
   }
+}
 
   Future<void> prosesKeApi() async {
     if (cartItems.isNotEmpty) {
