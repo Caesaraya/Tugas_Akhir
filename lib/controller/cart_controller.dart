@@ -178,16 +178,19 @@ void handleSelesaiActionDashboard(bool isFromHistory) async {
   }
 
   Future<void> generateAndPrintPdf() async {
+    final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
     final pdf = pw.Document();
 
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat(
-          80 * PdfPageFormat.mm,
-          double.infinity,
-          marginAll: 5,
-        ),
-        build: (context) {
+        pageFormat: isDesktop
+          ? PdfPageFormat.a4
+          : PdfPageFormat(
+              80 * PdfPageFormat.mm,
+              double.infinity,
+              marginAll: 5,
+            ),
+      build: (context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -358,7 +361,7 @@ void handleSelesaiActionDashboard(bool isFromHistory) async {
       Get.find<DashboardController>().fetchProducts();
     }
 
-    final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
+
 
     if (isDesktop) {
       Get.offAllNamed(AppRoutes.kasirboarddesk);
