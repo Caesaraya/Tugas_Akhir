@@ -18,7 +18,14 @@ class TransactionDetailMobile extends StatelessWidget {
     final CartController cartController = Get.find<CartController>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Detail Transaksi')),
+      appBar: AppBar(
+        title: const Text(
+          'Detail Transaksi',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: const Color(0xFFE89336),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -62,9 +69,15 @@ class TransactionDetailMobile extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            ReceiptActionButton(
-              label: 'Print Nota',
-              onPressed: () => cartController.printFromDetail(detailController),
+            Center(
+              child: SizedBox(
+                width: 200,
+                child: ReceiptActionButton(
+                  label: 'Print Nota',
+                  onPressed: () =>
+                      cartController.printFromDetail(detailController),
+                ),
+              ),
             ),
           ],
         ),
