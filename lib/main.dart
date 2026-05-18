@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF26C6DA)),
       ),
       initialBinding: AppBinding(), // <<< PASANG DI SINI SECARA GLOBAL
-      initialRoute: AppRoutes.login,
+      initialRoute: AppRoutes.kasirboarddesk,
       getPages: AppPages.pages,
     );
   }
