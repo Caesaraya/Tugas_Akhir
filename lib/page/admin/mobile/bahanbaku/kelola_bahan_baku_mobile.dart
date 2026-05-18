@@ -21,7 +21,7 @@ class BahanBakuListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const MobileAdminDrawer(),
+      drawer: MobileAdminDrawer(),
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: const Text(

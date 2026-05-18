@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/navigation_controller.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
-import 'package:tugas_akhir/widget/admin/custom_drawer.dart';
+import 'package:tugas_akhir/widget/admin/custom_sidebar.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/product/insert_product_dialog.dart';
 import 'package:tugas_akhir/widget/admin/produk/product_table.dart';
 import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';

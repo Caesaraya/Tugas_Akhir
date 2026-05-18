@@ -118,10 +118,25 @@ class KasirSelesaiDesktop extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ReceiptActionButton(
-                          label: 'Print Nota',
-                          backgroundColor: Colors.blueGrey,
-                          onPressed: () => cart.generateAndPrintPdf(),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => cart.generateAndPrintPdf(),
+                            icon: const Icon(
+                              Icons.print_outlined,
+                              color: Colors.white,
+                            ),
+                            label: const Text(
+                              'Print Nota',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE89336),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         ReceiptActionButton(

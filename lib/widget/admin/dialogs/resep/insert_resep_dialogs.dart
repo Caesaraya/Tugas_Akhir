@@ -56,27 +56,44 @@ class InsertResepDialog extends StatelessWidget {
 
               // Input Bar untuk Bahan
               Row(
+                crossAxisAlignment: CrossAxisAlignment
+                    .start, // Menjaga posisi vertikal tetap sejajar di atas jika ada error text
                 children: [
+                  // 1. Dropdown Bahan Baku (Mengambil 3/4 bagian dari total lebar Row)
                   Expanded(
                     flex: 3,
                     child: Obx(
                       () => DropdownButtonFormField<int>(
+                        isExpanded:
+                            true, // PENTING: Mencegah overflow dengan memotong teks yang terlalu panjang (...)
                         value: ctrl.selectedBahanId.value,
                         decoration: const InputDecoration(
                           labelText: 'Pilih Bahan Baku',
                           border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ), // Padding agar tinggi seimbang
                         ),
                         items: bahanBakuCtrl.originalList.map((b) {
                           return DropdownMenuItem(
                             value: b.id,
-                            child: Text("${b.namaBahan} (${b.merk})"),
+                            child: Text(
+                              "${b.namaBahan} (${b.merk})",
+                              overflow: TextOverflow
+                                  .ellipsis, // Memastikan teks dipotong dengan rapi menggunakan titik tiga (...)
+                              maxLines: 1, // Membatasi teks hanya dalam 1 baris
+                            ),
                           );
                         }).toList(),
                         onChanged: (val) => ctrl.selectedBahanId.value = val,
                       ),
                     ),
                   ),
+
                   const SizedBox(width: 10),
+
+                  // 2. TextField Jumlah (Mengambil 1/4 bagian dari total lebar Row)
                   Expanded(
                     flex: 1,
                     child: TextField(
@@ -85,16 +102,28 @@ class InsertResepDialog extends StatelessWidget {
                       decoration: const InputDecoration(
                         labelText: 'Jumlah',
                         border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 16,
+                        ),
                       ),
                     ),
                   ),
+
                   const SizedBox(width: 10),
-                  IconButton(
-                    onPressed: () => ctrl.addBahanToTempList(),
-                    icon: const Icon(
-                      Icons.add_circle,
-                      color: Colors.cyan,
-                      size: 35,
+
+                  // 3. Tombol Tambah (Icon Button)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 4,
+                    ), // Sedikit offset agar ikon pas berada di tengah tinggi input field
+                    child: IconButton(
+                      onPressed: () => ctrl.addBahanToTempList(),
+                      icon: const Icon(
+                        Icons.add_circle,
+                        color: Colors.cyan,
+                        size: 35,
+                      ),
                     ),
                   ),
                 ],
