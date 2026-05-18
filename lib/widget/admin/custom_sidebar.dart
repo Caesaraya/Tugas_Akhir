@@ -8,7 +8,7 @@ class AdminSidebar extends StatelessWidget {
   AdminSidebar({super.key});
 
   final NavigationController navC = Get.find();
-  final Color accentColor = const Color(0xFF26C6DA);
+  final Color accentColor = Colors.orange; // Warna aksen untuk sidebar
 
   @override
   Widget build(BuildContext context) {
@@ -29,19 +29,15 @@ class AdminSidebar extends StatelessWidget {
               decoration: BoxDecoration(color: accentColor),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Rumah Lezzaaa',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                children: [
+                  Image.asset(
+                    'assets/Logo_Rumah_Lezaa-removebg-preview.png',
+                    height: 160,
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Admin Panel 🚀',
-                    style: TextStyle(color: Colors.white70),
+                    'Admin Panel',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                 ],
               ),
@@ -93,15 +89,12 @@ class AdminSidebar extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: selected ? const Color(0xFF26C6DA) : Colors.grey[700],
-      ),
+      leading: Icon(icon, color: selected ? Colors.orange : Colors.grey[700]),
       title: Text(
         title,
         style: TextStyle(
           fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-          color: selected ? const Color(0xFF26C6DA) : Colors.grey[900],
+          color: selected ? Colors.orange : Colors.grey[900],
         ),
       ),
       selected: selected,

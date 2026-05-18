@@ -9,8 +9,6 @@ class KasirMobileDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final KasirMobileDrawer kasirMobileDrawer = Get.put(KasirMobileDrawer());
-
     return Drawer(
       child: SafeArea(
         child: Column(

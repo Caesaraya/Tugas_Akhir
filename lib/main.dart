@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF4F6F9),
         appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF26C6DA)),
       ),
-      initialBinding: AppBinding(), // <<< PASANG DI SINI SECARA GLOBAL
+      initialBinding: AppBinding(),
       initialRoute: AppRoutes.mediaQuery,
       getPages: AppPages.pages,
     );

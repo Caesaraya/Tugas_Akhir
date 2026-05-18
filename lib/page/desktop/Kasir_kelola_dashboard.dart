@@ -21,7 +21,6 @@ class KasirKelolaDashboard extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFE89336),
-        centerTitle: true,
         elevation: 0,
         actions: [
           IconButton(

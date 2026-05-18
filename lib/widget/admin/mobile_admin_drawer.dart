@@ -15,20 +15,21 @@ class MobileAdminDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(color: Colors.blue),
+            decoration: BoxDecoration(color: Color(0xFF5D3A1A)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
-              children: const [
+              children: [
                 Text(
-                  'Admin Panel 🚀',
-                  style: TextStyle(fontSize: 24, color: Colors.white),
+                  'Rumah Lezzaaa',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 SizedBox(height: 8),
-                Text(
-                  'Kelola data mobile',
-                  style: TextStyle(color: Colors.white70),
-                ),
+                Text('Admin Panel', style: TextStyle(color: Colors.white70)),
               ],
             ),
           ),

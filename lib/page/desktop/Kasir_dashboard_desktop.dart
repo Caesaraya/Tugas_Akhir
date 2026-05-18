@@ -24,7 +24,7 @@ class KasirDashboardDesktop extends StatelessWidget {
         length: controller.categories.length,
         child: Scaffold(
           key: scaffoldKey,
-          drawer: const DesktopNavigationDrawer(),
+          drawer: DesktopNavigationDrawer(),
           body: Row(
             children: [
               Expanded(
