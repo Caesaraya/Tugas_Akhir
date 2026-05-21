@@ -3,18 +3,34 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
 import '../../../../controller/admin/resep_table_controller.dart';
 import '../../../../models/resep.dart';
+import '../custom_form_fields.dart';
 
-class EditResepDialog extends StatelessWidget {
+class EditResepDialog extends StatefulWidget {
   final Resep resep;
-  EditResepDialog({super.key, required this.resep});
+  const EditResepDialog({super.key, required this.resep});
 
+  @override
+  State<EditResepDialog> createState() => _EditResepDialogState();
+}
+
+class _EditResepDialogState extends State<EditResepDialog> {
   final ctrl = Get.find<ResepTableController>();
   final bahanBakuCtrl = Get.find<BahanBakuTableController>();
+
+  final TextEditingController _bahanDropdownC = TextEditingController();
+
+  static const Color _primaryColor = Color(0xFFE65100);
+
+  @override
+  void dispose() {
+    _bahanDropdownC.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
         width: 800,
         padding: const EdgeInsets.all(24),
@@ -23,154 +39,213 @@ class EditResepDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Edit Resep: ${resep.namaResep}',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              DialogCommonTitle(
+                title: 'Edit Resep: ${widget.resep.namaResep}',
+                icon: Icons.edit_note_rounded,
               ),
-              const Divider(),
-              const SizedBox(height: 16),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Divider(thickness: 1),
+              ),
 
-              TextField(
+              CustomTextField(
                 controller: ctrl.namaResepC,
-                decoration: const InputDecoration(
-                  labelText: 'Nama Resep',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Nama Resep',
+                icon: Icons.fastfood_rounded,
+                hint: 'Nama resep',
               ),
-              const SizedBox(height: 16),
-              TextField(
+              const SizedBox(height: 18),
+              CustomTextField(
                 controller: ctrl.deskripsiC,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Deskripsi',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Deskripsi Resep',
+                icon: Icons.description_rounded,
+                hint: 'Deskripsi atau cara olah resep...',
               ),
 
-              const SizedBox(height: 24),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Divider(thickness: 1.5),
+              ),
+
               const Text(
-                'Kelola Komposisi Bahan',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                'Ubah Komposisi Bahan Baku',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _buildAddBahanSection(),
+
+              const SizedBox(height: 16),
+
+              const Text(
+                'Daftar Bahan Terpilih:',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                ),
               ),
               const SizedBox(height: 8),
+              _buildTempBahanList(),
 
-              // Bar Input Bahan (Sama dengan Insert)
-              Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Obx(
-                      () => DropdownButtonFormField<int>(
-                        value: ctrl.selectedBahanId.value,
-                        decoration: const InputDecoration(
-                          labelText: 'Pilih Bahan Baku',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: bahanBakuCtrl.originalList.map((b) {
-                          return DropdownMenuItem(
-                            value: b.id,
-                            child: Text("${b.namaBahan} (${b.merk})"),
-                          );
-                        }).toList(),
-                        onChanged: (val) => ctrl.selectedBahanId.value = val,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    flex: 1,
-                    child: TextField(
-                      controller: ctrl.jumlahBahanC,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Jumlah',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  IconButton(
-                    onPressed: () => ctrl.addBahanToTempList(),
-                    icon: const Icon(
-                      Icons.add_circle,
-                      color: Colors.blue,
-                      size: 35,
-                    ),
-                  ),
-                ],
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Divider(thickness: 1),
               ),
 
-              const SizedBox(height: 16),
-
-              // Di dalam EditResepDialog
-              Obx(() {
-                if (ctrl.tempBahanList.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Text("Tidak ada bahan dalam resep ini"),
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  shrinkWrap: true, // Agar ListView mengikuti ukuran konten
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Scroll utama ditangani SingleChildScrollView dialog
-                  itemCount: ctrl.tempBahanList.length,
-                  itemBuilder: (context, index) {
-                    final item = ctrl.tempBahanList[index];
-
-                    // Cari nama bahan dari master data bahan baku
-                    String namaBahan = "Bahan ID: ${item.bahanId}";
-                    try {
-                      final master = bahanBakuCtrl.originalList.firstWhere(
-                        (b) => b.id == item.bahanId,
-                      );
-                      namaBahan = master.namaBahan;
-                    } catch (_) {
-                      // Jika tidak ketemu di master, gunakan namaBahan dari item resep
-                      namaBahan = item.namaBahan ?? namaBahan;
-                    }
-
-                    return ListTile(
-                      title: Text(namaBahan),
-                      subtitle: Text("Jumlah: ${item.jumlahBahan}"),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => ctrl.removeBahanFromTemp(index),
-                      ),
-                    );
-                  },
-                );
-              }),
-
-              SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Get.back(),
-                    child: const Text('Batal'),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () => ctrl.updateResepData(resep),
-                    child: const Text('Update Resep'),
-                  ),
-                ],
+              DialogActionButtons(
+                onCancel: () => Get.back(),
+                onSave: () => ctrl.updateResepData(widget.resep),
+                saveLabel: 'Update Resep',
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAddBahanSection() {
+    final List<String> masterBahanNames = bahanBakuCtrl.originalList
+        .map((b) => b.namaBahan)
+        .toSet()
+        .toList();
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: CustomDropdownMenu(
+            controller: _bahanDropdownC,
+            label: 'Pilih Bahan Baku',
+            icon: Icons.inventory_2_rounded,
+            items: masterBahanNames,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          flex: 2,
+          child: CustomTextField(
+            controller: ctrl.jumlahBahanC,
+            label: 'Jumlah',
+            icon: Icons.scale_rounded,
+            hint: '0.0',
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primaryColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: Colors.black87, width: 1.5),
+              ),
+              elevation: 0,
+            ),
+            onPressed: () {
+              final selectedName = _bahanDropdownC.text;
+              try {
+                final matchBahan = bahanBakuCtrl.originalList.firstWhere(
+                  (b) => b.namaBahan == selectedName,
+                );
+                ctrl.selectedBahanId.value = matchBahan.id;
+                ctrl.addBahanToTempList();
+                _bahanDropdownC.clear();
+              } catch (_) {
+                Get.snackbar(
+                  "Peringatan",
+                  "Silahkan pilih bahan baku yang valid terlebih dahulu",
+                  backgroundColor: Colors.orange,
+                  colorText: Colors.white,
+                );
+              }
+            },
+            icon: const Icon(Icons.add, size: 20),
+            label: const Text(
+              'Tambah',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTempBahanList() {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.black26, width: 1.5),
+      ),
+      child: Obx(() {
+        if (ctrl.tempBahanList.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                'Belum ada komposisi bahan baku',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          );
+        }
+        return ListView.separated(
+          shrinkWrap: true,
+          itemCount: ctrl.tempBahanList.length,
+          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemBuilder: (context, index) {
+            final item = ctrl.tempBahanList[index];
+
+            // Menggunakan item.bahanId sesuai objek model resep.dart
+            String namaBahan = "Bahan #${item.bahanId}";
+
+            try {
+              final masterBahan = bahanBakuCtrl.originalList.firstWhere(
+                (b) => b.id == item.bahanId,
+              );
+              namaBahan = "${masterBahan.namaBahan} (${masterBahan.satuan})";
+            } catch (_) {
+              namaBahan = item.namaBahan ?? namaBahan;
+            }
+
+            return ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Color(0xFFFFF3E0),
+                child: Icon(
+                  Icons.restaurant_menu_rounded,
+                  color: _primaryColor,
+                ),
+              ),
+              title: Text(
+                namaBahan,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text("Jumlah Aturan: ${item.jumlahBahan}"),
+              trailing: IconButton(
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Colors.red,
+                ),
+                onPressed: () => ctrl.removeBahanFromTemp(index),
+              ),
+            );
+          },
+        );
+      }),
     );
   }
 }

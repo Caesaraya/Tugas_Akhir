@@ -2,220 +2,255 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../models/resep.dart';
 import 'package:tugas_akhir/utils/currency.dart';
+import '../custom_form_fields.dart';
 
 class DetailResepDialog extends StatelessWidget {
   final Resep resep;
-
   const DetailResepDialog({super.key, required this.resep});
+
+  static const Color _primaryColor = Color(0xFFE65100);
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
-        width:
-            850, // Lebar optimal untuk tampilan desktop agar tabel tidak sesak
+        width: 850,
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Dialog
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Detail Resep: ${resep.namaResep}',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "ID Resep: #${resep.id}",
-                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Get.back(),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
+            DialogCommonTitle(
+              title: 'Detail Resep: ${resep.namaResep}',
+              icon: Icons.assignment_rounded,
             ),
-            const Divider(height: 30),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Divider(thickness: 1),
+            ),
 
-            // Konten dengan Scroll Vertikal
-            Flexible(
+            Expanded(
               child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Informasi Deskripsi
+                    _buildInfoCard(),
+                    const SizedBox(height: 20),
                     const Text(
-                      'Deskripsi Resep:',
+                      '📋 Komposisi Bahan Baku Terdaftar',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        resep.deskripsi.isEmpty ? "-" : resep.deskripsi,
-                        style: const TextStyle(height: 1.5),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Judul Tabel Bahan
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.flatware,
-                          size: 20,
-                          color: Colors.cyan,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Komposisi Bahan Baku',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          "${resep.bahan?.length ?? 0} Jenis Bahan",
-                          style: TextStyle(
-                            color: Colors.cyan[800],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Tabel Bahan Baku
-                    if (resep.bahan == null || resep.bahan!.isEmpty)
-                      const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(40),
-                          child: Text(
-                            'Tidak ada rincian bahan untuk resep ini.',
-                          ),
-                        ),
-                      )
-                    else
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: DataTable(
-                            columnSpacing: 24,
-                            columns: const [
-                              DataColumn(
-                                label: Text(
-                                  'Nama Bahan',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
-                                  'Merk',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
-                                  'Jumlah',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
-                                  'Satuan',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              DataColumn(
-                                label: Text(
-                                  'Estimasi Biaya',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ],
-                            rows: resep.bahan!.map((item) {
-                              return DataRow(
-                                cells: [
-                                  DataCell(Text(item.namaBahan ?? '-')),
-                                  DataCell(Text(item.merk ?? '-')),
-                                  DataCell(Text(item.jumlahBahan.toString())),
-                                  DataCell(Text(item.satuan ?? '-')),
-                                  DataCell(
-                                    Text(
-                                      formatRupiah(item.totalHargaBahan ?? 0),
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
+                    _buildBahanTable(),
                   ],
                 ),
               ),
             ),
 
-            const Divider(height: 30),
+            const Divider(height: 30, thickness: 1),
 
-            // Footer
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueGrey[700],
+                    backgroundColor: _primaryColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 15,
+                      horizontal: 24,
+                      vertical: 16,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Colors.black87, width: 1.5),
                     ),
+                    elevation: 0,
                   ),
                   onPressed: () => Get.back(),
-                  icon: const Icon(Icons.check_circle_outline, size: 18),
-                  label: const Text('Selesai'),
+                  icon: const Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 20,
+                  ),
+                  label: const Text(
+                    'Selesai',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
                 ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard() {
+    // Menghitung total HPP secara dinamis dari model resep.bahan Anda
+    double hitungTotalHpp = 0.0;
+    if (resep.bahan != null) {
+      for (var b in resep.bahan!) {
+        hitungTotalHpp += b.totalHargaBahan!;
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3E0),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _primaryColor, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Deskripsi / Petunjuk Resep:',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black54,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            resep.deskripsi.isNotEmpty
+                ? resep.deskripsi
+                : "Tidak ada deskripsi cara pembuatan.",
+            style: const TextStyle(
+              fontSize: 15,
+              color: Colors.black87,
+              height: 1.4,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              const Text(
+                'Estimasi HPP Resep: ',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                ),
+              ),
+              Text(
+                formatRupiah(hitungTotalHpp),
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: _primaryColor,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBahanTable() {
+    // Disesuaikan ke resep.bahan berdasarkan property model resep.dart Anda
+    if (resep.bahan == null || resep.bahan!.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Text(
+            'Resep ini belum memiliki daftar bahan baku.',
+            style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black26, width: 1.5),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Table(
+        columnWidths: const {
+          0: FlexColumnWidth(3),
+          1: FlexColumnWidth(2),
+          2: FlexColumnWidth(2),
+          3: FlexColumnWidth(2),
+        },
+        children: [
+          TableRow(
+            decoration: BoxDecoration(color: Colors.amber.shade50),
+            children: const [
+              Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  'Nama Bahan Baku',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  'Jumlah',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  'Harga Satuan',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  'Subtotal HPP',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          // Property diubah menyesuaikan model DetailResep Anda (namaBahan, satuan, hargaSatuan, totalHargaBahan)
+          ...resep.bahan!.map((item) {
+            return TableRow(
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+              ),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    item.namaBahan ?? 'Bahan Tidak Diketahui',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text('${item.jumlahBahan} ${item.satuan ?? ''}'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(formatRupiah(item.hargaSatuan ?? 0)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    formatRupiah(item.totalHargaBahan as num),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
+        ],
       ),
     );
   }
