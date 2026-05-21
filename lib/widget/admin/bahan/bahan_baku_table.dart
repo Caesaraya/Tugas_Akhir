@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
-import 'package:tugas_akhir/widget/admin/table/table_action_button.dart';
-import 'package:tugas_akhir/widget/admin/table/table_header_cell.dart';
-import 'package:tugas_akhir/widget/admin/table/table_row_cell.dart';
-import 'package:tugas_akhir/widget/admin/table/table_pagination.dart';
+import '../../../controller/admin/bahan_baku_table_controller.dart';
+import '../../admin/table/table_action_button.dart';
+import '../../admin/table/table_pagination.dart';
 
 class BahanBakuTable extends StatelessWidget {
   BahanBakuTable({super.key});
@@ -19,70 +17,119 @@ class BahanBakuTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Obx(() {
       return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Tabel
-          Row(
-            children: const [
-              TableHeaderCell(title: "ID", width: 50),
-              TableHeaderCell(title: "Nama Bahan", width: 150),
-              TableHeaderCell(title: "Merk", width: 100),
-              TableHeaderCell(title: "Satuan", width: 80),
-              TableHeaderCell(title: "Stok", width: 80),
-              TableHeaderCell(title: "Harga Satuan", width: 120),
-              // Tambahan Kolom Total Harga
-              TableHeaderCell(title: "Total Harga", width: 120),
-              TableHeaderCell(title: "Aksi", width: 100),
-            ],
-          ),
-
-          // Data Body
-          ...ctrl.paginatedList.map((item) {
-            return Row(
-              children: [
-                TableRowCell(text: item.id.toString(), width: 50),
-                TableRowCell(text: item.namaBahan, width: 150),
-                TableRowCell(text: item.merk, width: 100),
-                TableRowCell(text: item.satuan, width: 80),
-                TableRowCell(text: item.stok.toString(), width: 80),
-                TableRowCell(
-                  text: currencyFormatter.format(item.hargaSatuan),
-                  width: 120,
-                ),
-
-                // Menampilkan Total Harga (Mengambil dari model)
-                TableRowCell(
-                  text: currencyFormatter.format(item.totalHarga ?? 0),
-                  width: 120,
-                ),
-
-                TableRowCell(
-                  text: "",
-                  width: 100,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      TableActionButton(
-                        icon: Icons.edit,
-                        color: Colors.blue,
-                        onTap: () => ctrl.openEditDialog(item),
-                      ),
-                      TableActionButton(
-                        icon: Icons.delete,
-                        color: Colors.red,
-                        onTap: () => ctrl.deleteData(item.id!),
-                      ),
-                    ],
-                  ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
               ],
-            );
-          }),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Table(
+              columnWidths: const {
+                0: FixedColumnWidth(50), // ID
+                1: FixedColumnWidth(150), // Nama Bahan
+                2: FixedColumnWidth(100), // Merk
+                3: FixedColumnWidth(80), // Satuan
+                4: FixedColumnWidth(70), // Stok
+                5: FixedColumnWidth(110), // Harga Satuan
+                6: FixedColumnWidth(120), // Total Harga
+                7: FixedColumnWidth(90), // Aksi
+              },
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              children: [
+                // Header
+                TableRow(
+                  decoration: BoxDecoration(color: primaryColor),
+                  children: [
+                    _buildHeaderCell("ID"),
+                    _buildHeaderCell("Nama Bahan"),
+                    _buildHeaderCell("Merk"),
+                    _buildHeaderCell("Satuan"),
+                    _buildHeaderCell("Stok"),
+                    _buildHeaderCell("Harga Satuan"),
+                    _buildHeaderCell("Total Harga"),
+                    _buildHeaderCell("Aksi"),
+                  ],
+                ),
+                // Body Data
+                ...ctrl.paginatedList.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  var item = entry.value;
+                  Color rowBgColor = index % 2 == 0
+                      ? Colors.white
+                      : Colors.grey.shade50;
 
-          const SizedBox(height: 20),
+                  return TableRow(
+                    decoration: BoxDecoration(
+                      color: rowBgColor,
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey.shade100),
+                      ),
+                    ),
+                    children: [
+                      _buildDataCell(item.id.toString()),
+                      _buildDataCell(item.namaBahan),
+                      _buildDataCell(item.merk),
+                      _buildDataCell(item.satuan),
+                      _buildDataCell(item.stok.toString()),
+                      _buildDataCell(
+                        currencyFormatter.format(item.hargaSatuan),
+                      ),
+                      _buildDataCell(
+                        currencyFormatter.format(item.totalHarga ?? 0),
+                      ),
 
-          // Widget Pagination
+                      TableCell(
+                        child: Container(
+                          height: 44,
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              TableActionButton(
+                                icon: Icons.edit,
+                                color: Colors.blue,
+                                onTap: () => ctrl.openEditDialog(item),
+                              ),
+                              TableActionButton(
+                                icon: Icons.delete,
+                                color: Colors.red,
+                                onTap: () => ctrl.deleteData(item.id!),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+              ],
+            ),
+          ),
+
+          if (ctrl.paginatedList.isEmpty)
+            Container(
+              height: 100,
+              alignment: Alignment.center,
+              child: Text(
+                "Tidak ada data",
+                style: TextStyle(color: Colors.grey.shade500),
+              ),
+            ),
+
+          const SizedBox(height: 12),
           TablePagination(
             currentPage: ctrl.currentPage.value,
             totalPages: ctrl.totalPages.value,
@@ -92,5 +139,43 @@ class BahanBakuTable extends StatelessWidget {
         ],
       );
     });
+  }
+
+  Widget _buildHeaderCell(String title) {
+    return Container(
+      height: 40,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  Widget _buildDataCell(String text) {
+    return Container(
+      height: 44,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Colors.grey.shade800,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
   }
 }
