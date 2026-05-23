@@ -18,7 +18,6 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // Ambil data unik satuan dari data model bahan baku yang ada
     final List<String> baseSatuan = ctrl.originalList
         .map((b) => b.satuan.trim())
         .where((satuan) => satuan.isNotEmpty)
@@ -38,25 +37,26 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               CustomTextField(
                 controller: ctrl.namaC,
-                label: 'Nama Bahan',
-                icon: Icons.inventory_2,
-                hint: 'Contoh: Tepung Terigu',
+                label: 'Nama Bahan Baku',
+                icon: Icons.fastfood_outlined,
+                hint: 'Masukkan nama bahan',
               ),
               const SizedBox(height: 18),
               CustomTextField(
                 controller: ctrl.merkC,
-                label: 'Merk',
-                icon: Icons.branding_watermark,
-                hint: 'Contoh: Segitiga Biru',
+                label: 'Merk / Produsen',
+                icon: Icons.branding_watermark_outlined,
+                hint: 'Masukkan merk bahan',
               ),
               const SizedBox(height: 18),
               CustomDropdownMenu(
                 controller: ctrl.satuanC,
-                label: 'Satuan',
-                icon: Icons.scale,
+                label: 'Satuan Ukur',
+                icon: Icons.scale_outlined,
                 items: dropdownSatuanItems,
               ),
               const SizedBox(height: 22),
@@ -86,7 +86,6 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
             Get.back();
           },
           onSave: () {
-            // Menggunakan widget.bahan sesuai dengan nama variabel di class utamanya
             if (widget.bahan.id != null) {
               final typedSatuan = ctrl.satuanC.text.trim();
               if (typedSatuan.isNotEmpty &&
@@ -95,9 +94,8 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
                   _addedSatuan.add(typedSatuan);
                 });
               }
-              ctrl.updateBahanBaku(
-                widget.bahan.id!,
-              ); // Menggunakan widget.bahan.id
+              // Menggunakan method bawaan BaseTableController
+              ctrl.updateBahanBaku(widget.bahan.id!);
             } else {
               Get.snackbar('Error', 'ID Bahan Baku tidak ditemukan');
             }

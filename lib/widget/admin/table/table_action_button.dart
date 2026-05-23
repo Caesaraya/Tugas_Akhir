@@ -18,22 +18,16 @@ class TableActionButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         child: Container(
-          width: 32,
-          height: 32,
+          width: 30,
+          height: 30,
           decoration: BoxDecoration(
-            // Memberikan warna latar belakang yang sangat lembut (12% intensitas warna asli)
-            color: color.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: color.withOpacity(0.25), width: 1),
+            color: color.withOpacity(0.08), // Efek soft background tipis
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: color.withOpacity(0.15), width: 1),
           ),
-          child: Icon(
-            icon,
-            color:
-                color, // Ikon terlihat tajam karena background-nya soft/terang
-            size: 16,
-          ),
+          child: Icon(icon, color: color, size: 16),
         ),
       ),
     );

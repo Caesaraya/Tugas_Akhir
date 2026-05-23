@@ -8,7 +8,8 @@ import '../../admin/table/table_pagination.dart';
 class BahanBakuTable extends StatelessWidget {
   BahanBakuTable({super.key});
 
-  final ctrl = Get.put(BahanBakuTableController());
+  final ctrl = Get.find<BahanBakuTableController>();
+
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
@@ -17,7 +18,7 @@ class BahanBakuTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
+    final headerColor = const Color(0xFF1E1E1E);
 
     return Obx(() {
       return Column(
@@ -27,89 +28,107 @@ class BahanBakuTable extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: Border.all(color: Colors.grey.shade200, width: 1),
             ),
             clipBehavior: Clip.antiAlias,
             child: Table(
               columnWidths: const {
-                0: FixedColumnWidth(50), // ID
-                1: FixedColumnWidth(150), // Nama Bahan
-                2: FixedColumnWidth(100), // Merk
-                3: FixedColumnWidth(80), // Satuan
-                4: FixedColumnWidth(70), // Stok
-                5: FixedColumnWidth(110), // Harga Satuan
-                6: FixedColumnWidth(120), // Total Harga
-                7: FixedColumnWidth(90), // Aksi
+                0: FixedColumnWidth(60), // ID
+                1: FlexColumnWidth(2.5), // Nama Bahan
+                2: FlexColumnWidth(1.5), // Merk
+                3: FlexColumnWidth(1.2), // Stok
+                4: FlexColumnWidth(1.2), // Satuan
+                5: FlexColumnWidth(1.8), // Harga Satuan
+                6: FlexColumnWidth(2.0), // Total Nilai (KOLOM BARU)
+                7: FixedColumnWidth(100), // Aksi
               },
               defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
-                // Header
+                // --- HEADER TABEL ---
                 TableRow(
-                  decoration: BoxDecoration(color: primaryColor),
+                  decoration: BoxDecoration(color: headerColor),
                   children: [
                     _buildHeaderCell("ID"),
                     _buildHeaderCell("Nama Bahan"),
                     _buildHeaderCell("Merk"),
-                    _buildHeaderCell("Satuan"),
                     _buildHeaderCell("Stok"),
+                    _buildHeaderCell("Satuan"),
                     _buildHeaderCell("Harga Satuan"),
-                    _buildHeaderCell("Total Harga"),
+                    _buildHeaderCell("Total Nilai"), // HEADER BARU
                     _buildHeaderCell("Aksi"),
                   ],
                 ),
-                // Body Data
-                ...ctrl.paginatedList.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  var item = entry.value;
-                  Color rowBgColor = index % 2 == 0
-                      ? Colors.white
-                      : Colors.grey.shade50;
+
+                // --- DATA BARIS TABEL ---
+                ...ctrl.paginatedList.map((bahan) {
+                  // Sesuai dengan spesifikasi kondisi di UI, stok menipis jika <= 5
+                  final isStokTipis = (bahan.stok) <= 5;
+
+                  // Hitung total harga item (Gunakan dari API jika tersedia, jika tidak hitung manual)
+                  final totalHargaItem =
+                      bahan.totalHarga ?? (bahan.stok * bahan.hargaSatuan);
 
                   return TableRow(
                     decoration: BoxDecoration(
-                      color: rowBgColor,
+                      color: Colors.white,
                       border: Border(
-                        bottom: BorderSide(color: Colors.grey.shade100),
+                        bottom: BorderSide(
+                          color: Colors.grey.shade100,
+                          width: 1,
+                        ),
                       ),
                     ),
                     children: [
-                      _buildDataCell(item.id.toString()),
-                      _buildDataCell(item.namaBahan),
-                      _buildDataCell(item.merk),
-                      _buildDataCell(item.satuan),
-                      _buildDataCell(item.stok.toString()),
+                      _buildDataCell(bahan.id?.toString() ?? '-'),
                       _buildDataCell(
-                        currencyFormatter.format(item.hargaSatuan),
+                        bahan.namaBahan,
+                        alignment: Alignment.centerLeft,
                       ),
                       _buildDataCell(
-                        currencyFormatter.format(item.totalHarga ?? 0),
+                        bahan.merk,
+                        alignment: Alignment.centerLeft,
+                      ),
+                      _buildDataCell(
+                        bahan.stok.toString(),
+                        textColor: isStokTipis
+                            ? Colors.red.shade700
+                            : Colors.grey.shade800,
+                        fontWeight: isStokTipis
+                            ? FontWeight.bold
+                            : FontWeight.w500,
+                      ),
+                      _buildDataCell(bahan.satuan),
+                      _buildDataCell(
+                        currencyFormatter.format(bahan.hargaSatuan),
+                        alignment: Alignment.centerRight,
                       ),
 
-                      TableCell(
-                        child: Container(
-                          height: 44,
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              TableActionButton(
-                                icon: Icons.edit,
-                                color: Colors.blue,
-                                onTap: () => ctrl.openEditDialog(item),
-                              ),
-                              TableActionButton(
-                                icon: Icons.delete,
-                                color: Colors.red,
-                                onTap: () => ctrl.deleteData(item.id!),
-                              ),
-                            ],
-                          ),
+                      // --- DATA KOLOM TOTAL HARGA BARU ---
+                      _buildDataCell(
+                        currencyFormatter.format(totalHargaItem),
+                        alignment: Alignment.centerRight,
+                        fontWeight: FontWeight.w600,
+                      ),
+
+                      // --- KOLOM AKSI ---
+                      Container(
+                        height: 48,
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TableActionButton(
+                              icon: Icons.edit_outlined,
+                              color: Colors.blue.shade700,
+                              onTap: () => ctrl.openEditDialog(bahan),
+                            ),
+                            const SizedBox(width: 8),
+                            TableActionButton(
+                              icon: Icons.delete_outline_rounded,
+                              color: Colors.red.shade600,
+                              onTap: () => ctrl.deleteData(bahan.id!),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -121,15 +140,16 @@ class BahanBakuTable extends StatelessWidget {
 
           if (ctrl.paginatedList.isEmpty)
             Container(
-              height: 100,
+              height: 150,
               alignment: Alignment.center,
               child: Text(
-                "Tidak ada data",
-                style: TextStyle(color: Colors.grey.shade500),
+                "Tidak ada data bahan baku",
+                style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               ),
             ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
+
           TablePagination(
             currentPage: ctrl.currentPage.value,
             totalPages: ctrl.totalPages.value,
@@ -143,38 +163,39 @@ class BahanBakuTable extends StatelessWidget {
 
   Widget _buildHeaderCell(String title) {
     return Container(
-      height: 40,
+      height: 46,
       alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Text(
         title,
         style: const TextStyle(
           color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
         ),
-        textAlign: TextAlign.center,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
-  Widget _buildDataCell(String text) {
+  Widget _buildDataCell(
+    String text, {
+    Alignment alignment = Alignment.center,
+    Color? textColor,
+    FontWeight? fontWeight,
+  }) {
     return Container(
-      height: 44,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      height: 48,
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
         text,
-        style: TextStyle(
-          color: Colors.grey.shade800,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        textAlign: TextAlign.center,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: textColor ?? Colors.grey.shade800,
+          fontSize: 13,
+          fontWeight: fontWeight ?? FontWeight.w500,
+        ),
       ),
     );
   }

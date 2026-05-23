@@ -234,4 +234,38 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
       },
     );
   }
+  // Taruh kode ini di dalam kelas BahanBakuTableController
+
+  // 1. Menghitung total nilai seluruh inventory (stok * hargaSatuan)
+  double get totalNilaiInventory {
+    return originalList.fold(
+      0.0,
+      (sum, item) => sum + (item.stok * item.hargaSatuan),
+    );
+  }
+
+  // 2. Menghitung jumlah total macam bahan baku yang aktif
+  int get totalBahanAktif => originalList.length;
+
+  // 3. Menghitung berapa bahan yang stoknya menipis (contoh: di bawah 10 tapi masih di atas 0)
+  int get jumlahStokMenipis {
+    return originalList.where((e) => e.stok > 0 && e.stok < 10).length;
+  }
+
+  // 4. Menghitung berapa bahan yang stoknya kritis / habis (stok <= 0)
+  int get jumlahStokKritis {
+    return originalList.where((e) => e.stok <= 0).length;
+  }
+
+  // Fungsi pembantu untuk memformat mata uang singkat (Contoh: Rp 12,4M atau Rp 250K)
+  String formatRingkasanMataUanng(double nomor) {
+    if (nomor >= 1000000000) {
+      return 'Rp ${(nomor / 1000000000).toStringAsFixed(1).replaceAll('.', ',')}M';
+    } else if (nomor >= 1000000) {
+      return 'Rp ${(nomor / 1000000).toStringAsFixed(1).replaceAll('.', ',')}Jt';
+    } else if (nomor >= 1000) {
+      return 'Rp ${(nomor / 1000).toStringAsFixed(0)}K';
+    }
+    return 'Rp ${nomor.toStringAsFixed(0)}';
+  }
 }

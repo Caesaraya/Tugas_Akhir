@@ -16,7 +16,6 @@ class _InsertBahanBakuDialogState extends State<InsertBahanBakuDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // Ambil data unik satuan dari model bahan baku yang ada di database lokal/state controller
     final List<String> baseSatuan = ctrl.originalList
         .map((b) => b.satuan.trim())
         .where((satuan) => satuan.isNotEmpty)
@@ -36,24 +35,25 @@ class _InsertBahanBakuDialogState extends State<InsertBahanBakuDialog> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               CustomTextField(
                 controller: ctrl.namaC,
-                label: 'Nama Bahan',
-                icon: Icons.inventory,
-                hint: 'Contoh: Gula Pasir',
+                label: 'Nama Bahan Baku',
+                icon: Icons.fastfood_outlined,
+                hint: 'Masukkan nama bahan',
               ),
               const SizedBox(height: 18),
               CustomTextField(
                 controller: ctrl.merkC,
-                label: 'Merk',
-                icon: Icons.branding_watermark,
-                hint: 'Contoh: Gulaku',
+                label: 'Merk / Produsen',
+                icon: Icons.branding_watermark_outlined,
+                hint: 'Masukkan merk bahan',
               ),
               const SizedBox(height: 18),
               CustomDropdownMenu(
                 controller: ctrl.satuanC,
-                label: 'Satuan Unit',
+                label: 'Satuan Ukur',
                 icon: Icons.scale_outlined,
                 items: dropdownSatuanItems,
               ),
@@ -86,16 +86,17 @@ class _InsertBahanBakuDialogState extends State<InsertBahanBakuDialog> {
                 "Peringatan",
                 "Nama dan Stok tidak boleh kosong",
                 backgroundColor: Colors.orange,
+                colorText: Colors.white,
               );
               return;
             }
-            // Simpan input satuan baru ke state local jika belum ada di list
             final typedSatuan = ctrl.satuanC.text.trim();
             if (typedSatuan.isNotEmpty && !_addedSatuan.contains(typedSatuan)) {
               setState(() {
                 _addedSatuan.add(typedSatuan);
               });
             }
+            // Menggunakan method bawaan BaseTableController
             ctrl.insertBahanBaku();
           },
           saveLabel: 'Simpan Data',

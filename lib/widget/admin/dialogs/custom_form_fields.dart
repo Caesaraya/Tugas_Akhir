@@ -41,7 +41,7 @@ class CustomTextField extends StatelessWidget {
         hintText: hint,
 
         prefixText: prefixText,
-        prefixIcon: Icon(icon, size: 22, color: RumahLezaatTheme.primaryColor),
+        prefixIcon: Icon(icon, size: 22, color: Colors.black),
         labelStyle: const TextStyle(
           color: Colors.black87,
           fontWeight: FontWeight.bold,
@@ -57,10 +57,7 @@ class CustomTextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: RumahLezaatTheme.primaryColor,
-            width: 2.5,
-          ),
+          borderSide: const BorderSide(color: Colors.black, width: 2.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -95,7 +92,7 @@ class CustomDropdownMenu extends StatelessWidget {
       width: width,
       menuHeight: 200,
       label: Text(label),
-      leadingIcon: Icon(icon, size: 22, color: RumahLezaatTheme.primaryColor),
+      leadingIcon: Icon(icon, size: 22, color: Colors.black),
       requestFocusOnTap: true,
       enableFilter: true,
       textStyle: const TextStyle(
@@ -119,10 +116,7 @@ class CustomDropdownMenu extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: RumahLezaatTheme.primaryColor,
-            width: 2.5,
-          ),
+          borderSide: const BorderSide(color: Colors.black, width: 2.5),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -172,7 +166,7 @@ class CustomStockStepper extends StatelessWidget {
             children: [
               const Icon(
                 Icons.inventory_2_rounded,
-                color: RumahLezaatTheme.primaryColor,
+                color: Colors.black,
                 size: 22,
               ),
               const SizedBox(width: 14),
@@ -302,7 +296,7 @@ class DialogActionButtons extends StatelessWidget {
           child: ElevatedButton(
             onPressed: onSave,
             style: ElevatedButton.styleFrom(
-              backgroundColor: RumahLezaatTheme.primaryColor,
+              backgroundColor: Colors.black,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
@@ -331,7 +325,7 @@ class DialogCommonTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: RumahLezaatTheme.primaryColor, size: 28),
+        Icon(icon, color: Colors.black, size: 28),
         const SizedBox(width: 12),
         Text(
           title,

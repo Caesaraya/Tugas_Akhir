@@ -17,7 +17,7 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
 
   final TextEditingController _bahanDropdownC = TextEditingController();
 
-  static const Color _primaryColor = Color(0xFFE65100);
+  static const Color _themeColor = Color(0xFF1E1E1E);
 
   @override
   void dispose() {
@@ -38,66 +38,113 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const DialogCommonTitle(
-                title: 'Tambah Resep Baru',
-                icon: Icons.receipt_long_rounded,
+                title: 'Form Formulasi Resep Kue',
+                icon: Icons.bakery_dining_rounded,
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
-                child: Divider(thickness: 1),
+                child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
               ),
-
               CustomTextField(
                 controller: ctrl.namaResepC,
-                label: 'Nama Resep',
-                icon: Icons.fastfood_rounded,
-                hint: 'Masukkan nama resep menu',
+                label: 'Nama Formulasi Resep',
+                icon: Icons.dinner_dining_outlined,
+                hint: 'Contoh: Resep Blackforest Base 22cm',
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               CustomTextField(
                 controller: ctrl.deskripsiC,
-                label: 'Deskripsi / Cara Pembuatan',
-                icon: Icons.description_rounded,
-                hint: 'Masukkan langkah-langkah singkat pembuatan...',
+                label: 'Deskripsi / Instruksi Singkat',
+                icon: Icons.description_outlined,
+                hint: 'Masukkan keterangan resep produksi',
               ),
-
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: Divider(thickness: 1.5),
+                padding: EdgeInsets.symmetric(vertical: 18),
+                child: Divider(thickness: 1),
               ),
-
               const Text(
-                'Komposisi Bahan Baku',
+                '🛠️ Tambah Komposisi Bahan Baku:',
                 style: TextStyle(
-                  fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  fontSize: 14,
+                  color: _themeColor,
                 ),
               ),
               const SizedBox(height: 12),
               _buildAddBahanSection(),
-
-              const SizedBox(height: 16),
-
+              const SizedBox(height: 20),
               const Text(
-                'Daftar Bahan Terpilih:',
+                '📋 Daftar Bahan Terpilih di Resep ini:',
                 style: TextStyle(
-                  fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black54,
+                  fontSize: 14,
+                  color: _themeColor,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               _buildTempBahanList(),
-
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
                 child: Divider(thickness: 1),
               ),
-
-              DialogActionButtons(
-                onCancel: () => Get.back(),
-                onSave: () => ctrl.insertResep(),
-                saveLabel: 'Simpan Resep',
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () {
+                      ctrl.clearForm();
+                      Get.back();
+                    },
+                    child: const Text(
+                      'Batal',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _themeColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 14,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () {
+                      if (ctrl.namaResepC.text.isEmpty ||
+                          ctrl.tempBahanList.isEmpty) {
+                        Get.snackbar(
+                          'Peringatan',
+                          'Nama resep dan minimal 1 takaran bahan harus diisi.',
+                          backgroundColor: Colors.orange,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
+                      // Menggunakan method bawaan BaseTableController
+                      ctrl.insertResep();
+                    },
+                    child: const Text(
+                      'Simpan Formula Resep',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -107,21 +154,20 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
   }
 
   Widget _buildAddBahanSection() {
-    final List<String> masterBahanNames = bahanBakuCtrl.originalList
-        .map((b) => b.namaBahan)
-        .toSet()
+    final List<String> itemsBahan = bahanBakuCtrl.originalList
+        .map((b) => "${b.id} - ${b.namaBahan} (${b.satuan})")
         .toList();
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
           flex: 3,
           child: CustomDropdownMenu(
             controller: _bahanDropdownC,
-            label: 'Pilih Bahan Baku',
-            icon: Icons.inventory_2_rounded,
-            items: masterBahanNames,
+            label: 'Pilih Bahan Baku Utama',
+            icon: Icons.compost_outlined,
+            items: itemsBahan,
           ),
         ),
         const SizedBox(width: 12),
@@ -129,49 +175,47 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
           flex: 2,
           child: CustomTextField(
             controller: ctrl.jumlahBahanC,
-            label: 'Jumlah Kebutuhan',
-            icon: Icons.scale_rounded,
+            label: 'Takaran Kebutuhan',
+            icon: Icons.scale_outlined,
             hint: '0.0',
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
         ),
         const SizedBox(width: 12),
-        Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.black87, width: 1.5),
-              ),
-              elevation: 0,
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFF5F5F5),
+            foregroundColor: _themeColor,
+            elevation: 0,
+            side: BorderSide(color: Colors.grey.shade300),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            onPressed: () {
-              final selectedName = _bahanDropdownC.text;
-              try {
-                final matchBahan = bahanBakuCtrl.originalList.firstWhere(
-                  (b) => b.namaBahan == selectedName,
-                );
-                ctrl.selectedBahanId.value = matchBahan.id;
-                ctrl.addBahanToTempList();
-                _bahanDropdownC.clear();
-              } catch (_) {
-                Get.snackbar(
-                  "Peringatan",
-                  "Silahkan pilih bahan baku yang valid terlebih dahulu",
-                  backgroundColor: Colors.orange,
-                  colorText: Colors.white,
-                );
-              }
-            },
-            icon: const Icon(Icons.add, size: 20),
-            label: const Text(
-              'Tambah',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+          ),
+          onPressed: () {
+            if (_bahanDropdownC.text.isEmpty ||
+                ctrl.jumlahBahanC.text.isEmpty) {
+              Get.snackbar(
+                'Error',
+                'Pilih bahan baku dan isikan takaran jumlahnya.',
+              );
+              return;
+            }
+            final parts = _bahanDropdownC.text.split(' - ');
+            final int? idBahan = int.tryParse(parts[0]);
+            final double? qty = double.tryParse(ctrl.jumlahBahanC.text);
+
+            if (idBahan != null && qty != null) {
+              ctrl.addBahanToTempList();
+              _bahanDropdownC.clear();
+              ctrl.jumlahBahanC.clear();
+            }
+          },
+          icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+          label: const Text(
+            'Tambahkan',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -179,67 +223,60 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
   }
 
   Widget _buildTempBahanList() {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black26, width: 1.5),
-      ),
-      child: Obx(() {
-        if (ctrl.tempBahanList.isEmpty) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(24),
-              child: Text(
-                'Belum ada bahan baku yang ditambahkan',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
+    return Obx(() {
+      if (ctrl.tempBahanList.isEmpty) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.grey.shade200,
+              style: BorderStyle.solid,
+            ),
+          ),
+          child: const Center(
+            child: Text(
+              'Belum ada bahan baku yang dimasukkan ke formula resep ini.',
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
+          ),
+        );
+      }
+      return ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: ctrl.tempBahanList.length,
+        separatorBuilder: (_, __) =>
+            const Divider(height: 1, color: Color(0xFFF5F5F5)),
+        itemBuilder: (context, index) {
+          final item = ctrl.tempBahanList[index];
+
+          final masterBahan = bahanBakuCtrl.originalList.firstWhere(
+            (b) => b.id == item.bahanId,
+            orElse: () => bahanBakuCtrl.originalList.first,
+          );
+
+          return ListTile(
+            leading: const CircleAvatar(
+              backgroundColor: Color(0xFFF5F5F5),
+              child: Icon(Icons.restaurant_menu_rounded, color: _themeColor),
+            ),
+            title: Text(
+              masterBahan.namaBahan,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              "Kebutuhan: ${item.jumlahBahan} ${masterBahan.satuan}",
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+              onPressed: () => ctrl.removeBahanFromTemp(index),
             ),
           );
-        }
-        return ListView.separated(
-          shrinkWrap: true,
-          itemCount: ctrl.tempBahanList.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (context, index) {
-            final item = ctrl.tempBahanList[index];
-
-            // Disesuaikan ke item.bahanId sesuai model resep.dart
-            final masterBahan = bahanBakuCtrl.originalList.firstWhere(
-              (b) => b.id == item.bahanId,
-              orElse: () => bahanBakuCtrl.originalList.first,
-            );
-
-            return ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFFFFF3E0),
-                child: Icon(
-                  Icons.restaurant_menu_rounded,
-                  color: _primaryColor,
-                ),
-              ),
-              title: Text(
-                masterBahan.namaBahan,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(
-                "Kebutuhan: ${item.jumlahBahan} ${masterBahan.satuan}",
-              ),
-              trailing: IconButton(
-                icon: const Icon(
-                  Icons.delete_outline_rounded,
-                  color: Colors.red,
-                ),
-                onPressed: () => ctrl.removeBahanFromTemp(index),
-              ),
-            );
-          },
-        );
-      }),
-    );
+        },
+      );
+    });
   }
 }

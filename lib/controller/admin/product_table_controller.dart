@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pdf/widgets.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/product/edit_product_dialog.dart';
 
 import '../../api service/api_service.dart';
@@ -36,6 +37,7 @@ class ProductTableController extends BaseTableController<Product> {
   final stockC = TextEditingController();
   final jenisC = TextEditingController();
   final satuanC = TextEditingController();
+  final barcodeC = TextEditingController();
 
   final Rx<File?> selectedImage = Rx<File?>(null);
 

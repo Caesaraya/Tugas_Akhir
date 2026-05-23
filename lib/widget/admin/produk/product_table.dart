@@ -17,46 +17,43 @@ class ProductTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
+    final headerColor = const Color(0xFF1E1E1E); // Disamakan menjadi Hitam
 
     return Obx(() {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Pembungkus utama tabel ber-radius manis dan bayangan halus
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: Border.all(
+                color: Colors.grey.shade200,
+                width: 1,
+              ), // Border tipis netral
             ),
             clipBehavior: Clip.antiAlias,
             child: Table(
-              // Mengatur proporsi lebar kolom secara absolut agar pas dengan layout dashboard
               columnWidths: const {
-                0: FixedColumnWidth(40), // ID
-                1: FixedColumnWidth(120), // Nama
-                2: FixedColumnWidth(85), // Harga
-                3: FixedColumnWidth(65), // Diskon
-                4: FixedColumnWidth(90), // Harga Final
-                5: FixedColumnWidth(50), // Stock
-                6: FixedColumnWidth(65), // Jenis
-                7: FixedColumnWidth(70), // Satuan
-                8: FixedColumnWidth(65), // Barcode
-                9: FixedColumnWidth(60), // Image
-                10: FixedColumnWidth(85), // Aksi
+                0: FixedColumnWidth(80), // ID sedikit diperlebar
+                1: FlexColumnWidth(
+                  1.5,
+                ), // Menggunakan Flex agar responsif di layar desktop
+                2: FlexColumnWidth(1.2),
+                3: FixedColumnWidth(65),
+                4: FlexColumnWidth(1.3),
+                5: FixedColumnWidth(60),
+                6: FlexColumnWidth(1.0),
+                7: FlexColumnWidth(1.0),
+                8: FlexColumnWidth(1.2),
+                9: FixedColumnWidth(60),
+                10: FixedColumnWidth(100), // Aksi disamakan 100
               },
               defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
                 // ================== HEADER TABEL ==================
                 TableRow(
-                  decoration: BoxDecoration(color: primaryColor),
+                  decoration: BoxDecoration(color: headerColor),
                   children: [
                     _buildHeaderCell('ID'),
                     _buildHeaderCell('Nama'),
@@ -73,29 +70,45 @@ class ProductTable extends StatelessWidget {
                 ),
 
                 // ================== BODY DATA ==================
-                ...ctrl.paginatedList.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  var item = entry.value;
-                  Color rowBgColor = index % 2 == 0
-                      ? Colors.white
-                      : Colors.grey.shade50;
+                ...ctrl.paginatedList.map((item) {
+                  final isStokTipis =
+                      item.stock <= 5; // Pola logic yang sama dengan bahan baku
 
                   return TableRow(
                     decoration: BoxDecoration(
-                      color: rowBgColor,
+                      color: Colors.white,
                       border: Border(
-                        bottom: BorderSide(color: Colors.grey.shade100),
+                        bottom: BorderSide(
+                          color: Colors.grey.shade100,
+                          width: 1,
+                        ),
                       ),
                     ),
                     children: [
                       _buildDataCell(item.id.toString()),
-                      _buildDataCell(item.name),
-                      _buildDataCell(currencyFormatter.format(item.price)),
+                      _buildDataCell(
+                        item.name,
+                        alignment: Alignment.centerLeft,
+                      ),
+                      _buildDataCell(
+                        currencyFormatter.format(item.price),
+                        alignment: Alignment.centerRight,
+                      ),
                       _buildDataCell('${item.discount}%'),
                       _buildDataCell(
                         currencyFormatter.format(item.priceAfterDiscount),
+                        alignment: Alignment.centerRight,
+                        fontWeight: FontWeight.w600,
                       ),
-                      _buildDataCell(item.stock.toString()),
+                      _buildDataCell(
+                        item.stock.toString(),
+                        textColor: isStokTipis
+                            ? Colors.red.shade700
+                            : Colors.grey.shade800,
+                        fontWeight: isStokTipis
+                            ? FontWeight.bold
+                            : FontWeight.w500,
+                      ),
                       _buildDataCell(item.jenis),
                       _buildDataCell(item.satuan),
                       _buildDataCell(item.barcode),
@@ -103,7 +116,7 @@ class ProductTable extends StatelessWidget {
                       // Cell Gambar Produk
                       TableCell(
                         child: Container(
-                          height: 44,
+                          height: 48, // Disamakan menjadi 48
                           alignment: Alignment.center,
                           child: item.image.isNotEmpty
                               ? ClipRRect(
@@ -131,25 +144,24 @@ class ProductTable extends StatelessWidget {
                       ),
 
                       // Cell Tombol Aksi
-                      TableCell(
-                        child: Container(
-                          height: 44,
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              TableActionButton(
-                                icon: Icons.delete,
-                                color: Colors.red,
-                                onTap: () => ctrl.deleteData(item.id),
-                              ),
-                              TableActionButton(
-                                icon: Icons.edit,
-                                color: Colors.blue,
-                                onTap: () => ctrl.openEditDialog(item),
-                              ),
-                            ],
-                          ),
+                      Container(
+                        height: 48, // Disamakan menjadi 48
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TableActionButton(
+                              icon: Icons.edit_outlined,
+                              color: Colors.blue.shade700,
+                              onTap: () => ctrl.openEditDialog(item),
+                            ),
+                            const SizedBox(width: 8),
+                            TableActionButton(
+                              icon: Icons.delete_outline_rounded,
+                              color: Colors.red.shade600,
+                              onTap: () => ctrl.deleteData(item.id),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -161,15 +173,15 @@ class ProductTable extends StatelessWidget {
 
           if (ctrl.paginatedList.isEmpty)
             Container(
-              height: 100,
+              height: 150,
               alignment: Alignment.center,
               child: Text(
                 "Tidak ada produk",
-                style: TextStyle(color: Colors.grey.shade500),
+                style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               ),
             ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           TablePagination(
             currentPage: ctrl.currentPage.value,
             totalPages: ctrl.totalPages.value,
@@ -183,38 +195,39 @@ class ProductTable extends StatelessWidget {
 
   Widget _buildHeaderCell(String title) {
     return Container(
-      height: 40,
+      height: 46, // Disamakan dengan Bahan Baku
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         title,
         style: const TextStyle(
           color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
         ),
-        textAlign: TextAlign.center,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
-  Widget _buildDataCell(String text) {
+  Widget _buildDataCell(
+    String text, {
+    Alignment alignment = Alignment.center,
+    Color? textColor,
+    FontWeight? fontWeight,
+  }) {
     return Container(
-      height: 44,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      height: 48, // Disamakan dengan Bahan Baku
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
         text,
-        style: TextStyle(
-          color: Colors.grey.shade800,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        textAlign: TextAlign.center,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: textColor ?? Colors.grey.shade800,
+          fontSize: 13,
+          fontWeight: fontWeight ?? FontWeight.w500,
+        ),
       ),
     );
   }

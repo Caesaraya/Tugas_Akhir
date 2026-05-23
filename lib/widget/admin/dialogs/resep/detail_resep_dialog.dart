@@ -8,7 +8,7 @@ class DetailResepDialog extends StatelessWidget {
   final Resep resep;
   const DetailResepDialog({super.key, required this.resep});
 
-  static const Color _primaryColor = Color(0xFFE65100);
+  static const Color _themeColor = Color(0xFF1E1E1E);
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +27,8 @@ class DetailResepDialog extends StatelessWidget {
             ),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
-              child: Divider(thickness: 1),
+              child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
             ),
-
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -38,11 +37,11 @@ class DetailResepDialog extends StatelessWidget {
                     _buildInfoCard(),
                     const SizedBox(height: 20),
                     const Text(
-                      '📋 Komposisi Bahan Baku Terdaftar',
+                      '📋 Komposisi Bahan Terpakai:',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: _themeColor,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -51,37 +50,27 @@ class DetailResepDialog extends StatelessWidget {
                 ),
               ),
             ),
-
-            const Divider(height: 30, thickness: 1),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: const BorderSide(color: Colors.black87, width: 1.5),
-                    ),
-                    elevation: 0,
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _themeColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  onPressed: () => Get.back(),
-                  icon: const Icon(
-                    Icons.check_circle_outline_rounded,
-                    size: 20,
-                  ),
-                  label: const Text(
-                    'Selesai',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
                   ),
                 ),
-              ],
+                onPressed: () => Get.back(),
+                child: const Text(
+                  'Tutup Detail',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ],
         ),
@@ -90,62 +79,39 @@ class DetailResepDialog extends StatelessWidget {
   }
 
   Widget _buildInfoCard() {
-    // Menghitung total HPP secara dinamis dari model resep.bahan Anda
-    double hitungTotalHpp = 0.0;
-    if (resep.bahan != null) {
-      for (var b in resep.bahan!) {
-        hitungTotalHpp += b.totalHargaBahan!;
-      }
-    }
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E0),
+        color: const Color(0xFFFAFAFA),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _primaryColor, width: 1.5),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Deskripsi / Petunjuk Resep:',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black54,
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 6),
           Text(
             resep.deskripsi.isNotEmpty
                 ? resep.deskripsi
-                : "Tidak ada deskripsi cara pembuatan.",
-            style: const TextStyle(
-              fontSize: 15,
-              color: Colors.black87,
-              height: 1.4,
-              fontWeight: FontWeight.w500,
+                : 'Tidak ada deskripsi resep.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade700,
+              fontStyle: FontStyle.italic,
             ),
           ),
           const SizedBox(height: 14),
           Row(
             children: [
-              const Text(
-                'Estimasi HPP Resep: ',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black54,
-                ),
+              _buildBadgedInfo(
+                Icons.flatware_rounded,
+                'Total Varian Bahan: ${resep.bahan?.length ?? 0}',
               ),
-              Text(
-                formatRupiah(hitungTotalHpp),
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: _primaryColor,
-                ),
+              const SizedBox(width: 24),
+              _buildBadgedInfo(
+                Icons.monetization_on_rounded,
+                'Estimasi Modal Resep: ${formatRupiah(resep.bahan?.fold<double>(0.0, (sum, item) => sum + (item.totalHargaBahan ?? 0.0)) ?? 0.0)}',
+                textColor: Colors.green.shade800,
               ),
             ],
           ),
@@ -154,72 +120,96 @@ class DetailResepDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildBahanTable() {
-    // Disesuaikan ke resep.bahan berdasarkan property model resep.dart Anda
-    if (resep.bahan == null || resep.bahan!.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Text(
-            'Resep ini belum memiliki daftar bahan baku.',
-            style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+  Widget _buildBadgedInfo(IconData icon, String text, {Color? textColor}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18, color: _themeColor),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: textColor ?? Colors.grey.shade800,
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildBahanTable() {
+    if (resep.bahan == null || resep.bahan!.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        alignment: Alignment.center,
+        child: const Text('Resep ini tidak memiliki komposisi bahan baku.'),
       );
     }
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black26, width: 1.5),
-        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(12),
       ),
       clipBehavior: Clip.antiAlias,
       child: Table(
         columnWidths: const {
-          0: FlexColumnWidth(3),
-          1: FlexColumnWidth(2),
-          2: FlexColumnWidth(2),
-          3: FlexColumnWidth(2),
+          0: FlexColumnWidth(2.5),
+          1: FlexColumnWidth(1.5),
+          2: FlexColumnWidth(1.5),
+          3: FlexColumnWidth(1.5),
         },
         children: [
-          TableRow(
-            decoration: BoxDecoration(color: Colors.amber.shade50),
-            children: const [
+          const TableRow(
+            decoration: BoxDecoration(color: _themeColor),
+            children: [
               Padding(
                 padding: EdgeInsets.all(12),
                 child: Text(
-                  'Nama Bahan Baku',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  'Nama Bahan',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(12),
                 child: Text(
-                  'Jumlah',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  'Takaran Resep',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(12),
                 child: Text(
                   'Harga Satuan',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.all(12),
                 child: Text(
-                  'Subtotal HPP',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  'Sub Total',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
           ),
-          // Property diubah menyesuaikan model DetailResep Anda (namaBahan, satuan, hargaSatuan, totalHargaBahan)
           ...resep.bahan!.map((item) {
             return TableRow(
               decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+                border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
               ),
               children: [
                 Padding(
@@ -237,10 +227,13 @@ class DetailResepDialog extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   child: Text(formatRupiah(item.hargaSatuan ?? 0)),
                 ),
+                // KODE BARU (SUDAH DIPERBAIKI)
                 Padding(
                   padding: const EdgeInsets.all(12),
                   child: Text(
-                    formatRupiah(item.totalHargaBahan as num),
+                    formatRupiah(
+                      item.totalHargaBahan ?? 0.0,
+                    ), // <--- Menggunakan operator ??
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,

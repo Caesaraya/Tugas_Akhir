@@ -14,7 +14,7 @@ class TableHeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
+    final primaryColor = const Color(0xFFE65100);
 
     return Container(
       width: width,

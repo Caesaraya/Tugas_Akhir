@@ -11,7 +11,7 @@ class ResepTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
+    final headerColor = const Color(0xFF1E1E1E); // Disamakan menjadi Hitam
 
     return Obx(() {
       if (ctrl.isLoading.value) {
@@ -30,28 +30,27 @@ class ResepTable extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: Border.all(
+                color: Colors.grey.shade200,
+                width: 1,
+              ), // Border tipis netral
             ),
             clipBehavior: Clip.antiAlias,
             child: Table(
               columnWidths: const {
-                0: FixedColumnWidth(55), // ID
-                1: FixedColumnWidth(160), // Nama Resep
-                2: FixedColumnWidth(240), // Deskripsi
-                3: FixedColumnWidth(110), // Jumlah Bahan
-                4: FixedColumnWidth(120), // Aksi
+                0: FixedColumnWidth(60), // ID
+                1: FlexColumnWidth(2.5), // Nama Resep (Menggunakan Flex)
+                2: FlexColumnWidth(4.0), // Deskripsi
+                3: FlexColumnWidth(1.5), // Jumlah Bahan
+                4: FixedColumnWidth(
+                  140,
+                ), // Ruang Aksi disesuaikan karena ada 3 tombol
               },
               defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
                 // Header
                 TableRow(
-                  decoration: BoxDecoration(color: primaryColor),
+                  decoration: BoxDecoration(color: headerColor),
                   children: [
                     _buildHeaderCell('ID'),
                     _buildHeaderCell('Nama Resep'),
@@ -61,53 +60,56 @@ class ResepTable extends StatelessWidget {
                   ],
                 ),
                 // Body Data
-                ...ctrl.paginatedList.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  var item = entry.value;
-                  Color rowBgColor = index % 2 == 0
-                      ? Colors.white
-                      : Colors.grey.shade50;
-
+                ...ctrl.paginatedList.map((item) {
                   return TableRow(
                     decoration: BoxDecoration(
-                      color: rowBgColor,
+                      color: Colors.white,
                       border: Border(
-                        bottom: BorderSide(color: Colors.grey.shade100),
+                        bottom: BorderSide(
+                          color: Colors.grey.shade100,
+                          width: 1,
+                        ),
                       ),
                     ),
                     children: [
                       _buildDataCell(item.id.toString()),
-                      _buildDataCell(item.namaResep),
-                      _buildDataCell(item.deskripsi),
+                      _buildDataCell(
+                        item.namaResep,
+                        alignment: Alignment.centerLeft,
+                      ),
+                      _buildDataCell(
+                        item.deskripsi,
+                        alignment: Alignment.centerLeft,
+                      ),
                       _buildDataCell((item.bahan?.length ?? 0).toString()),
 
-                      TableCell(
-                        child: Container(
-                          height: 44,
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              TableActionButton(
-                                icon: Icons.list_alt,
-                                color: Colors.green,
-                                onTap: () => ctrl.showDetailBahan(item),
-                              ),
-                              TableActionButton(
-                                icon: Icons.edit,
-                                color: Colors.blue,
-                                onTap: () => ctrl.openEditDialog(item),
-                              ),
-                              TableActionButton(
-                                icon: Icons.delete,
-                                color: Colors.red,
-                                onTap: () {
-                                  if (item.id != null)
-                                    ctrl.deleteData(item.id!);
-                                },
-                              ),
-                            ],
-                          ),
+                      // Kolom Aksi (3 Tombol rapi sejajar horizontal)
+                      Container(
+                        height: 48,
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TableActionButton(
+                              icon: Icons.list_alt_rounded,
+                              color: Colors.green.shade700,
+                              onTap: () => ctrl.showDetailBahan(item),
+                            ),
+                            const SizedBox(width: 6),
+                            TableActionButton(
+                              icon: Icons.edit_outlined,
+                              color: Colors.blue.shade700,
+                              onTap: () => ctrl.openEditDialog(item),
+                            ),
+                            const SizedBox(width: 6),
+                            TableActionButton(
+                              icon: Icons.delete_outline_rounded,
+                              color: Colors.red.shade600,
+                              onTap: () {
+                                if (item.id != null) ctrl.deleteData(item.id!);
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -119,15 +121,15 @@ class ResepTable extends StatelessWidget {
 
           if (ctrl.paginatedList.isEmpty)
             Container(
-              height: 100,
+              height: 150,
               alignment: Alignment.center,
               child: Text(
                 "Tidak ada resep",
-                style: TextStyle(color: Colors.grey.shade500),
+                style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               ),
             ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           TablePagination(
             currentPage: ctrl.currentPage.value,
             totalPages: ctrl.totalPages.value,
@@ -141,38 +143,39 @@ class ResepTable extends StatelessWidget {
 
   Widget _buildHeaderCell(String title) {
     return Container(
-      height: 40,
+      height: 46, // Disamakan dengan Bahan Baku
       alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Text(
         title,
         style: const TextStyle(
           color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
         ),
-        textAlign: TextAlign.center,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
-  Widget _buildDataCell(String text) {
+  Widget _buildDataCell(
+    String text, {
+    Alignment alignment = Alignment.center,
+    Color? textColor,
+    FontWeight? fontWeight,
+  }) {
     return Container(
-      height: 44,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      height: 48, // Disamakan dengan Bahan Baku
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
         text,
-        style: TextStyle(
-          color: Colors.grey.shade800,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-        textAlign: TextAlign.center,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: textColor ?? Colors.grey.shade800,
+          fontSize: 13,
+          fontWeight: fontWeight ?? FontWeight.w500,
+        ),
       ),
     );
   }

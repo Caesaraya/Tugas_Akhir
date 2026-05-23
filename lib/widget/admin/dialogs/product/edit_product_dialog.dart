@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../controller/admin/product_table_controller.dart';
 import '../../../../models/product.dart';
-import '../custom_form_fields.dart'; // <--- IMPORT
+import '../custom_form_fields.dart';
 
 class EditProductDialog extends StatefulWidget {
   final Product product;
@@ -16,6 +16,8 @@ class _EditProductDialogState extends State<EditProductDialog> {
   final _ctrl = Get.find<ProductTableController>();
   final List<String> _addedJenis = [];
   final List<String> _addedSatuan = [];
+
+  static const Color _themeColor = Color(0xFF1E1E1E);
 
   @override
   Widget build(BuildContext context) {
@@ -37,54 +39,49 @@ class _EditProductDialogState extends State<EditProductDialog> {
               _buildImageSection(),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
-                child: Divider(thickness: 1),
+                child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
               ),
               CustomTextField(
                 controller: _ctrl.nameC,
                 label: 'Nama Produk',
-                icon: Icons.shopping_bag_outlined,
-                hint: 'Nama',
+                icon: Icons.cake_outlined,
+                hint: 'Masukkan nama produk',
               ),
               const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: CustomTextField(
-                      controller: _ctrl.priceC,
-                      label: 'Harga',
-                      icon: Icons.payments_outlined,
-                      hint: 'Harga',
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    flex: 2,
-                    child: CustomTextField(
-                      controller: _ctrl.discountC,
-                      label: 'Diskon',
-                      icon: Icons.percent_rounded,
-                      hint: 'Diskon',
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                ],
+              CustomTextField(
+                controller: _ctrl.priceC,
+                label: 'Harga Jual Base',
+                icon: Icons.payments_outlined,
+                hint: '0',
+                prefixText: 'Rp ',
+                keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 22),
-              CustomStockStepper(controller: _ctrl.stockC),
-              const SizedBox(height: 22),
+              const SizedBox(height: 18),
+              CustomTextField(
+                controller: _ctrl.discountC,
+                label: 'Diskon Produk (%)',
+                icon: Icons.percent_rounded,
+                hint: '0',
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 18),
+              CustomStockStepper(
+                controller: _ctrl.stockC,
+                label: 'Stok Jual Kue',
+                isDouble: false,
+              ),
+              const SizedBox(height: 18),
               CustomDropdownMenu(
                 controller: _ctrl.jenisC,
-                label: 'Jenis',
-                icon: Icons.category_rounded,
+                label: 'Kategori / Jenis',
+                icon: Icons.category_outlined,
                 items: [...baseJenis, ..._addedJenis],
               ),
               const SizedBox(height: 18),
               CustomDropdownMenu(
                 controller: _ctrl.satuanC,
-                label: 'Satuan',
-                icon: Icons.scale_rounded,
+                label: 'Satuan Jual',
+                icon: Icons.layers_outlined,
                 items: [...baseSatuan, ..._addedSatuan],
               ),
             ],
@@ -98,18 +95,21 @@ class _EditProductDialogState extends State<EditProductDialog> {
             _ctrl.clearForm();
             Get.back();
           },
-          onSave: () => _ctrl.updateProductData(widget.product),
-          saveLabel: 'Update Data',
+          onSave: () {
+            // Menggunakan method bawaan BaseTableController
+            _ctrl.updateProductData(widget.product);
+          },
+          saveLabel: 'Simpan Perubahan',
         ),
       ],
     );
   }
 
-  List<String> _getUniqueValues(String Function(dynamic) mapper) {
+  List<String> _getUniqueValues(String Function(Product) mapper) {
     return _ctrl.originalList
         .map(mapper)
-        .map((val) => val.trim())
-        .where((val) => val.isNotEmpty)
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
         .toSet()
         .toList();
   }
@@ -126,7 +126,7 @@ class _EditProductDialogState extends State<EditProductDialog> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: RumahLezaatTheme.primaryColor.withOpacity(0.3),
+                  color: _themeColor.withOpacity(0.4),
                   width: 2,
                 ),
               ),
@@ -142,18 +142,17 @@ class _EditProductDialogState extends State<EditProductDialog> {
                           : const Icon(
                               Icons.fastfood_rounded,
                               size: 48,
-                              color: RumahLezaatTheme.primaryColor,
+                              color: _themeColor,
                             )),
               ),
             ),
           ),
+          const SizedBox(height: 8),
           TextButton.icon(
             onPressed: _ctrl.pickImage,
             icon: const Icon(Icons.image),
             label: const Text('Ganti Gambar'),
-            style: TextButton.styleFrom(
-              foregroundColor: RumahLezaatTheme.primaryColor,
-            ),
+            style: TextButton.styleFrom(foregroundColor: _themeColor),
           ),
         ],
       ),

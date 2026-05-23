@@ -15,6 +15,15 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
   final List<String> _addedJenis = [];
   final List<String> _addedSatuan = [];
 
+  static const Color _themeColor = Color(0xFF1E1E1E);
+
+  @override
+  void initState() {
+    super.initState();
+    // Memanggil fungsi pembuat barcode bawaan dari controller Anda saat dialog dibuka
+    _ctrl.generateBarcode();
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<String> baseJenis = _getUniqueValues((p) => p.jenis);
@@ -35,55 +44,57 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
               _buildImageSection(),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
-                child: Divider(thickness: 1),
+                child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
               ),
               CustomTextField(
                 controller: _ctrl.nameC,
                 label: 'Nama Produk',
-                icon: Icons.shopping_bag_outlined,
+                icon: Icons.cake_outlined,
                 hint: 'Masukkan nama produk',
               ),
               const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: CustomTextField(
-                      controller: _ctrl.priceC,
-                      label: 'Harga Jual',
-                      icon: Icons.payments_outlined,
-                      hint: '0',
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    flex: 2,
-                    child: CustomTextField(
-                      controller: _ctrl.discountC,
-                      label: 'Diskon (%)',
-                      icon: Icons.percent_rounded,
-                      hint: '0',
-                      keyboardType: TextInputType.number,
-                    ),
-                  ),
-                ],
+              CustomTextField(
+                controller: _ctrl.priceC,
+                label: 'Harga Jual Base',
+                icon: Icons.payments_outlined,
+                hint: '0',
+                prefixText: 'Rp ',
+                keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 22),
-              CustomStockStepper(controller: _ctrl.stockC),
-              const SizedBox(height: 22),
+              const SizedBox(height: 18),
+              CustomTextField(
+                controller: _ctrl.discountC,
+                label: 'Diskon Produk (%)',
+                icon: Icons.percent_rounded,
+                hint: '0',
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 18),
+              CustomStockStepper(
+                controller: _ctrl.stockC,
+                label: 'Stok Awal Kue',
+                isDouble: false,
+              ),
+              const SizedBox(height: 18),
               CustomDropdownMenu(
                 controller: _ctrl.jenisC,
-                label: 'Jenis Kategori',
-                icon: Icons.category_rounded,
+                label: 'Kategori / Jenis',
+                icon: Icons.category_outlined,
                 items: [...baseJenis, ..._addedJenis],
               ),
               const SizedBox(height: 18),
               CustomDropdownMenu(
                 controller: _ctrl.satuanC,
-                label: 'Satuan Unit',
-                icon: Icons.scale_rounded,
+                label: 'Satuan Jual',
+                icon: Icons.layers_outlined,
                 items: [...baseSatuan, ..._addedSatuan],
+              ),
+              const SizedBox(height: 18),
+              CustomTextField(
+                controller: _ctrl.barcodeC,
+                label: 'Kode Barcode / SKU',
+                icon: Icons.qr_code_scanner_rounded,
+                hint: 'Scan atau ketik kode',
               ),
             ],
           ),
@@ -92,8 +103,11 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
       actionsPadding: const EdgeInsets.all(16),
       actions: [
         DialogActionButtons(
-          onCancel: () => Get.back(),
-          onSave: _onSaveAndInsert,
+          onCancel: () {
+            _ctrl.clearForm();
+            Get.back();
+          },
+          onSave: _handleSave,
           saveLabel: 'Simpan Produk',
         ),
       ],
@@ -103,21 +117,31 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
   List<String> _getUniqueValues(String Function(dynamic) mapper) {
     return _ctrl.originalList
         .map(mapper)
-        .map((val) => val.trim())
-        .where((val) => val.isNotEmpty)
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
         .toSet()
         .toList();
   }
 
-  void _onSaveAndInsert() {
-    if (_ctrl.jenisC.text.isNotEmpty &&
+  void _handleSave() {
+    if (_ctrl.nameC.text.isEmpty || _ctrl.priceC.text.isEmpty) {
+      Get.snackbar(
+        "Peringatan",
+        "Nama produk dan harga tidak boleh kosong",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+    if (_ctrl.jenisC.text.trim().isNotEmpty &&
         !_addedJenis.contains(_ctrl.jenisC.text.trim())) {
       _addedJenis.add(_ctrl.jenisC.text.trim());
     }
-    if (_ctrl.satuanC.text.isNotEmpty &&
+    if (_ctrl.satuanC.text.trim().isNotEmpty &&
         !_addedSatuan.contains(_ctrl.satuanC.text.trim())) {
       _addedSatuan.add(_ctrl.satuanC.text.trim());
     }
+    // Menjalankan perintah simpan bawaan milik base controller Anda
     _ctrl.insertProduct();
   }
 
@@ -133,7 +157,7 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: RumahLezaatTheme.primaryColor,
+                  color: _themeColor.withOpacity(0.4),
                   width: 2,
                 ),
               ),
@@ -144,18 +168,17 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
                     : const Icon(
                         Icons.fastfood_rounded,
                         size: 48,
-                        color: RumahLezaatTheme.primaryColor,
+                        color: _themeColor,
                       ),
               ),
             ),
           ),
+          const SizedBox(height: 8),
           TextButton.icon(
             onPressed: _ctrl.pickImage,
             icon: const Icon(Icons.camera_alt_rounded),
             label: const Text('Unggah Foto Produk'),
-            style: TextButton.styleFrom(
-              foregroundColor: RumahLezaatTheme.primaryColor,
-            ),
+            style: TextButton.styleFrom(foregroundColor: _themeColor),
           ),
         ],
       ),

@@ -18,27 +18,57 @@ class KelolaProdukDeskPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: const Color(0xFFFAFAFA), // Disamakan dengan Bahan Baku
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AdminSidebar(),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(
+                32.0,
+              ), // Padding disamakan menjadi 32
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // --- JUDUL & SUBTITLE HALAMAN ---
+                  const Text(
+                    'Kelola Produk',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E1E1E),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Manajemen data produk, harga jual, dan stok kue',
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // --- TOOLBAR ROW ---
                   Row(
                     children: [
+                      const Text(
+                        "Daftar Produk",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const Spacer(),
                       TableSearchBar(
                         controller: ctrl.searchC,
                         hint: 'Cari produk...',
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: 12),
                       ToolbarButton(
                         title: 'Insert Product',
-                        icon: Icons.add,
-                        color: Colors.cyan,
+                        icon: Icons.add_rounded,
+                        color: const Color(
+                          0xFF1E1E1E,
+                        ), // Menggunakan Hitam Tema Utama
                         onTap: () {
                           Get.dialog(InsertProductDialog());
                         },
@@ -46,8 +76,8 @@ class KelolaProdukDeskPage extends StatelessWidget {
                       const SizedBox(width: 12),
                       ToolbarButton(
                         title: "Sortir Stok Habis",
-                        icon: Icons.sort,
-                        color: Colors.orange,
+                        icon: Icons.sort_rounded,
+                        color: Colors.grey.shade700,
                         onTap: () {
                           ctrl.toggleFilterStockHabis();
                         },
@@ -55,19 +85,29 @@ class KelolaProdukDeskPage extends StatelessWidget {
                       const SizedBox(width: 12),
                       ToolbarButton(
                         title: "",
-                        icon: Icons.refresh,
-                        color: Colors.green,
+                        icon: Icons.refresh_outlined,
+                        color: Colors.grey.shade400,
                         onTap: () {
                           ctrl.refreshData();
                         },
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
+
+                  // --- TABEL PRODUK ---
                   Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: ProductTable(),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        child: ProductTable(),
+                      ),
                     ),
                   ),
                 ],
