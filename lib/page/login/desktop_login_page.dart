@@ -4,10 +4,6 @@ import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:tugas_akhir/widget/login/desktop/header_form_widget.dart';
 import 'package:tugas_akhir/widget/login/desktop/left_banner_widget.dart';
 import 'package:tugas_akhir/widget/login/desktop/login_form_fields.dart';
-// Import widget pecahan kamu di sini, contoh:
-// import 'widgets/left_banner_widget.dart';
-// import 'widgets/header_form_widget.dart';
-// import 'widgets/login_form_fields.dart';
 
 class DesktopLoginPage extends StatelessWidget {
   DesktopLoginPage({super.key});
@@ -18,35 +14,35 @@ class DesktopLoginPage extends StatelessWidget {
     final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.white,
       body: Row(
         children: [
-          // 1. SISI KIRI: BANNER (Hanya muncul di layar lebar > 800px)
+          // 1. SISI KIRI: BANNER (Flex 5 agar seimbang 50:50 atau sesuaikan kebutuhan)
           if (screenSize.width > 800)
-            const Expanded(flex: 6, child: LeftBannerWidget()),
+            const Expanded(flex: 5, child: LeftBannerWidget()),
 
           // 2. SISI KANAN: FORM LOGIN
           Expanded(
-            flex: 4,
+            flex: 5,
             child: Container(
               color: Colors.white,
               child: Center(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 48,
+                    horizontal: 64,
                     vertical: 32,
                   ),
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 400),
+                    constraints: const BoxConstraints(
+                      maxWidth: 460,
+                    ), // Diperlebar agar layout horizontal di footer muat
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const HeaderFormWidget(), // Komponen Header (Logo & Title)
-                        const SizedBox(height: 24),
-                        LoginFormFields(
-                          controller: controller,
-                        ), // Komponen Form Input & Button
+                        const HeaderFormWidget(),
+                        const SizedBox(height: 32),
+                        LoginFormFields(controller: controller),
                       ],
                     ),
                   ),

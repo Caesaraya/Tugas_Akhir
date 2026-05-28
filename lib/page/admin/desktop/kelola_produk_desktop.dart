@@ -8,6 +8,7 @@ import 'package:tugas_akhir/widget/admin/dialogs/product/insert_product_dialog.d
 import 'package:tugas_akhir/widget/admin/produk/product_table.dart';
 import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
+import 'package:tugas_akhir/widget/admin/bahan/summary_card.dart'; // ← sesuaikan path
 
 class KelolaProdukDeskPage extends StatelessWidget {
   KelolaProdukDeskPage({super.key}) {
@@ -18,16 +19,14 @@ class KelolaProdukDeskPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA), // Disamakan dengan Bahan Baku
+      backgroundColor: const Color(0xFFFAFAFA),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AdminSidebar(),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(
-                32.0,
-              ), // Padding disamakan menjadi 32
+              padding: const EdgeInsets.all(32.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -45,6 +44,74 @@ class KelolaProdukDeskPage extends StatelessWidget {
                     'Manajemen data produk, harga jual, dan stok kue',
                     style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                   ),
+                  const SizedBox(height: 24),
+
+                  // --- SUMMARY CARDS ---
+                  // Gunakan Obx agar reaktif saat data berubah
+                  Obx(() {
+                    final allProducts = ctrl.originalList;
+                    final totalProduk = allProducts.length;
+                    final totalStok = allProducts.fold<int>(
+                      0,
+                      (sum, p) => sum + p.stock,
+                    );
+                    final stokHabis = allProducts
+                        .where((p) => p.stock <= 0)
+                        .length;
+
+                    return Row(
+                      children: [
+                        // Card 1 – Total Produk
+                        SummaryCard(
+                          title: 'Total Produk',
+                          value: '$totalProduk',
+                          subtitle: 'Jenis produk terdaftar',
+                          subtitleColor: Colors.blue.shade600,
+                          trailingGraph: Icon(
+                            Icons.inventory_2_outlined,
+                            size: 40,
+                            color: Colors.blue.shade100,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+
+                        // Card 2 – Total Stok
+                        SummaryCard(
+                          title: 'Total Stok',
+                          value: '$totalStok',
+                          subtitle: 'Unit tersedia di seluruh produk',
+                          subtitleColor: Colors.green.shade600,
+                          trailingGraph: Icon(
+                            Icons.layers_outlined,
+                            size: 40,
+                            color: Colors.green.shade100,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+
+                        // Card 3 – Stok Habis
+                        SummaryCard(
+                          title: 'Stok Habis',
+                          value: '$stokHabis',
+                          subtitle: stokHabis > 0
+                              ? '$stokHabis produk perlu diisi ulang'
+                              : 'Semua produk tersedia',
+                          subtitleColor: stokHabis > 0
+                              ? Colors.red.shade600
+                              : Colors.green.shade600,
+                          trailingGraph: Icon(
+                            stokHabis > 0
+                                ? Icons.warning_amber_rounded
+                                : Icons.check_circle_outline,
+                            size: 40,
+                            color: stokHabis > 0
+                                ? Colors.red.shade100
+                                : Colors.green.shade100,
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                   const SizedBox(height: 24),
 
                   // --- TOOLBAR ROW ---
@@ -66,9 +133,7 @@ class KelolaProdukDeskPage extends StatelessWidget {
                       ToolbarButton(
                         title: 'Insert Product',
                         icon: Icons.add_rounded,
-                        color: const Color(
-                          0xFF1E1E1E,
-                        ), // Menggunakan Hitam Tema Utama
+                        color: const Color(0xFF1E1E1E),
                         onTap: () {
                           Get.dialog(InsertProductDialog());
                         },

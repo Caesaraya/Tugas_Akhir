@@ -154,72 +154,93 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
   }
 
   Widget _buildAddBahanSection() {
-    final List<String> itemsBahan = bahanBakuCtrl.originalList
-        .map((b) => "${b.id} - ${b.namaBahan} (${b.satuan})")
-        .toList();
+    // Membungkus dengan Obx agar dropdown terupdate otomatis saat data bahan baku masuk
+    return Obx(() {
+      // Pastikan data master bahan baku sudah di-fetch
+      if (bahanBakuCtrl.originalList.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0),
+          child: Text(
+            'Memuat data bahan baku atau data kosong...',
+            style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+          ),
+        );
+      }
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Expanded(
-          flex: 3,
-          child: CustomDropdownMenu(
-            controller: _bahanDropdownC,
-            label: 'Pilih Bahan Baku Utama',
-            icon: Icons.compost_outlined,
-            items: itemsBahan,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          flex: 2,
-          child: CustomTextField(
-            controller: ctrl.jumlahBahanC,
-            label: 'Takaran Kebutuhan',
-            icon: Icons.scale_outlined,
-            hint: '0.0',
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          ),
-        ),
-        const SizedBox(width: 12),
-        ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFF5F5F5),
-            foregroundColor: _themeColor,
-            elevation: 0,
-            side: BorderSide(color: Colors.grey.shade300),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+      // Map data dari controller bahan baku
+      final List<String> itemsBahan = bahanBakuCtrl.originalList
+          .map((b) => "${b.id} - ${b.namaBahan} (${b.satuan})")
+          .toList();
+
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            flex: 3,
+            child: CustomDropdownMenu(
+              controller: _bahanDropdownC,
+              label: 'Pilih Bahan Baku Utama',
+              icon: Icons.compost_outlined,
+              items: itemsBahan, // Sekarang items ini reaktif!
             ),
           ),
-          onPressed: () {
-            if (_bahanDropdownC.text.isEmpty ||
-                ctrl.jumlahBahanC.text.isEmpty) {
-              Get.snackbar(
-                'Error',
-                'Pilih bahan baku dan isikan takaran jumlahnya.',
-              );
-              return;
-            }
-            final parts = _bahanDropdownC.text.split(' - ');
-            final int? idBahan = int.tryParse(parts[0]);
-            final double? qty = double.tryParse(ctrl.jumlahBahanC.text);
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: CustomTextField(
+              controller: ctrl.jumlahBahanC,
+              label: 'Takaran Kebutuhan',
+              icon: Icons.scale_outlined,
+              hint: '0.0',
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF5F5F5),
+              foregroundColor: _themeColor,
+              elevation: 0,
+              side: BorderSide(color: Colors.grey.shade300),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () {
+              if (_bahanDropdownC.text.isEmpty ||
+                  ctrl.jumlahBahanC.text.isEmpty) {
+                Get.snackbar(
+                  'Error',
+                  'Pilih bahan baku dan isikan takaran jumlahnya.',
+                );
+                return;
+              }
 
-            if (idBahan != null && qty != null) {
+              final parts = _bahanDropdownC.text.split(' - ');
+              final int? idBahan = int.tryParse(parts[0]);
+              final double? qty = double.tryParse(ctrl.jumlahBahanC.text);
+
+              if (idBahan == null || qty == null) {
+                Get.snackbar('Error', 'Data tidak valid.');
+                return;
+              }
+
+              ctrl.selectedBahanId.value = idBahan;
               ctrl.addBahanToTempList();
               _bahanDropdownC.clear();
-              ctrl.jumlahBahanC.clear();
-            }
-          },
-          icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-          label: const Text(
-            'Tambahkan',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            },
+            icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+            label: const Text(
+              'Tambahkan',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 
   Widget _buildTempBahanList() {
