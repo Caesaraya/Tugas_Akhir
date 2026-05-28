@@ -7,30 +7,43 @@ function getImageByJenis(jenis) {
   switch (jenis) {
     case "CAKE":
       return "cake.jpg";
+
     case "BREAD":
       return "bread.jpg";
+
     case "PASTA":
       return "pasta.jpg";
+
     case "KUE KERING":
       return "kue_kering.jpg";
+
     case "KONSINYASI":
       return "konsinyasi.jpg";
+
     case "MINUMAN":
       return "minuman.jpg";
+
     case "TART":
       return "tart.jpg";
+
     case "PASTRY":
       return "pastry.jpg";
+
     case "BASAHAN":
       return "basahan.jpg";
+
     case "HANTARAN":
       return "hantaran.jpg";
+
     case "PACKAGING":
       return "packaging.jpg";
+
     case "PUTUS":
       return "putus.jpg";
+
     case "GROSIR RESILEDO":
       return "grosir.jpg";
+
     default:
       return "default.jpg";
   }
@@ -64,7 +77,7 @@ function isDefaultImage(imageName) {
 // BUILD IMAGE URL
 // ========================
 function buildImageUrl(product) {
-  const baseUrl = "https://porthole-popcorn-winter.ngrok-free.dev";
+  const baseUrl = "https://www.yara07.my.id";
 
   if (!product.image) {
     return `${baseUrl}/images/${getImageByJenis(product.jenis)}`;
@@ -94,20 +107,24 @@ exports.getProducts = async (req, res) => {
         satuan,
         barcode,
         image,
-        resep_id
+        resep_id,
+        deleted_at
       FROM products
-      ORDER BY id DESC
+      ORDER BY (deleted_at IS NOT NULL) ASC, id DESC
     `);
 
     const products = rows.map((product) => ({
       ...product,
-      price_after_discount: Math.round(product.price_after_discount),
+      price_after_discount: Math.round(
+        product.price_after_discount
+      ),
       image: buildImageUrl(product),
     }));
 
     res.json(products);
   } catch (error) {
     console.error(error);
+
     res.status(500).json({
       message: "Failed to load products",
       error: error.message,
@@ -133,7 +150,8 @@ exports.getProductById = async (req, res) => {
         satuan,
         barcode,
         image,
-        resep_id
+        resep_id,
+        deleted_at
       FROM products
       WHERE id = ?
       `,
@@ -148,13 +166,16 @@ exports.getProductById = async (req, res) => {
 
     const product = {
       ...rows[0],
-      price_after_discount: Math.round(rows[0].price_after_discount),
+      price_after_discount: Math.round(
+        rows[0].price_after_discount
+      ),
       image: buildImageUrl(rows[0]),
     };
 
     res.json(product);
   } catch (error) {
     console.error(error);
+
     res.status(500).json({
       message: "Failed to load product",
       error: error.message,
@@ -190,7 +211,17 @@ exports.createProduct = async (req, res) => {
     const [result] = await db.query(
       `
       INSERT INTO products
-      (name, price, discount, stock, jenis, satuan, barcode, image, resep_id)
+      (
+        name,
+        price,
+        discount,
+        stock,
+        jenis,
+        satuan,
+        barcode,
+        image,
+        resep_id
+      )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
@@ -217,9 +248,11 @@ exports.createProduct = async (req, res) => {
       barcode,
       image,
       resep_id,
+      deleted_at: null,
     });
   } catch (error) {
     console.error(error);
+
     res.status(500).json({
       message: "Failed to create product",
       error: error.message,
@@ -252,7 +285,6 @@ exports.updateProduct = async (req, res) => {
 
     if (req.file) {
       image = req.file.filename;
-      console.log("New image uploaded:", image);
     } else {
       const [existingProduct] = await db.query(
         "SELECT image FROM products WHERE id = ?",
@@ -260,9 +292,8 @@ exports.updateProduct = async (req, res) => {
       );
 
       image =
-        existingProduct[0]?.image || getImageByJenis(jenis);
-
-      console.log("Using existing image:", image);
+        existingProduct[0]?.image ||
+        getImageByJenis(jenis);
     }
 
     await db.query(
@@ -296,21 +327,10 @@ exports.updateProduct = async (req, res) => {
 
     res.json({
       message: "Product updated",
-      data: {
-        id: parseInt(req.params.id),
-        name,
-        price,
-        discount,
-        stock,
-        jenis,
-        satuan,
-        barcode,
-        image,
-        resep_id,
-      },
     });
   } catch (error) {
     console.error(error);
+
     res.status(500).json({
       message: "Failed to update product",
       error: error.message,
@@ -319,9 +339,75 @@ exports.updateProduct = async (req, res) => {
 };
 
 // ========================
-// DELETE PRODUCT
+// SOFT DELETE PRODUCT
 // ========================
 exports.deleteProduct = async (req, res) => {
+  try {
+    const [result] = await db.query(
+      `
+      UPDATE products
+      SET deleted_at = NOW()
+      WHERE id = ?
+      `,
+      [req.params.id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    res.json({
+      message: "Product soft deleted",
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Failed to delete product",
+      error: error.message,
+    });
+  }
+};
+
+// ========================
+// RESTORE PRODUCT
+// ========================
+exports.restoreProduct = async (req, res) => {
+  try {
+    const [result] = await db.query(
+      `
+      UPDATE products
+      SET deleted_at = NULL
+      WHERE id = ?
+      `,
+      [req.params.id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    res.json({
+      message: "Product restored",
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Failed to restore product",
+      error: error.message,
+    });
+  }
+};
+
+// ========================
+// FORCE DELETE PRODUCT
+// ========================
+exports.forceDeleteProduct = async (req, res) => {
   try {
     const [result] = await db.query(
       "DELETE FROM products WHERE id = ?",
@@ -335,7 +421,7 @@ exports.deleteProduct = async (req, res) => {
     }
 
     res.json({
-      message: "Product deleted",
+      message: "Product permanently deleted",
     });
   } catch (error) {
     console.error(error);
@@ -348,7 +434,7 @@ exports.deleteProduct = async (req, res) => {
     }
 
     res.status(500).json({
-      message: "Failed to delete product",
+      message: "Failed to force delete product",
       error: error.message,
     });
   }

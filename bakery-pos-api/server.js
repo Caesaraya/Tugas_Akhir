@@ -1,5 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const cron = require("node-cron");
+
+const db = require("./config/db");
 
 const app = express();
 
@@ -35,6 +38,27 @@ app.use("/api/produksi", produksiRoutes);
 app.use("/api/supplier", supplierRoutes);
 app.use("/api/diskon", diskonRoutes);
 app.use("/api/users", userRoutes);
+
+// ======================
+// AUTO CLEANUP SOFT DELETE
+// ======================
+cron.schedule("0 0 * * *", async () => {
+  try {
+    console.log("Running auto cleanup deleted products...");
+
+    const [result] = await db.query(`
+      DELETE FROM products
+      WHERE deleted_at IS NOT NULL
+      AND deleted_at < NOW() - INTERVAL 14 DAY
+    `);
+
+    console.log(
+      `Auto cleanup success. Deleted ${result.affectedRows} products`
+    );
+  } catch (error) {
+    console.error("Auto cleanup failed:", error.message);
+  }
+});
 
 // ======================
 // HEALTH CHECK
