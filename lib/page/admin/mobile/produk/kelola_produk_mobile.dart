@@ -6,6 +6,7 @@ import 'package:tugas_akhir/widget/admin/produk/mobile/product_item_card.dart';
 import 'package:tugas_akhir/widget/admin/produk/mobile/product_list_header.dart';
 import 'package:tugas_akhir/widget/admin/mobile_admin_drawer.dart';
 import 'package:tugas_akhir/widget/admin/produk/mobile/product_pagination_footer.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/product/insert_product_dialog.dart';
 
 class ProductListPage extends StatelessWidget {
   final controller = Get.find<ProductTableController>();
@@ -20,13 +21,18 @@ class ProductListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const MobileAdminDrawer(),
-      backgroundColor: const Color(0xFFF8F9FA),
+      drawer: const MobileAdminDrawer(), // Menambahkan drawer samping
+      backgroundColor: const Color(
+        0xFFF8F9FA,
+      ), // Warna background utama sesuai gambar
       appBar: AppBar(
         title: const Text(
-          'Daftar Produk',
+          'Kelola Produk',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
+        iconTheme: const IconThemeData(
+          color: Colors.black,
+        ), // Menyelaraskan warna ikon menu drawer
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -47,10 +53,13 @@ class ProductListPage extends StatelessWidget {
               return RefreshIndicator(
                 onRefresh: () => controller.fetchData(),
                 child: ListView.separated(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   itemCount: controller.paginatedList.length,
                   separatorBuilder: (context, index) =>
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final product = controller.paginatedList[index];
                     return ProductItemCard(
@@ -65,6 +74,13 @@ class ProductListPage extends StatelessWidget {
           ),
           ProductPaginationFooter(controller: controller),
         ],
+      ),
+      // Floating Action Button Hitam Sesuai Desain Pojok Kanan Bawah
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        onPressed: () => Get.dialog(InsertProductDialog()),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }

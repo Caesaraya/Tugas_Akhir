@@ -33,10 +33,7 @@ class ProductDetailPage extends StatelessWidget {
         ),
       ),
       body: Column(
-        children: [
-          ProductDetailBody(product: product, currency: currency),
-          ProductDetailActions(product: product, controller: controller),
-        ],
+        children: [ProductDetailBody(product: product, currency: currency)],
       ),
     );
   }

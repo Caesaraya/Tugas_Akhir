@@ -1,108 +1,98 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../../../../controller/admin/bahan_baku_table_controller.dart';
-import '../../../../models/bahan_baku.dart';
-import '../custom_form_fields.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/custom_form_fields.dart';
 
 class EditBahanBakuDialog extends StatefulWidget {
-  final BahanBaku bahan;
-  const EditBahanBakuDialog({super.key, required this.bahan});
+  final Map<String, dynamic> oldData;
+  final List<String> units;
+  final Function(String) onAddNewUnit;
+  final Function(Map<String, dynamic>) onUpdate;
+
+  const EditBahanBakuDialog({
+    super.key,
+    required this.oldData,
+    required this.units,
+    required this.onAddNewUnit,
+    required this.onUpdate,
+  });
 
   @override
   State<EditBahanBakuDialog> createState() => _EditBahanBakuDialogState();
 }
 
 class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
-  final ctrl = Get.find<BahanBakuTableController>();
-  final List<String> _addedSatuan = [];
+  late TextEditingController _namaController;
+  late TextEditingController _stokController;
+  late TextEditingController _satuanController;
+
+  @override
+  void initState() {
+    super.initState();
+    _namaController = TextEditingController(text: widget.oldData['nama_bahan']);
+    _stokController = TextEditingController(
+      text: widget.oldData['stok']?.toString(),
+    );
+    _satuanController = TextEditingController(text: widget.oldData['satuan']);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<String> baseSatuan = ctrl.originalList
-        .map((b) => b.satuan.trim())
-        .where((satuan) => satuan.isNotEmpty)
-        .toSet()
-        .toList();
-
-    final List<String> dropdownSatuanItems = [...baseSatuan, ..._addedSatuan];
-
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      contentPadding: const EdgeInsets.all(24),
       title: const DialogCommonTitle(
-        title: 'Edit Bahan Baku',
-        icon: Icons.edit_calendar_rounded,
+        title: 'Ubah Bahan Baku',
+        icon: Icons.edit_attributes_rounded,
       ),
-      content: SizedBox(
-        width: 440,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CustomTextField(
-                controller: ctrl.namaC,
-                label: 'Nama Bahan Baku',
-                icon: Icons.fastfood_outlined,
-                hint: 'Masukkan nama bahan',
-              ),
-              const SizedBox(height: 18),
-              CustomTextField(
-                controller: ctrl.merkC,
-                label: 'Merk / Produsen',
-                icon: Icons.branding_watermark_outlined,
-                hint: 'Masukkan merk bahan',
-              ),
-              const SizedBox(height: 18),
-              CustomDropdownMenu(
-                controller: ctrl.satuanC,
-                label: 'Satuan Ukur',
-                icon: Icons.scale_outlined,
-                items: dropdownSatuanItems,
-              ),
-              const SizedBox(height: 22),
-              CustomStockStepper(
-                controller: ctrl.stokC,
-                label: 'Stok',
-                isDouble: true,
-              ),
-              const SizedBox(height: 18),
-              CustomTextField(
-                controller: ctrl.hargaC,
-                label: 'Harga Satuan',
-                icon: Icons.payments_outlined,
-                hint: '0',
-                prefixText: 'Rp ',
-                keyboardType: TextInputType.number,
-              ),
-            ],
-          ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            CustomTextField(
+              controller: _namaController,
+              label: 'Nama Bahan Baku',
+              hint: 'Masukkan nama bahan',
+              icon: Icons.layers_outlined,
+            ),
+            const SizedBox(height: 16),
+            CustomTextField(
+              controller: _stokController,
+              label: 'Jumlah Stok',
+              hint: '0',
+              icon: Icons.warehouse_rounded,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            CustomDropdownField(
+              controller: _satuanController,
+              label: 'Satuan Ukur',
+              hint: 'Pilih Satuan',
+              icon: Icons.scale_rounded,
+              items: widget.units,
+              onAddNew: (newVal) {
+                widget.onAddNewUnit(newVal);
+                setState(() => _satuanController.text = newVal);
+              },
+            ),
+            const SizedBox(height: 24),
+            DialogActionButtons(
+              saveLabel: 'Simpan',
+              onCancel: () => Navigator.pop(context),
+              onSave: () {
+                if (_namaController.text.isNotEmpty &&
+                    _stokController.text.isNotEmpty) {
+                  widget.onUpdate({
+                    'nama_bahan': _namaController.text.trim(),
+                    'stok': double.tryParse(_stokController.text) ?? 0.0,
+                    'satuan': _satuanController.text,
+                  });
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ],
         ),
       ),
-      actionsPadding: const EdgeInsets.all(16),
-      actions: [
-        DialogActionButtons(
-          onCancel: () {
-            ctrl.clearForm();
-            Get.back();
-          },
-          onSave: () {
-            if (widget.bahan.id != null) {
-              final typedSatuan = ctrl.satuanC.text.trim();
-              if (typedSatuan.isNotEmpty &&
-                  !_addedSatuan.contains(typedSatuan)) {
-                setState(() {
-                  _addedSatuan.add(typedSatuan);
-                });
-              }
-              // Menggunakan method bawaan BaseTableController
-              ctrl.updateBahanBaku(widget.bahan.id!);
-            } else {
-              Get.snackbar('Error', 'ID Bahan Baku tidak ditemukan');
-            }
-          },
-          saveLabel: 'Simpan Perubahan',
-        ),
-      ],
     );
   }
 }

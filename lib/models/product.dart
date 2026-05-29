@@ -5,26 +5,28 @@ class Product {
   final String name;
   final int price;
   final int discount;
-  final int priceAfterDiscount; 
+  final int priceAfterDiscount;
   final int stock;
   final String jenis;
   final String satuan;
   final String barcode;
   final String image;
   final int? resepId;
+  final DateTime? deletedAt; // Perbaikan: Menggunakan DateTime? bukan String?
 
   Product({
     required this.id,
     required this.name,
     required this.price,
     required this.discount,
-    required this.priceAfterDiscount, 
+    required this.priceAfterDiscount,
     required this.stock,
     required this.jenis,
     required this.satuan,
     required this.barcode,
     required this.image,
     this.resepId,
+    this.deletedAt,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -33,18 +35,21 @@ class Product {
       name: json['name'] ?? '',
       price: int.tryParse(json['price'].toString()) ?? 0,
       discount: int.tryParse(json['discount'].toString()) ?? 0,
-      // Ambil data dari field baru di API
-      priceAfterDiscount: int.tryParse(json['price_after_discount'].toString()) ?? 0,
+      priceAfterDiscount:
+          int.tryParse(json['price_after_discount'].toString()) ?? 0,
       stock: int.tryParse(json['stock'].toString()) ?? 0,
       jenis: json['jenis'] ?? '',
       satuan: json['satuan'] ?? '',
       barcode: json['barcode'] ?? '',
       image: json['image'] ?? '',
       resepId: int.tryParse(json['resep_id'].toString()),
+      // Ambil data jika tidak null, parsing string ISO8601 ke DateTime
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.tryParse(json['deleted_at'].toString())
+          : null,
     );
   }
 
-  // Method untuk copyWith
   Product copyWith({
     int? id,
     String? name,
@@ -57,6 +62,7 @@ class Product {
     String? barcode,
     String? image,
     int? resepId,
+    DateTime? deletedAt,
   }) {
     return Product(
       id: id ?? this.id,
@@ -70,10 +76,10 @@ class Product {
       barcode: barcode ?? this.barcode,
       image: image ?? this.image,
       resepId: resepId ?? this.resepId,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
-  // Method untuk convert ke JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -87,6 +93,7 @@ class Product {
       'barcode': barcode,
       'image': image,
       'resep_id': resepId,
+      'deleted_at': deletedAt?.toIso8601String(),
     };
   }
 }

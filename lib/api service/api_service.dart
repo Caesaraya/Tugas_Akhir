@@ -286,6 +286,60 @@ class ApiService {
   }
 
   // ========================
+  // SOFT DELETE PRODUCT
+  // ========================
+  static Future<bool> softDeleteProduct(int id) async {
+    try {
+      final response = await http
+          .patch(
+            Uri.parse("$baseUrl/api/products/$id/delete"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal soft delete produk: $e");
+    }
+  }
+
+  // ========================
+  // RESTORE PRODUCT
+  // ========================
+  static Future<bool> restoreProduct(int id) async {
+    try {
+      final response = await http
+          .patch(
+            Uri.parse("$baseUrl/api/products/$id/restore"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal restore produk: $e");
+    }
+  }
+
+  // ========================
+  // FORCE DELETE PRODUCT
+  // ========================
+  static Future<bool> forceDeleteProduct(int id) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse("$baseUrl/api/products/$id/force"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal force delete produk: $e");
+    }
+  }
+
+  // ========================
   // CREATE TRANSACTION
   // ========================
   static Future<bool> createTransaction({
