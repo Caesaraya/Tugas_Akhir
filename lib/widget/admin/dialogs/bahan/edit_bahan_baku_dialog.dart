@@ -5,8 +5,9 @@ import '../../../../models/bahan_baku.dart';
 import '../custom_form_fields.dart';
 
 class EditBahanBakuDialog extends StatefulWidget {
-  final BahanBaku bahan;
-  const EditBahanBakuDialog({super.key, required this.bahan});
+  final BahanBaku
+  item; // Menyesuaikan nama parameter model dengan parameter table action ('item')
+  const EditBahanBakuDialog({super.key, required this.item});
 
   @override
   State<EditBahanBakuDialog> createState() => _EditBahanBakuDialogState();
@@ -43,19 +44,19 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
                 controller: ctrl.namaC,
                 label: 'Nama Bahan Baku',
                 icon: Icons.fastfood_outlined,
-                hint: 'Masukkan nama bahan',
+                hint: 'Masukkan nama bahan baku',
               ),
               const SizedBox(height: 18),
               CustomTextField(
                 controller: ctrl.merkC,
                 label: 'Merk / Produsen',
                 icon: Icons.branding_watermark_outlined,
-                hint: 'Masukkan merk bahan',
+                hint: 'Masukkan merk bahan baku',
               ),
               const SizedBox(height: 18),
               CustomDropdownMenu(
                 controller: ctrl.satuanC,
-                label: 'Satuan Ukur',
+                label: 'Satuan',
                 icon: Icons.scale_outlined,
                 items: dropdownSatuanItems,
               ),
@@ -63,7 +64,8 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
               CustomStockStepper(
                 controller: ctrl.stokC,
                 label: 'Stok',
-                isDouble: true,
+                isDouble:
+                    true, // Mendukung tipe desimal/double untuk bahan baku pecahan
               ),
               const SizedBox(height: 18),
               CustomTextField(
@@ -86,7 +88,7 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
             Get.back();
           },
           onSave: () {
-            if (widget.bahan.id != null) {
+            if (widget.item.id != null) {
               final typedSatuan = ctrl.satuanC.text.trim();
               if (typedSatuan.isNotEmpty &&
                   !_addedSatuan.contains(typedSatuan)) {
@@ -94,10 +96,15 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
                   _addedSatuan.add(typedSatuan);
                 });
               }
-              // Menggunakan method bawaan BaseTableController
-              ctrl.updateBahanBaku(widget.bahan.id!);
+              // Mengeksekusi pembaruan data pada controller baru sesuai target ID
+              ctrl.updateBahanBaku(widget.item.id!);
             } else {
-              Get.snackbar('Error', 'ID Bahan Baku tidak ditemukan');
+              Get.snackbar(
+                'Error',
+                'ID Bahan Baku tidak ditemukan',
+                backgroundColor: Colors.red,
+                colorText: Colors.white,
+              );
             }
           },
           saveLabel: 'Simpan Perubahan',

@@ -19,103 +19,187 @@ class BahanBakuItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDeleted = item.deletedAt != null;
+
+    // Format konversi angka desimal agar rapi tanpa .0 jika bilangan bulat
+    final String displayStok = item.stok == item.stok.roundToDouble()
+        ? item.stok.toInt().toString()
+        : item.stok.toString();
+
+    // Penentuan warna status berdasarkan ketersediaan stok bahan baku
+    Color stockColor = Colors.green;
+    if (isDeleted) {
+      stockColor = Colors.grey;
+    } else if (item.stok == 0) {
+      stockColor = Colors.red;
+    } else if (item.stok <= 5) {
+      stockColor = Colors.orange;
+    }
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDeleted ? Colors.red.shade50.withOpacity(0.4) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10),
-        ],
+        border: Border.all(
+          color: isDeleted ? Colors.red.shade200 : Colors.grey.shade200,
+        ),
       ),
       child: InkWell(
         onTap: () => Get.to(() => BahanBakuDetailPage(bahanBaku: item)),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 1. Gambar Ikon Pengganti representasi visual di Sisi Kiri
             Container(
-              width: 50,
-              height: 50,
+              width: 68,
+              height: 68,
               decoration: BoxDecoration(
-                color: const Color(0xFF5D4037).withOpacity(0.1),
+                color: const Color(0xFFF1F3F5),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.inventory_2, color: Color(0xFF5D4037)),
+              child: const Icon(
+                Icons.inventory_2_outlined,
+                color: Colors.black54,
+                size: 26,
+              ),
             ),
             const SizedBox(width: 12),
+
+            // 2. Blok Detail Konten Sisi Kanan (Atas & Bawah)
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    item.namaBahan,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                  // Sisi Atas: Nama & Merk Bahan di kiri, Harga di Kanan Atas
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.namaBahan,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: Colors.black,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              item.merk.isEmpty ? '-' : item.merk,
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        formatCurrency.format(item.hargaSatuan),
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    'Merk: ${item.merk}',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                  ),
-                  Text(
-                    formatCurrency.format(item.hargaSatuan),
-                    style: const TextStyle(
-                      color: Color(0xFF5D4037),
-                      fontWeight: FontWeight.bold,
-                    ),
+                  const SizedBox(height: 12),
+
+                  // Sisi Bawah: Status Indikator Lingkaran Stok & Tombol Navigasi Aksi
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Indikator Titik Status Stok
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: stockColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            isDeleted
+                                ? 'Terhapus'
+                                : 'Stok: $displayStok ${item.satuan}',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Kumpulan Tombol Aksi Berwarna di Kanan Bawah
+                      Row(
+                        children: isDeleted
+                            ? [
+                                // JIKA DELETED = TRUE (Menampilkan Restore & Hapus Permanen)
+                                _buildActionIconButton(
+                                  icon: Icons.restore_outlined,
+                                  color:
+                                      Colors.green, // Warna Hijau untuk Restore
+                                  onTap: () =>
+                                      controller.restoreBahan(item.id!),
+                                ),
+                                const SizedBox(width: 6),
+                                _buildActionIconButton(
+                                  icon: Icons.delete_forever_outlined,
+                                  color: Colors
+                                      .red
+                                      .shade900, // Merah tua untuk hapus permanen
+                                  onTap: () =>
+                                      controller.forceDeleteBahan(item.id!),
+                                ),
+                              ]
+                            : [
+                                _buildActionIconButton(
+                                  icon: Icons.edit_outlined,
+                                  color: Colors.blue, // Warna Biru untuk Edit
+                                  onTap: () => controller.showEditDialog(item),
+                                ),
+                                const SizedBox(width: 6),
+                                _buildActionIconButton(
+                                  icon: Icons.delete_outline_rounded,
+                                  color: Colors.red, // Warna Merah untuk Hapus
+                                  onTap: () =>
+                                      controller.softDeleteBahan(item.id!),
+                                ),
+                              ],
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: item.stok <= 0
-                        ? Colors.red.withOpacity(0.1)
-                        : Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '${item.stok} ${item.satuan}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: item.stok <= 0 ? Colors.red : Colors.green,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(
-                        Icons.edit_outlined,
-                        color: Colors.blue,
-                        size: 20,
-                      ),
-                      onPressed: () => controller.openEditDialog(item),
-                    ),
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        color: Colors.red,
-                        size: 20,
-                      ),
-                      onPressed: () => controller.deleteData(item.id!),
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildActionIconButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Icon(icon, size: 20, color: color),
       ),
     );
   }

@@ -50,7 +50,7 @@ class BahanBakuScreen extends StatelessWidget {
                       children: [
                         SummaryCard(
                           title: 'Nilai Inventory',
-                          value: ctrl.formatRingkasanMataUanng(
+                          value: ctrl.formatRingkasanMataUang(
                             ctrl.totalNilaiInventory,
                           ),
                           subtitle:
