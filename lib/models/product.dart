@@ -1,5 +1,3 @@
-import 'dart:io';
-
 class Product {
   final int id;
   final String name;
@@ -12,7 +10,9 @@ class Product {
   final String barcode;
   final String image;
   final int? resepId;
-  final DateTime? deletedAt; // Perbaikan: Menggunakan DateTime? bukan String?
+
+  // DIUBAH: Menggunakan DateTime untuk fungsionalitas waktu
+  final DateTime? deletedAt;
 
   Product({
     required this.id,
@@ -37,13 +37,15 @@ class Product {
       discount: int.tryParse(json['discount'].toString()) ?? 0,
       priceAfterDiscount:
           int.tryParse(json['price_after_discount'].toString()) ?? 0,
+
       stock: int.tryParse(json['stock'].toString()) ?? 0,
       jenis: json['jenis'] ?? '',
       satuan: json['satuan'] ?? '',
       barcode: json['barcode'] ?? '',
       image: json['image'] ?? '',
       resepId: int.tryParse(json['resep_id'].toString()),
-      // Ambil data jika tidak null, parsing string ISO8601 ke DateTime
+
+      // DIUBAH: Parse ke DateTime jika tidak null
       deletedAt: json['deleted_at'] != null
           ? DateTime.tryParse(json['deleted_at'].toString())
           : null,
@@ -62,7 +64,7 @@ class Product {
     String? barcode,
     String? image,
     int? resepId,
-    DateTime? deletedAt,
+    DateTime? deletedAt, // DIUBAH
   }) {
     return Product(
       id: id ?? this.id,
@@ -93,7 +95,11 @@ class Product {
       'barcode': barcode,
       'image': image,
       'resep_id': resepId,
+      // DIUBAH: Konversi balik ke ISO-8601 string jika tidak null
       'deleted_at': deletedAt?.toIso8601String(),
     };
   }
+
+  // HELPER: Cek apakah produk dalam state terhapus
+  bool get isDeleted => deletedAt != null;
 }

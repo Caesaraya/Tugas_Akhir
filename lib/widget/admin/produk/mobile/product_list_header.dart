@@ -15,21 +15,21 @@ class ProductListHeader extends StatelessWidget {
 
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Search Bar Utama
+          // Search Bar Atas Penuh
           TableSearchBar(
             controller: controller.searchC,
             hint: 'Cari nama produk...',
-            // Jika TableSearchBar mendukung onChanged, kamu bisa pasang:
-            // onChanged: (val) => controller.search(val),
           ),
           const SizedBox(height: 12),
 
-          // 2. Kategori Pilihan (Pill/Chips)
+          // Horizontal Scroll Filter Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
             child: Row(
               children: categories.map((cat) {
                 return Obx(() {
@@ -42,22 +42,19 @@ class ProductListHeader extends StatelessWidget {
                       onSelected: (selected) {
                         if (selected) {
                           selectedCategory.value = cat;
-                          if (cat == 'Semua') {
-                            controller.search('');
-                          } else {
-                            controller.search(cat);
-                          }
+                          // Memanggil fungsi search bawaan controller tanpa mengubah strukturnya
+                          controller.search(cat == 'Semua' ? '' : cat);
                         }
                       },
                       selectedColor: Colors.black,
-                      backgroundColor: Colors.grey.shade100,
+                      backgroundColor: Colors.white,
                       labelStyle: TextStyle(
                         color: isSelected ? Colors.white : Colors.black87,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                         side: BorderSide(
                           color: isSelected
                               ? Colors.black

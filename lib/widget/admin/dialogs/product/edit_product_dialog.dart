@@ -1,113 +1,161 @@
 import 'package:flutter/material.dart';
-import 'package:tugas_akhir/models/product.dart';
-import 'package:tugas_akhir/widget/admin/dialogs/custom_form_fields.dart';
+import 'package:get/get.dart';
+import '../../../../controller/admin/product_table_controller.dart';
+import '../../../../models/product.dart';
+import '../custom_form_fields.dart';
 
 class EditProductDialog extends StatefulWidget {
-  final Map<String, dynamic> oldData;
-  final List<String> categories;
-  final Function(String) onAddNewCategory;
-  final Function(Map<String, dynamic>) onUpdate;
-
-  const EditProductDialog({
-    super.key,
-    required this.oldData,
-    required this.categories,
-    required this.onAddNewCategory,
-    required this.onUpdate,
-    required Product product,
-  });
+  final Product product;
+  const EditProductDialog({super.key, required this.product});
 
   @override
   State<EditProductDialog> createState() => _EditProductDialogState();
 }
 
 class _EditProductDialogState extends State<EditProductDialog> {
-  late TextEditingController _namaController;
-  late TextEditingController _hargaController;
-  late TextEditingController _kategoriController;
-  late bool _isAvailable;
+  final _ctrl = Get.find<ProductTableController>();
+  final List<String> _addedJenis = [];
+  final List<String> _addedSatuan = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _namaController = TextEditingController(
-      text: widget.oldData['nama_produk'],
-    );
-    _hargaController = TextEditingController(
-      text: widget.oldData['harga']?.toString(),
-    );
-    _kategoriController = TextEditingController(
-      text: widget.oldData['kategori'],
-    );
-    _isAvailable = widget.oldData['is_available'] ?? true;
-  }
+  static const Color _themeColor = Color(0xFF1E1E1E);
 
   @override
   Widget build(BuildContext context) {
+    final List<String> baseJenis = _getUniqueValues((p) => p.jenis);
+    final List<String> baseSatuan = _getUniqueValues((p) => p.satuan);
+
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      contentPadding: const EdgeInsets.all(24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       title: const DialogCommonTitle(
         title: 'Ubah Data Produk',
         icon: Icons.edit_note_rounded,
       ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 16),
-            CustomTextField(
-              controller: _namaController,
-              label: 'Nama Produk',
-              hint: 'Masukkan nama produk',
-              icon: Icons.shopping_bag_outlined,
-            ),
-            const SizedBox(height: 16),
-            CustomTextField(
-              controller: _hargaController,
-              label: 'Harga Jual',
-              hint: '0',
-              icon: Icons.attach_money_rounded,
-              keyboardType: TextInputType.number,
-              prefixText: 'Rp ',
-            ),
-            const SizedBox(height: 16),
-            CustomDropdownField(
-              controller: _kategoriController,
-              label: 'Kategori Produk',
-              hint: 'Pilih Kategori',
-              icon: Icons.grid_view_rounded,
-              items: widget.categories,
-              onAddNew: (newVal) {
-                widget.onAddNewCategory(newVal);
-                setState(() => _kategoriController.text = newVal);
-              },
-            ),
-            const SizedBox(height: 16),
-            CustomSwitchField(
-              label: 'Status Produk Tersedia',
-              value: _isAvailable,
-              onChanged: (val) => setState(() => _isAvailable = val),
-            ),
-            const SizedBox(height: 24),
-            DialogActionButtons(
-              saveLabel: 'Simpan',
-              onCancel: () => Navigator.pop(context),
-              onSave: () {
-                if (_namaController.text.isNotEmpty &&
-                    _hargaController.text.isNotEmpty) {
-                  widget.onUpdate({
-                    'nama_produk': _namaController.text.trim(),
-                    'harga': double.tryParse(_hargaController.text) ?? 0.0,
-                    'kategori': _kategoriController.text,
-                    'is_available': _isAvailable,
-                  });
-                  Navigator.pop(context);
-                }
-              },
-            ),
-          ],
+      content: SizedBox(
+        width: 440,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            children: [
+              _buildImageSection(),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
+              ),
+              CustomTextField(
+                controller: _ctrl.nameC,
+                label: 'Nama Produk',
+                icon: Icons.cake_outlined,
+                hint: 'Masukkan nama produk',
+              ),
+              const SizedBox(height: 18),
+              CustomTextField(
+                controller: _ctrl.priceC,
+                label: 'Harga Jual Base',
+                icon: Icons.payments_outlined,
+                hint: '0',
+                prefixText: 'Rp ',
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 18),
+              CustomTextField(
+                controller: _ctrl.discountC,
+                label: 'Diskon Produk (%)',
+                icon: Icons.percent_rounded,
+                hint: '0',
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 18),
+              CustomStockStepper(
+                controller: _ctrl.stockC,
+                label: 'Stok Jual Kue',
+                isDouble: false,
+              ),
+              const SizedBox(height: 18),
+              CustomDropdownMenu(
+                controller: _ctrl.jenisC,
+                label: 'Kategori / Jenis',
+                icon: Icons.category_outlined,
+                items: [...baseJenis, ..._addedJenis],
+              ),
+              const SizedBox(height: 18),
+              CustomDropdownMenu(
+                controller: _ctrl.satuanC,
+                label: 'Satuan Jual',
+                icon: Icons.layers_outlined,
+                items: [...baseSatuan, ..._addedSatuan],
+              ),
+            ],
+          ),
         ),
+      ),
+      actionsPadding: const EdgeInsets.all(16),
+      actions: [
+        DialogActionButtons(
+          onCancel: () {
+            _ctrl.clearForm();
+            Get.back();
+          },
+          onSave: () {
+            _ctrl.updateProductData(widget.product);
+          },
+          saveLabel: 'Simpan Perubahan',
+        ),
+      ],
+    );
+  }
+
+  List<String> _getUniqueValues(String Function(Product) mapper) {
+    return _ctrl.originalList
+        .cast<Product>()
+        .where((p) => !p.isDeleted)
+        .map(mapper)
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toSet()
+        .toList();
+  }
+
+  Widget _buildImageSection() {
+    return Center(
+      child: Column(
+        children: [
+          Obx(
+            () => Container(
+              height: 140,
+              width: 140,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: _themeColor.withOpacity(0.4),
+                  width: 2,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: _ctrl.selectedImage.value != null
+                    ? Image.file(_ctrl.selectedImage.value!, fit: BoxFit.cover)
+                    : (widget.product.image.isNotEmpty
+                          ? Image.network(
+                              widget.product.image,
+                              fit: BoxFit.cover,
+                            )
+                          : const Icon(
+                              Icons.fastfood_rounded,
+                              size: 48,
+                              color: _themeColor,
+                            )),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: _ctrl.pickImage,
+            icon: const Icon(Icons.image),
+            label: const Text('Ganti Gambar'),
+            style: TextButton.styleFrom(foregroundColor: _themeColor),
+          ),
+        ],
       ),
     );
   }

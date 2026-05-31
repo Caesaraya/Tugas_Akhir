@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
 import 'package:tugas_akhir/models/product.dart';
-import '../../custom_network_image.dart';
+import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 
 class ProductDetailBody extends StatelessWidget {
   final Product product;
@@ -16,133 +17,41 @@ class ProductDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDeleted = product.deletedAt != null;
-
     return Expanded(
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CustomNetworkImage(
-              imageUrl: product.image,
-              width: double.infinity,
-              height: 250,
-              fit: BoxFit.cover,
-              color: isDeleted ? Colors.grey : null,
-              colorBlendMode: isDeleted ? BlendMode.saturation : null,
-            ),
-
+            ProductDetailImage(product: product),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          product.name,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDeleted
-                              ? Colors.red.shade100
-                              : Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          isDeleted ? 'Nonaktif' : product.jenis,
-                          style: TextStyle(
-                            color: isDeleted
-                                ? Colors.red.shade800
-                                : Colors.blue.shade700,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-
-                  if (product.discount > 0) ...[
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            '${product.discount}% OFF',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          currency.format(product.price),
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            decoration: TextDecoration.lineThrough,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                  ProductDetailHeader(product: product),
+                  const SizedBox(height: 10),
+                  if (product.discount > 0)
+                    ProductPriceDiscount(product: product, currency: currency),
+                  Text(
+                    currency.format(product.priceAfterDiscount),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      color: Color(0xFF5D4037),
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      currency.format(product.priceAfterDiscount),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ] else ...[
-                    Text(
-                      currency.format(product.price),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-
-                  const Divider(height: 32),
-                  _buildInfoRow(
-                    Icons.inventory_2_outlined,
-                    'Stok Tersedia',
-                    '${product.stock} ${product.satuan}',
                   ),
-                  _buildInfoRow(
-                    Icons.qr_code_2_rounded,
-                    'Barcode Produk',
-                    product.barcode,
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Informasi Produk',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  _buildInfoRow(
-                    Icons.assignment_outlined,
-                    'Kategori Alat',
-                    product.jenis,
-                  ),
+                  const SizedBox(height: 12),
+                  InfoRow(label: 'Jenis', value: product.jenis),
+                  InfoRow(label: 'Satuan', value: product.satuan),
+                  InfoRow(label: 'Stok Sistem', value: '${product.stock} pcs'),
+                  InfoRow(label: 'Barcode', value: product.barcode),
                 ],
               ),
             ),
@@ -151,31 +60,144 @@ class ProductDetailBody extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.grey[600], size: 20),
-          const SizedBox(width: 12),
-          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-          const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+class ProductDetailImage extends StatelessWidget {
+  final Product product;
+  const ProductDetailImage({super.key, required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 260,
+      color: Colors.grey[100],
+      child: product.image.isNotEmpty
+          ? Image.network(
+              product.image,
+              fit: product.image.startsWith('http')
+                  ? BoxFit.cover
+                  : BoxFit.contain,
+            )
+          : const Icon(Icons.image_not_supported, size: 80, color: Colors.grey),
+    );
+  }
+}
+
+class ProductDetailHeader extends StatelessWidget {
+  final Product product;
+  const ProductDetailHeader({super.key, required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            product.name,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              // Memberikan efek coret jika produk dalam status terhapus (Soft Deleted)
+              decoration: product.isDeleted ? TextDecoration.lineThrough : null,
+              color: product.isDeleted ? Colors.grey : Colors.black,
+            ),
           ),
+        ),
+        if (product.isDeleted)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.red.shade100,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              'DIHAPUS',
+              style: TextStyle(
+                color: Colors.red.shade800,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class ProductPriceDiscount extends StatelessWidget {
+  final Product product;
+  final NumberFormat currency;
+
+  const ProductPriceDiscount({
+    super.key,
+    required this.product,
+    required this.currency,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.red[50],
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            '${product.discount}%',
+            style: const TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          currency.format(product.price),
+          style: const TextStyle(
+            color: Colors.grey,
+            decoration: TextDecoration.lineThrough,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const InfoRow({super.key, required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );
   }
 }
 
-class ProductDetailBottomBar extends StatelessWidget {
+// ==========================================
+// BAGIAN UTAMA YANG DIUBAH / DISELARASKAN
+// ==========================================
+class ProductDetailActions extends StatelessWidget {
   final Product product;
   final ProductTableController controller;
 
-  const ProductDetailBottomBar({
+  const ProductDetailActions({
     super.key,
     required this.product,
     required this.controller,
@@ -183,71 +205,60 @@ class ProductDetailBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDeleted = product.deletedAt != null;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () => controller.openEditDialog(product),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    'Edit Produk',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: product.isDeleted
+            ? [
+                // JIKA PRODUK SUDAH DIHAPUS (SOFT DELETED): Sediakan Opsi Pulihkan & Hapus Permanen
+                Expanded(
+                  child: ToolbarButton(
+                    title: 'Pulihkan',
+                    icon: Icons.restore_rounded,
+                    color: Colors.green,
+                    onTap: () async {
+                      await controller.restoreProduct(product.id);
+                      Get.back(); // Otomatis kembali ke list setelah berhasil dipulihkan
+                    },
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: SizedBox(
-                height: 48,
-                child: OutlinedButton(
-                  onPressed: () => isDeleted
-                      ? controller.confirmRestore(product.id)
-                      : controller.confirmSoftDelete(product.id),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: isDeleted ? Colors.green : Colors.red,
-                    side: BorderSide(
-                      color: isDeleted
-                          ? Colors.green.shade200
-                          : const Color(0xFFFFCDD2),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    isDeleted ? 'Pulihkan' : 'Hapus',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ToolbarButton(
+                    title: 'Hapus Permanen',
+                    icon: Icons.delete_forever_rounded,
+                    color: Colors.red.shade900,
+                    onTap: () async {
+                      await controller.forceDeleteProduct(product.id);
+                      Get.back(); // Otomatis kembali ke list setelah berhasil dihapus permanen
+                    },
                   ),
                 ),
-              ),
-            ),
-          ],
-        ),
+              ]
+            : [
+                // JIKA PRODUK AKTIF: Sediakan Opsi Edit & Hapus (Soft Delete)
+                Expanded(
+                  child: ToolbarButton(
+                    title: 'Edit',
+                    icon: Icons.edit_outlined,
+                    color: const Color(0xFF5D4037),
+                    onTap: () => controller.openEditDialog(product),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ToolbarButton(
+                    title: 'Hapus',
+                    icon: Icons.delete_outline,
+                    color: Colors.red,
+                    onTap: () async {
+                      await controller.softDeleteProduct(product.id);
+                      // Tidak menggunakan Get.back() di sini karena dialog konfirmasi
+                      // dari softDeleteProduct() di controller yang akan mengontrol alur perpindahan layar.
+                    },
+                  ),
+                ),
+              ],
       ),
     );
   }

@@ -19,24 +19,23 @@ class ProductPaginationFooter extends StatelessWidget {
         color: const Color(0xFFF8F9FA),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+
           children: [
-            // Baris Navigasi Tombol Angka (Maksimal 4 Pilihan)
+            // Baris Navigasi Tombol Angka (Strict Maksimal 4 Pilihan Kotak)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Tombol Back (<)
-                _buildSquareNav(
+                _buildSquareNavButton(
                   icon: Icons.chevron_left,
                   onPressed: current > 1 ? controller.previousPage : null,
                 ),
                 const SizedBox(width: 4),
 
-                // Render Item Angka Pagination (Maksimal 4 Elemen)
-                ..._buildStrictFourPaginationItems(current, total),
+                // Memanggil builder item pagination maksimal 4 komponen
+                ..._buildStrictFourItems(current, total),
 
                 const SizedBox(width: 4),
-                // Tombol Next (>)
-                _buildSquareNav(
+                _buildSquareNavButton(
                   icon: Icons.chevron_right,
                   onPressed: current < total ? controller.nextPage : null,
                 ),
@@ -44,7 +43,7 @@ class ProductPaginationFooter extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Teks Keterangan Total Produk di Bagian Bawah
+            // Keterangan Total Data di Bagian Bawah
             Text(
               'Menampilkan ${controller.paginatedList.length} dari ${controller.filteredList.length} produk',
               style: TextStyle(
@@ -59,57 +58,46 @@ class ProductPaginationFooter extends StatelessWidget {
     });
   }
 
-  /// Fungsi khusus untuk menghasilkan maksimal 4 elemen pilihan pagination
-  List<Widget> _buildStrictFourPaginationItems(int current, int total) {
+  /// Menghasilkan maksimal hanya 4 kotak elemen (Angka / Titik) di layar
+  List<Widget> _buildStrictFourItems(int current, int total) {
     List<Widget> items = [];
 
-    // Kondisi 1: Jika total halaman kurang dari atau sama dengan 4, tampilkan semua angka langsung
     if (total <= 4) {
       for (int i = 1; i <= total; i++) {
-        items.add(_buildPageNumber(i.toString(), i == current, i));
+        items.add(_buildPageBox(i.toString(), i == current, i));
       }
       return items;
     }
 
-    // Kondisi 2: Jika total halaman banyak (> 4), kita batasi ketat hanya 4 item
-    // Skenario A: Masih di halaman awal (Halaman 1 atau 2 aktif) -> Tampilkan: [1] [2] [...] [Total]
+    // Kondisi pembatasan ketat 4 item saat total halaman > 4
     if (current <= 2) {
-      items.add(_buildPageNumber('1', current == 1, 1));
-      items.add(_buildPageNumber('2', current == 2, 2));
-      items.add(_buildEllipsis());
-      items.add(_buildPageNumber(total.toString(), false, total));
-    }
-    // Skenario B: Sudah mendekati halaman akhir (Halaman terakhir atau Halaman terakhir - 1 aktif) -> Tampilkan: [1] [...] [Total-1] [Total]
-    else if (current >= total - 1) {
-      items.add(_buildPageNumber('1', false, 1));
-      items.add(_buildEllipsis());
+      items.add(_buildPageBox('1', current == 1, 1));
+      items.add(_buildPageBox('2', current == 2, 2));
+      items.add(_buildEllipsisSign());
+      items.add(_buildPageBox(total.toString(), false, total));
+    } else if (current >= total - 1) {
+      items.add(_buildPageBox('1', false, 1));
+      items.add(_buildEllipsisSign());
       items.add(
-        _buildPageNumber(
-          (total - 1).toString(),
-          current == total - 1,
-          total - 1,
-        ),
+        _buildPageBox((total - 1).toString(), current == total - 1, total - 1),
       );
-      items.add(_buildPageNumber(total.toString(), current == total, total));
-    }
-    // Skenario C: Di tengah-tengah (Misal total 10, sedang di halaman 5) -> Tampilkan: [1] [...] [Current] [Total]
-    else {
-      items.add(_buildPageNumber('1', false, 1));
-      items.add(_buildEllipsis());
-      items.add(_buildPageNumber(current.toString(), true, current));
-      items.add(_buildPageNumber(total.toString(), false, total));
+      items.add(_buildPageBox(total.toString(), current == total, total));
+    } else {
+      items.add(_buildPageBox('1', false, 1));
+      items.add(_buildEllipsisSign());
+      items.add(_buildPageBox(current.toString(), true, current));
+      items.add(_buildPageBox(total.toString(), false, total));
     }
 
     return items;
   }
 
-  /// Widget Kotak Angka (Hitam jika aktif, Putih jika tidak aktif)
-  Widget _buildPageNumber(String label, bool isActive, int pageTarget) {
+  Widget _buildPageBox(String label, bool isActive, int targetPage) {
     return InkWell(
       onTap: isActive
           ? null
           : () {
-              controller.currentPage.value = pageTarget;
+              controller.currentPage.value = targetPage;
               controller.setupPagination();
             },
       child: Container(
@@ -132,8 +120,7 @@ class ProductPaginationFooter extends StatelessWidget {
     );
   }
 
-  /// Widget penanda jeda halaman [...]
-  Widget _buildEllipsis() {
+  Widget _buildEllipsisSign() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Text(
@@ -147,8 +134,10 @@ class ProductPaginationFooter extends StatelessWidget {
     );
   }
 
-  /// Widget tombol navigasi panah < dan >
-  Widget _buildSquareNav({required IconData icon, VoidCallback? onPressed}) {
+  Widget _buildSquareNavButton({
+    required IconData icon,
+    VoidCallback? onPressed,
+  }) {
     bool isDisable = onPressed == null;
     return InkWell(
       onTap: onPressed,
