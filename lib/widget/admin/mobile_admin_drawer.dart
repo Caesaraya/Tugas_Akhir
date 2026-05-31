@@ -15,7 +15,7 @@ class MobileAdminDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(color: Color(0xFF5D3A1A)),
+            decoration: BoxDecoration(color: Colors.black),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,

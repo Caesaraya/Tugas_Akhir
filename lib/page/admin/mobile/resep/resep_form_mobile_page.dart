@@ -65,7 +65,7 @@ class ResepFormMobilePage extends StatelessWidget {
                     subtitle: Text("Jumlah: ${item.jumlahBahan}"),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => ctrl.removeBahanFromTemp(index),
+                      onPressed: () => ctrl.removeBahanFromTempList(index),
                     ),
                   );
                 },
@@ -82,7 +82,7 @@ class ResepFormMobilePage extends StatelessWidget {
             backgroundColor: Colors.cyan,
           ),
           onPressed: () =>
-              isEdit ? ctrl.updateResepData(resep!) : ctrl.insertResep(),
+              isEdit ? ctrl.updateResep(resep!.id!) : ctrl.submitResep(),
           child: const Text(
             'SIMPAN RESEP',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

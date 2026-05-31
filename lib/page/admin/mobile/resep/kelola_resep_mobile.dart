@@ -4,13 +4,13 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/resep_table_controller.dart';
 import 'package:tugas_akhir/widget/admin/mobile_admin_drawer.dart';
 import 'package:tugas_akhir/widget/admin/resep/resep_pagination_footer.dart';
-import 'package:tugas_akhir/widget/admin/resep/mobile/kelola_resep_mobile_header.dart';
 import 'package:tugas_akhir/widget/admin/resep/mobile/kelola_resep_mobile_list.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/resep/insert_resep_dialogs.dart';
+import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 
 class KelolaResepMobilePage extends StatelessWidget {
   KelolaResepMobilePage({super.key});
 
-  // Memastikan controller sudah ada
   final ctrl = Get.find<ResepTableController>();
 
   @override
@@ -19,22 +19,29 @@ class KelolaResepMobilePage extends StatelessWidget {
       drawer: const MobileAdminDrawer(),
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text(
-          'Kelola Resep',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        // Judul teks diganti sepenuhnya dengan Search Bar
+        title: TableSearchBar(
+          controller: ctrl.searchC,
+          hint: 'Cari resep aktif atau terhapus...',
         ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        titleSpacing: 0,
       ),
       bottomNavigationBar: ResepPaginationFooter(controller: ctrl),
       body: Column(
         children: [
-          KelolaResepMobileHeader(controller: ctrl),
-          const SizedBox(height: 12),
+          // KelolaResepMobileHeader dihapus dari sini karena seluruh fungsinya berpindah ke AppBar
           Expanded(child: KelolaResepMobileList(controller: ctrl)),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        onPressed: () => Get.dialog(InsertResepDialog()),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }

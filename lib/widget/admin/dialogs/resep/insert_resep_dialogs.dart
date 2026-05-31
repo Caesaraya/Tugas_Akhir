@@ -137,7 +137,7 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
                         return;
                       }
                       // Menggunakan method bawaan BaseTableController
-                      ctrl.insertResep();
+                      ctrl.submitResep();
                     },
                     child: const Text(
                       'Simpan Formula Resep',
@@ -210,21 +210,21 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
               ),
             ),
             onPressed: () {
-              if (_bahanDropdownC.text.isEmpty ||
-                  ctrl.jumlahBahanC.text.isEmpty) {
-                Get.snackbar(
-                  'Error',
-                  'Pilih bahan baku dan isikan takaran jumlahnya.',
-                );
+              if (_bahanDropdownC.text.isEmpty) {
+                Get.snackbar("Peringatan", "Pilih bahan baku terlebih dahulu.");
                 return;
               }
+              final String val = _bahanDropdownC.text;
 
-              final parts = _bahanDropdownC.text.split(' - ');
-              final int? idBahan = int.tryParse(parts[0]);
-              final double? qty = double.tryParse(ctrl.jumlahBahanC.text);
+              // SOLUSI AMAN TYPE DATA: Ambil teks angka ID paling depan
+              final String rawId = val.split(' - ')[0];
 
-              if (idBahan == null || qty == null) {
-                Get.snackbar('Error', 'Data tidak valid.');
+              // Gunakan num.tryParse untuk menangani jika ada format string angka desimal (cth: "1.0")
+              // lalu amankan konversinya menjadi .toInt() sesuai kebutuhan type model.
+              final int? idBahan = num.tryParse(rawId)?.toInt();
+
+              if (idBahan == null) {
+                Get.snackbar("Error", "Format ID Bahan baku tidak valid.");
                 return;
               }
 
@@ -293,7 +293,7 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
             ),
             trailing: IconButton(
               icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-              onPressed: () => ctrl.removeBahanFromTemp(index),
+              onPressed: () => ctrl.removeBahanFromTempList(index),
             ),
           );
         },

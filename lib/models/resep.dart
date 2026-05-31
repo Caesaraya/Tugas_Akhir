@@ -82,12 +82,12 @@ class DetailResep {
       id: json['id'],
       resepId: json['resep_id'],
       bahanId: json['bahan_id'] ?? 0,
-      jumlahBahan: (json['jumlah_bahan'] ?? 0).toDouble(),
+      jumlahBahan: _parseDouble(json['jumlah_bahan']) ?? 0.0, // ✅ aman
       namaBahan: json['nama_bahan'],
       merk: json['merk'],
       satuan: json['satuan'],
-      hargaSatuan: json['harga_satuan']?.toDouble(),
-      totalHargaBahan: json['total_harga_bahan']?.toDouble(),
+      hargaSatuan: _parseDouble(json['harga_satuan']), // ✅ aman
+      totalHargaBahan: _parseDouble(json['total_harga_bahan']), // ✅ aman
     );
   }
 
@@ -128,4 +128,11 @@ class DetailResep {
       totalHargaBahan: totalHargaBahan ?? this.totalHargaBahan,
     );
   }
+}
+
+double? _parseDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
 }

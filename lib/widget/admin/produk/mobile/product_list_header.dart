@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
-import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 
 class ProductListHeader extends StatelessWidget {
   final ProductTableController controller;
@@ -15,18 +14,18 @@ class ProductListHeader extends StatelessWidget {
 
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        12,
+      ), // Mengurangi padding atas agar lebih compact
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Search Bar Atas Penuh
-          TableSearchBar(
-            controller: controller.searchC,
-            hint: 'Cari nama produk...',
-          ),
-          const SizedBox(height: 12),
+          // TableSearchBar telah dihapus dari sini karena dipindah ke AppBar
 
-          // Horizontal Scroll Filter Chips
+          // Horizontal Scroll Filter Chips dipertahankan penuh
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -42,7 +41,6 @@ class ProductListHeader extends StatelessWidget {
                       onSelected: (selected) {
                         if (selected) {
                           selectedCategory.value = cat;
-                          // Memanggil fungsi search bawaan controller tanpa mengubah strukturnya
                           controller.search(cat == 'Semua' ? '' : cat);
                         }
                       },
