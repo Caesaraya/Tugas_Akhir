@@ -22,8 +22,11 @@ class ProductItemCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: product.isDeleted ? Colors.red.shade50 : Colors.white, // DIUBAH
         borderRadius: BorderRadius.circular(12),
+        border: product.isDeleted
+            ? Border.all(color: Colors.red.shade200)
+            : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -33,7 +36,14 @@ class ProductItemCard extends StatelessWidget {
         ],
       ),
       child: InkWell(
-        onTap: () => Get.to(() => ProductDetailPage(product: product)),
+        onTap: () {
+          if (!product.isDeleted) {
+            // Cegah akses detail untuk produk terhapus
+            Get.to(() => ProductDetailPage(product: product));
+          } else {
+            Get.snackbar('Info', 'Produk ini sedang dalam status dihapus.');
+          }
+        },
         child: Row(
           children: [
             ClipRRect(
@@ -54,12 +64,41 @@ class ProductItemCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    product.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          product.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            decoration: product.isDeleted
+                                ? TextDecoration.lineThrough
+                                : null, // Coret nama jika dihapus
+                          ),
+                        ),
+                      ),
+                      // DITAMBAHKAN: Badge Mobile
+                      if (product.isDeleted)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade100,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'DIHAPUS',
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: Colors.red.shade800,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -88,26 +127,51 @@ class ProductItemCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Row(
-                  children: [
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(
-                        Icons.edit_outlined,
-                        color: Colors.blue,
-                        size: 20,
-                      ),
-                      onPressed: () => controller.openEditDialog(product),
-                    ),
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        color: Colors.red,
-                        size: 20,
-                      ),
-                      onPressed: () => controller.deleteData(product.id),
-                    ),
-                  ],
+                  children: product.isDeleted
+                      ? [
+                          // DIUBAH: Tombol dinamis
+                          IconButton(
+                            visualDensity: VisualDensity.compact,
+                            icon: const Icon(
+                              Icons.restore_rounded,
+                              color: Colors.green,
+                              size: 20,
+                            ),
+                            onPressed: () =>
+                                controller.restoreProduct(product.id),
+                          ),
+                          IconButton(
+                            visualDensity: VisualDensity.compact,
+                            icon: Icon(
+                              Icons.delete_forever_rounded,
+                              color: Colors.red.shade900,
+                              size: 20,
+                            ),
+                            onPressed: () =>
+                                controller.forceDeleteProduct(product.id),
+                          ),
+                        ]
+                      : [
+                          IconButton(
+                            visualDensity: VisualDensity.compact,
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: Colors.blue,
+                              size: 20,
+                            ),
+                            onPressed: () => controller.openEditDialog(product),
+                          ),
+                          IconButton(
+                            visualDensity: VisualDensity.compact,
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                            onPressed: () =>
+                                controller.softDeleteProduct(product.id),
+                          ),
+                        ],
                 ),
               ],
             ),

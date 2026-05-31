@@ -40,54 +40,18 @@ class ProductDetailBody extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Divider(height: 40),
-                  const Text(
-                    'Informasi Detail',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const SizedBox(height: 15),
-                  ProductDetailFieldRow(
-                    label: 'ID Produk',
-                    value: '#${product.id}',
-                  ),
-                  ProductDetailFieldRow(
-                    label: 'Barcode',
-                    value: product.barcode.isEmpty ? '-' : product.barcode,
-                  ),
-                  ProductDetailFieldRow(
-                    label: 'Kategori/Jenis',
-                    value: product.jenis,
-                  ),
-                  ProductDetailFieldRow(
-                    label: 'Stok Tersedia',
-                    value: '${product.stock} ${product.satuan}',
-                  ),
-                  ProductDetailFieldRow(
-                    label: 'Satuan Jual',
-                    value: product.satuan,
-                  ),
-                  ProductDetailFieldRow(
-                    label: 'Potongan Harga',
-                    value: currency.format(
-                      product.price - product.priceAfterDiscount,
-                    ),
-                  ),
-                  ProductDetailFieldRow(
-                    label: 'Status Resep',
-                    value: product.resepId != null
-                        ? 'Terhubung (ID: ${product.resepId})'
-                        : 'Tanpa Resep',
-                  ),
                   const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 10),
                   const Text(
-                    'Catatan / Deskripsi',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    'Informasi Produk',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Produk ini termasuk dalam kategori ${product.jenis}. Pastikan stok selalu tersedia minimal 5 ${product.satuan} untuk menjaga ketersediaan.',
-                    style: const TextStyle(color: Colors.grey, height: 1.5),
-                  ),
+                  const SizedBox(height: 12),
+                  InfoRow(label: 'Jenis', value: product.jenis),
+                  InfoRow(label: 'Satuan', value: product.satuan),
+                  InfoRow(label: 'Stok Sistem', value: '${product.stock} pcs'),
+                  InfoRow(label: 'Barcode', value: product.barcode),
                 ],
               ),
             ),
@@ -100,31 +64,28 @@ class ProductDetailBody extends StatelessWidget {
 
 class ProductDetailImage extends StatelessWidget {
   final Product product;
-
   const ProductDetailImage({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
-    return Hero(
-      tag: 'prod_${product.id}',
-      child: Image.network(
-        product.image,
-        width: double.infinity,
-        height: 250,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
-          height: 250,
-          color: Colors.grey[200],
-          child: const Icon(Icons.image_not_supported, size: 50),
-        ),
-      ),
+    return Container(
+      width: double.infinity,
+      height: 260,
+      color: Colors.grey[100],
+      child: product.image.isNotEmpty
+          ? Image.network(
+              product.image,
+              fit: product.image.startsWith('http')
+                  ? BoxFit.cover
+                  : BoxFit.contain,
+            )
+          : const Icon(Icons.image_not_supported, size: 80, color: Colors.grey),
     );
   }
 }
 
 class ProductDetailHeader extends StatelessWidget {
   final Product product;
-
   const ProductDetailHeader({super.key, required this.product});
 
   @override
@@ -135,10 +96,31 @@ class ProductDetailHeader extends StatelessWidget {
         Expanded(
           child: Text(
             product.name,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              // Memberikan efek coret jika produk dalam status terhapus (Soft Deleted)
+              decoration: product.isDeleted ? TextDecoration.lineThrough : null,
+              color: product.isDeleted ? Colors.grey : Colors.black,
+            ),
           ),
         ),
-        ProductDetailBadge(label: product.jenis),
+        if (product.isDeleted)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.red.shade100,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              'DIHAPUS',
+              style: TextStyle(
+                color: Colors.red.shade800,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -158,28 +140,28 @@ class ProductPriceDiscount extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(
-          currency.format(product.price),
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-            decoration: TextDecoration.lineThrough,
-          ),
-        ),
-        const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: Colors.red,
+            color: Colors.red[50],
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
-            '-${product.discount}%',
+            '${product.discount}%',
             style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
+              color: Colors.red,
               fontWeight: FontWeight.bold,
+              fontSize: 12,
             ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          currency.format(product.price),
+          style: const TextStyle(
+            color: Colors.grey,
+            decoration: TextDecoration.lineThrough,
+            fontSize: 14,
           ),
         ),
       ],
@@ -187,40 +169,11 @@ class ProductPriceDiscount extends StatelessWidget {
   }
 }
 
-class ProductDetailBadge extends StatelessWidget {
-  final String label;
-
-  const ProductDetailBadge({super.key, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF5D4037),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-}
-
-class ProductDetailFieldRow extends StatelessWidget {
+class InfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const ProductDetailFieldRow({
-    super.key,
-    required this.label,
-    required this.value,
-  });
+  const InfoRow({super.key, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -237,6 +190,9 @@ class ProductDetailFieldRow extends StatelessWidget {
   }
 }
 
+// ==========================================
+// BAGIAN UTAMA YANG DIUBAH / DISELARASKAN
+// ==========================================
 class ProductDetailActions extends StatelessWidget {
   final Product product;
   final ProductTableController controller;
@@ -252,25 +208,57 @@ class ProductDetailActions extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Row(
-        children: [
-          Expanded(
-            child: ToolbarButton(
-              title: 'Edit',
-              icon: Icons.edit_outlined,
-              color: const Color(0xFF5D4037),
-              onTap: () => controller.openEditDialog(product),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ToolbarButton(
-              title: 'Hapus',
-              icon: Icons.delete_outline,
-              color: Colors.red,
-              onTap: () => controller.deleteData(product.id),
-            ),
-          ),
-        ],
+        children: product.isDeleted
+            ? [
+                // JIKA PRODUK SUDAH DIHAPUS (SOFT DELETED): Sediakan Opsi Pulihkan & Hapus Permanen
+                Expanded(
+                  child: ToolbarButton(
+                    title: 'Pulihkan',
+                    icon: Icons.restore_rounded,
+                    color: Colors.green,
+                    onTap: () async {
+                      await controller.restoreProduct(product.id);
+                      Get.back(); // Otomatis kembali ke list setelah berhasil dipulihkan
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ToolbarButton(
+                    title: 'Hapus Permanen',
+                    icon: Icons.delete_forever_rounded,
+                    color: Colors.red.shade900,
+                    onTap: () async {
+                      await controller.forceDeleteProduct(product.id);
+                      Get.back(); // Otomatis kembali ke list setelah berhasil dihapus permanen
+                    },
+                  ),
+                ),
+              ]
+            : [
+                // JIKA PRODUK AKTIF: Sediakan Opsi Edit & Hapus (Soft Delete)
+                Expanded(
+                  child: ToolbarButton(
+                    title: 'Edit',
+                    icon: Icons.edit_outlined,
+                    color: const Color(0xFF5D4037),
+                    onTap: () => controller.openEditDialog(product),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ToolbarButton(
+                    title: 'Hapus',
+                    icon: Icons.delete_outline,
+                    color: Colors.red,
+                    onTap: () async {
+                      await controller.softDeleteProduct(product.id);
+                      // Tidak menggunakan Get.back() di sini karena dialog konfirmasi
+                      // dari softDeleteProduct() di controller yang akan mengontrol alur perpindahan layar.
+                    },
+                  ),
+                ),
+              ],
       ),
     );
   }

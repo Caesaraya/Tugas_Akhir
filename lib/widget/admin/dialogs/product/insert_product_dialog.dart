@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../controller/admin/product_table_controller.dart';
+import '../../../../models/product.dart';
 import '../custom_form_fields.dart';
 
 class InsertProductDialog extends StatefulWidget {
@@ -20,8 +21,7 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
   @override
   void initState() {
     super.initState();
-    // Memanggil fungsi pembuat barcode bawaan dari controller Anda saat dialog dibuka
-    _ctrl.generateBarcode();
+    _ctrl.barcodeC.text = _ctrl.generateBarcode();
   }
 
   @override
@@ -114,8 +114,10 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
     );
   }
 
-  List<String> _getUniqueValues(String Function(dynamic) mapper) {
+  List<String> _getUniqueValues(String Function(Product) mapper) {
     return _ctrl.originalList
+        .cast<Product>()
+        .where((p) => !p.isDeleted)
         .map(mapper)
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
@@ -141,7 +143,6 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
         !_addedSatuan.contains(_ctrl.satuanC.text.trim())) {
       _addedSatuan.add(_ctrl.satuanC.text.trim());
     }
-    // Menjalankan perintah simpan bawaan milik base controller Anda
     _ctrl.insertProduct();
   }
 

@@ -96,7 +96,6 @@ class _EditProductDialogState extends State<EditProductDialog> {
             Get.back();
           },
           onSave: () {
-            // Menggunakan method bawaan BaseTableController
             _ctrl.updateProductData(widget.product);
           },
           saveLabel: 'Simpan Perubahan',
@@ -107,6 +106,8 @@ class _EditProductDialogState extends State<EditProductDialog> {
 
   List<String> _getUniqueValues(String Function(Product) mapper) {
     return _ctrl.originalList
+        .cast<Product>()
+        .where((p) => !p.isDeleted)
         .map(mapper)
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)

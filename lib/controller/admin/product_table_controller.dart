@@ -14,7 +14,6 @@ import '../../controller/admin/table/base_table_controller.dart';
 class ProductTableController extends BaseTableController<Product> {
   ProductTableController() {
     itemsPerPage = 35;
-    // Format harga saat user mengetik di field harga
     priceC.addListener(() {
       final raw = priceC.text;
       final clean = raw.replaceAll(RegExp(r'[^0-9]'), '');
@@ -54,7 +53,16 @@ class ProductTableController extends BaseTableController<Product> {
 
       final data = await ApiService.getProducts();
 
+      // DIUBAH: Logic Sorting. Produk Aktif di atas, Dihapus di bawah
+      data.sort((a, b) {
+        if (a.isDeleted && !b.isDeleted) return 1;
+        if (!a.isDeleted && b.isDeleted) return -1;
+        return a.id.compareTo(b.id); // Default urutan berdasar ID
+      });
+
       setData(data);
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal mengambil data produk: $e');
     } finally {
       isLoading.value = false;
     }
@@ -69,25 +77,29 @@ class ProductTableController extends BaseTableController<Product> {
 
       filteredList.assignAll(
         originalList.where((product) {
-          // Cek string fields
           final matchesString =
               product.name.toLowerCase().contains(searchText) ||
               product.barcode.toLowerCase().contains(searchText) ||
               product.jenis.toLowerCase().contains(searchText) ||
               product.satuan.toLowerCase().contains(searchText);
 
-          // Cek numeric fields (harga, stok, diskon)
           final matchesNumbers =
               product.price.toString().contains(searchText) ||
               product.stock.toString().contains(searchText) ||
               product.discount.toString().contains(searchText) ||
               product.priceAfterDiscount.toString().contains(searchText);
 
-          // Tambahan: Cek ID resep jika ada
           final matchesResep =
               product.resepId?.toString().contains(searchText) ?? false;
 
-          return matchesString || matchesNumbers || matchesResep;
+          // DIUBAH: Tambahan filter search berdasarkan status
+          final statusString = product.isDeleted ? 'dihapus' : 'aktif';
+          final matchesStatus = statusString.contains(searchText);
+
+          return matchesString ||
+              matchesNumbers ||
+              matchesResep ||
+              matchesStatus;
         }).toList(),
       );
     }
@@ -102,10 +114,8 @@ class ProductTableController extends BaseTableController<Product> {
     isFilterStockHabis.value = !isFilterStockHabis.value;
 
     if (isFilterStockHabis.value) {
-      // Tampilkan hanya yang stoknya 0 atau kurang
       filteredList.assignAll(originalList.where((e) => e.stock <= 0).toList());
     } else {
-      // Tampilkan semua data kembali
       filteredList.assignAll(originalList);
     }
 
@@ -114,20 +124,16 @@ class ProductTableController extends BaseTableController<Product> {
   }
 
   Future<void> pickImage() async {
-    // Contoh menggunakan image_picker
     final pickedFile = await ImagePicker().pickImage(
       source: ImageSource.gallery,
     );
     if (pickedFile != null) {
-      selectedImage.value = File(
-        pickedFile.path,
-      ); // Ini akan memicu UI untuk update previewnya
+      selectedImage.value = File(pickedFile.path);
     }
   }
 
   String generateBarcode() {
     final random = Random();
-
     return List.generate(12, (index) => random.nextInt(10)).join();
   }
 
@@ -150,11 +156,8 @@ class ProductTableController extends BaseTableController<Product> {
       );
 
       clearForm();
-
       fetchData();
-
       Get.back();
-
       Get.snackbar('Sukses', 'Produk berhasil ditambahkan');
     } catch (e) {
       Get.snackbar('Error', e.toString());
@@ -168,14 +171,15 @@ class ProductTableController extends BaseTableController<Product> {
     stockC.clear();
     jenisC.clear();
     satuanC.clear();
-
     selectedImage.value = null;
   }
 
   var oldImageUrl = ''.obs;
 
-  // Method untuk membuka dialog dan mengisi form dengan data yang sudah ada
   void openEditDialog(Product product) {
+    if (product.isDeleted)
+      return; // Proteksi agar produk dihapus tidak bisa diedit
+
     nameC.text = product.name;
     priceC.text = currencyFormatter.format(product.price);
     discountC.text = product.discount.toString();
@@ -183,19 +187,14 @@ class ProductTableController extends BaseTableController<Product> {
     jenisC.text = product.jenis;
     satuanC.text = product.satuan;
 
-    selectedImage.value = null; // Reset image picker
-    oldImageUrl.value = product.image; // Set preview gambar dari server
+    selectedImage.value = null;
+    oldImageUrl.value = product.image;
 
-    // Tampilkan dialog Edit (Pastikan kamu sudah membuat class EditProductDialog di bawah)
     Get.dialog(EditProductDialog(product: product));
   }
 
-  // Method untuk mengirim data update ke API
   Future<void> updateProductData(Product product) async {
     try {
-      // Tampilkan loading jika perlu
-      // Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
-
       await ApiService.updateProductWithImage(
         id: product.id,
         name: nameC.text,
@@ -204,16 +203,14 @@ class ProductTableController extends BaseTableController<Product> {
         stock: int.parse(stockC.text),
         jenis: jenisC.text,
         satuan: satuanC.text,
-        barcode: product.barcode, // Pertahankan barcode lama
-        imageFile: selectedImage
-            .value, // Akan null jika user tidak pilih foto baru (API service sudah handle File?)
-        resepId: product.resepId, // Pertahankan resepId lama
+        barcode: product.barcode,
+        imageFile: selectedImage.value,
+        resepId: product.resepId,
       );
 
       clearForm();
-      fetchData(); // Refresh data tabel
-
-      Get.back(); // Tutup dialog edit
+      fetchData();
+      Get.back();
 
       Get.snackbar(
         'Sukses',
@@ -222,8 +219,6 @@ class ProductTableController extends BaseTableController<Product> {
         colorText: Colors.white,
       );
     } catch (e) {
-      // Jika pakai loading dialog, tutup dulu sebelum memunculkan error
-      // Get.back();
       Get.snackbar(
         'Error',
         e.toString(),
@@ -233,29 +228,20 @@ class ProductTableController extends BaseTableController<Product> {
     }
   }
 
-  Future<void> deleteData(int id) async {
-    // Menampilkan Dialog Konfirmasi
+  // DITAMBAHKAN: Soft Delete
+  Future<void> softDeleteProduct(int id) async {
     Get.defaultDialog(
       title: "Konfirmasi Hapus",
       middleText:
-          "Apakah Anda yakin ingin menghapus produk ini? Data yang dihapus tidak dapat dikembalikan.",
+          "Produk akan dipindahkan ke data terhapus dan masih dapat dipulihkan.\nLanjutkan?",
       textConfirm: "Ya, Hapus",
       textCancel: "Batal",
       confirmTextColor: Colors.white,
       buttonColor: Colors.red,
-      onCancel: () {
-        // Menutup dialog secara otomatis saat klik Batal
-      },
       onConfirm: () async {
-        // Tutup dialog terlebih dahulu
-        Get.back();
-
+        Get.back(); // Tutup dialog
         try {
-          // Tampilkan loading indicator jika perlu
-          // Get.showSnackbar(const GetSnackBar(message: "Sedang menghapus...", duration: Duration(seconds: 1)));
-
-          bool success = await ApiService.deleteProduct(id);
-
+          bool success = await ApiService.softDeleteProduct(id);
           if (success) {
             Get.snackbar(
               "Berhasil",
@@ -264,15 +250,85 @@ class ProductTableController extends BaseTableController<Product> {
               backgroundColor: Colors.green,
               colorText: Colors.white,
             );
-            // Refresh data setelah berhasil hapus
             fetchData();
-          } else {
-            throw Exception("Gagal menghapus produk di server");
           }
         } catch (e) {
           Get.snackbar(
             "Error",
             "Gagal menghapus data: $e",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      },
+    );
+  }
+
+  // DITAMBAHKAN: Restore Product
+  Future<void> restoreProduct(int id) async {
+    Get.defaultDialog(
+      title: "Konfirmasi Restore",
+      middleText: "Apakah Anda yakin ingin memulihkan produk ini?",
+      textConfirm: "Ya, Pulihkan",
+      textCancel: "Batal",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.green,
+      onConfirm: () async {
+        Get.back();
+        try {
+          bool success = await ApiService.restoreProduct(id);
+          if (success) {
+            Get.snackbar(
+              "Berhasil",
+              "Produk berhasil dipulihkan",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+            );
+            fetchData();
+          }
+        } catch (e) {
+          Get.snackbar(
+            "Error",
+            "Gagal memulihkan data: $e",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      },
+    );
+  }
+
+  // DITAMBAHKAN: Force Delete
+  Future<void> forceDeleteProduct(int id) async {
+    Get.defaultDialog(
+      title: "Hapus Permanen",
+      middleText:
+          "Data akan dihapus permanen dan tidak dapat dipulihkan.\nLanjutkan?",
+      textConfirm: "Hapus Permanen",
+      textCancel: "Batal",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.red.shade900,
+      onConfirm: () async {
+        Get.back();
+        try {
+          bool success = await ApiService.forceDeleteProduct(id);
+          if (success) {
+            Get.snackbar(
+              "Berhasil",
+              "Produk dihapus secara permanen",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+            );
+            fetchData();
+          }
+        } catch (e) {
+          Get.snackbar(
+            "Error",
+            "Gagal menghapus data permanen: $e",
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red,
             colorText: Colors.white,

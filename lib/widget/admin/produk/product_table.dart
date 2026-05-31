@@ -17,7 +17,7 @@ class ProductTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final headerColor = const Color(0xFF1E1E1E); // Disamakan menjadi Hitam
+    final headerColor = const Color(0xFF1E1E1E);
 
     return Obx(() {
       return Column(
@@ -27,27 +27,24 @@ class ProductTable extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.grey.shade200,
-                width: 1,
-              ), // Border tipis netral
+              border: Border.all(color: Colors.grey.shade200, width: 1),
             ),
             clipBehavior: Clip.antiAlias,
             child: Table(
+              // DIUBAH: Penyesuaian lebar index column karena penambahan Kolom Status (indeks 6)
               columnWidths: const {
-                0: FixedColumnWidth(80), // ID sedikit diperlebar
-                1: FlexColumnWidth(
-                  1.5,
-                ), // Menggunakan Flex agar responsif di layar desktop
-                2: FlexColumnWidth(1.2),
-                3: FixedColumnWidth(65),
-                4: FlexColumnWidth(1.3),
-                5: FixedColumnWidth(60),
-                6: FlexColumnWidth(1.0),
-                7: FlexColumnWidth(1.0),
-                8: FlexColumnWidth(1.2),
-                9: FixedColumnWidth(60),
-                10: FixedColumnWidth(100), // Aksi disamakan 100
+                0: FixedColumnWidth(60), // ID
+                1: FlexColumnWidth(1.4), // Nama
+                2: FlexColumnWidth(1.2), // Harga
+                3: FixedColumnWidth(65), // Diskon
+                4: FlexColumnWidth(1.3), // Harga Final
+                5: FixedColumnWidth(60), // Stock
+                6: FixedColumnWidth(90), // DITAMBAHKAN: Status
+                7: FlexColumnWidth(1.0), // Jenis
+                8: FlexColumnWidth(1.0), // Satuan
+                9: FlexColumnWidth(1.2), // Barcode
+                10: FixedColumnWidth(60), // Image
+                11: FixedColumnWidth(100), // Aksi
               },
               defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
@@ -61,6 +58,7 @@ class ProductTable extends StatelessWidget {
                     _buildHeaderCell('Diskon'),
                     _buildHeaderCell('Harga Final'),
                     _buildHeaderCell('Stock'),
+                    _buildHeaderCell('Status'), // DITAMBAHKAN
                     _buildHeaderCell('Jenis'),
                     _buildHeaderCell('Satuan'),
                     _buildHeaderCell('Barcode'),
@@ -71,12 +69,16 @@ class ProductTable extends StatelessWidget {
 
                 // ================== BODY DATA ==================
                 ...ctrl.paginatedList.map((item) {
-                  final isStokTipis =
-                      item.stock <= 5; // Pola logic yang sama dengan bahan baku
+                  final isStokTipis = item.stock <= 5;
+
+                  // Visual adjustment untuk item yang dihapus
+                  final rowBgColor = item.isDeleted
+                      ? Colors.red.shade50
+                      : Colors.white;
 
                   return TableRow(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: rowBgColor,
                       border: Border(
                         bottom: BorderSide(
                           color: Colors.grey.shade100,
@@ -109,6 +111,37 @@ class ProductTable extends StatelessWidget {
                             ? FontWeight.bold
                             : FontWeight.w500,
                       ),
+
+                      // DITAMBAHKAN: Cell Status Badge
+                      TableCell(
+                        child: Container(
+                          height: 48,
+                          alignment: Alignment.center,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: item.isDeleted
+                                  ? Colors.red.shade100
+                                  : Colors.green.shade100,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              item.isDeleted ? 'DIHAPUS' : 'AKTIF',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: item.isDeleted
+                                    ? Colors.red.shade700
+                                    : Colors.green.shade700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
                       _buildDataCell(item.jenis),
                       _buildDataCell(item.satuan),
                       _buildDataCell(item.barcode),
@@ -116,7 +149,7 @@ class ProductTable extends StatelessWidget {
                       // Cell Gambar Produk
                       TableCell(
                         child: Container(
-                          height: 48, // Disamakan menjadi 48
+                          height: 48,
                           alignment: Alignment.center,
                           child: item.image.isNotEmpty
                               ? ClipRRect(
@@ -143,25 +176,43 @@ class ProductTable extends StatelessWidget {
                         ),
                       ),
 
-                      // Cell Tombol Aksi
+                      // DIUBAH: Cell Tombol Aksi Dinamis
                       Container(
-                        height: 48, // Disamakan menjadi 48
+                        height: 48,
                         alignment: Alignment.center,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TableActionButton(
-                              icon: Icons.edit_outlined,
-                              color: Colors.blue.shade700,
-                              onTap: () => ctrl.openEditDialog(item),
-                            ),
-                            const SizedBox(width: 8),
-                            TableActionButton(
-                              icon: Icons.delete_outline_rounded,
-                              color: Colors.red.shade600,
-                              onTap: () => ctrl.deleteData(item.id),
-                            ),
-                          ],
+                          children: item.isDeleted
+                              ? [
+                                  // Jika terhapus: Tampilkan Restore dan Force Delete
+                                  TableActionButton(
+                                    icon: Icons.restore_rounded,
+                                    color: Colors.green.shade700,
+                                    onTap: () => ctrl.restoreProduct(item.id),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  TableActionButton(
+                                    icon: Icons.delete_forever_rounded,
+                                    color: Colors.red.shade900,
+                                    onTap: () =>
+                                        ctrl.forceDeleteProduct(item.id),
+                                  ),
+                                ]
+                              : [
+                                  // Jika aktif: Tampilkan Edit dan Soft Delete
+                                  TableActionButton(
+                                    icon: Icons.edit_outlined,
+                                    color: Colors.blue.shade700,
+                                    onTap: () => ctrl.openEditDialog(item),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  TableActionButton(
+                                    icon: Icons.delete_outline_rounded,
+                                    color: Colors.red.shade600,
+                                    onTap: () =>
+                                        ctrl.softDeleteProduct(item.id),
+                                  ),
+                                ],
                         ),
                       ),
                     ],
@@ -176,7 +227,7 @@ class ProductTable extends StatelessWidget {
               height: 150,
               alignment: Alignment.center,
               child: Text(
-                "Tidak ada produk",
+                "Tidak ada produk ditemukan",
                 style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               ),
             ),
@@ -195,7 +246,7 @@ class ProductTable extends StatelessWidget {
 
   Widget _buildHeaderCell(String title) {
     return Container(
-      height: 46, // Disamakan dengan Bahan Baku
+      height: 46,
       alignment: Alignment.center,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
@@ -216,9 +267,9 @@ class ProductTable extends StatelessWidget {
     FontWeight? fontWeight,
   }) {
     return Container(
-      height: 48, // Disamakan dengan Bahan Baku
+      height: 48,
       alignment: alignment,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Text(
         text,
         maxLines: 1,
