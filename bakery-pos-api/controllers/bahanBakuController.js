@@ -7,17 +7,18 @@ exports.getAllBahanBaku = async (req, res) => {
   try {
 
     const [rows] = await db.execute(`
-      SELECT
-        id,
-        nama_bahan,
-        merk,
-        satuan,
-        stok,
-        harga_satuan,
-        (stok * harga_satuan) AS total_harga,
-        created_at
-      FROM bahan_baku
-      ORDER BY id DESC
+ SELECT
+  id,
+  nama_bahan,
+  merk,
+  satuan,
+  stok,
+  harga_satuan,
+  (stok * harga_satuan) AS total_harga,
+  created_at,
+  deleted_at
+FROM bahan_baku
+ORDER BY (deleted_at IS NOT NULL) ASC, id DESC
     `);
 
     res.json({
@@ -47,17 +48,18 @@ exports.getBahanBakuById = async (req, res) => {
 
     const [rows] = await db.execute(
       `
-      SELECT
-        id,
-        nama_bahan,
-        merk,
-        satuan,
-        stok,
-        harga_satuan,
-        (stok * harga_satuan) AS total_harga,
-        created_at
-      FROM bahan_baku
-      WHERE id = ?
+SELECT
+  id,
+  nama_bahan,
+  merk,
+  satuan,
+  stok,
+  harga_satuan,
+  (stok * harga_satuan) AS total_harga,
+  created_at,
+  deleted_at
+FROM bahan_baku
+WHERE id = ?
       `,
       [id]
     );
@@ -208,20 +210,28 @@ exports.updateBahanBaku = async (req, res) => {
 };
 
 // ========================
-// DELETE BAHAN BAKU
+// SOFT DELETE BAHAN BAKU
 // ========================
 exports.deleteBahanBaku = async (req, res) => {
   try {
 
     const { id } = req.params;
 
-    await db.execute(
+    const [result] = await db.execute(
       `
-      DELETE FROM bahan_baku
+      UPDATE bahan_baku
+      SET deleted_at = NOW()
       WHERE id = ?
       `,
       [id]
     );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Bahan baku tidak ditemukan",
+      });
+    }
 
     res.json({
       success: true,
@@ -230,12 +240,106 @@ exports.deleteBahanBaku = async (req, res) => {
 
   } catch (error) {
 
-    console.log("ERROR DELETE BAHAN:");
     console.log(error);
 
     res.status(500).json({
       success: false,
       message: "Gagal menghapus bahan baku",
+    });
+  }
+};
+// ========================
+// RESTORE BAHAN BAKU
+// ========================
+exports.restoreBahanBaku = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const [result] = await db.execute(
+      `
+      UPDATE bahan_baku
+      SET deleted_at = NULL
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Bahan baku tidak ditemukan",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Bahan baku berhasil direstore",
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Gagal restore bahan baku",
+    });
+  }
+};
+// ========================
+// FORCE DELETE BAHAN BAKU
+// ========================
+exports.forceDeleteBahanBaku = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const [usedByRecipe] = await db.execute(
+      `
+      SELECT id
+      FROM detail_resep
+      WHERE bahan_id = ?
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    if (usedByRecipe.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Bahan baku tidak bisa dihapus karena masih digunakan pada resep",
+      });
+    }
+
+    const [result] = await db.execute(
+      `
+      DELETE FROM bahan_baku
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Bahan baku tidak ditemukan",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Bahan baku berhasil dihapus permanen",
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Gagal force delete bahan baku",
     });
   }
 };

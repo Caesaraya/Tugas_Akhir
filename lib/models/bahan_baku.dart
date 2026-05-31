@@ -7,6 +7,7 @@ class BahanBaku {
   final double hargaSatuan;
   final double? totalHarga;
   final DateTime? createdAt;
+  final DateTime? deletedAt;
 
   BahanBaku({
     this.id,
@@ -17,6 +18,7 @@ class BahanBaku {
     required this.hargaSatuan,
     this.totalHarga,
     this.createdAt,
+    this.deletedAt,
   });
 
   factory BahanBaku.fromJson(Map<String, dynamic> json) {
@@ -28,8 +30,11 @@ class BahanBaku {
       stok: json['stok'] ?? 0,
       hargaSatuan: (json['harga_satuan'] ?? 0).toDouble(),
       totalHarga: json['total_harga']?.toDouble(),
-      createdAt: json['created_at'] != null 
-          ? DateTime.parse(json['created_at']) 
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : null,
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'])
           : null,
     );
   }
@@ -44,6 +49,7 @@ class BahanBaku {
       'harga_satuan': hargaSatuan,
       'total_harga': totalHarga,
       'created_at': createdAt?.toIso8601String(),
+      'deleted_at': deletedAt?.toIso8601String(),
     };
   }
 
@@ -56,6 +62,7 @@ class BahanBaku {
     double? hargaSatuan,
     double? totalHarga,
     DateTime? createdAt,
+    DateTime? deletedAt,
   }) {
     return BahanBaku(
       id: id ?? this.id,
@@ -66,6 +73,7 @@ class BahanBaku {
       hargaSatuan: hargaSatuan ?? this.hargaSatuan,
       totalHarga: totalHarga ?? this.totalHarga,
       createdAt: createdAt ?? this.createdAt,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }

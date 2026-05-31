@@ -38,11 +38,27 @@ router.put(
 );
 
 // ========================
-// DELETE
+// SOFT DELETE
+// ========================
+router.patch(
+  "/:id/delete",
+  bahanBakuController.deleteBahanBaku
+);
+
+// ========================
+// RESTORE
+// ========================
+router.patch(
+  "/:id/restore",
+  bahanBakuController.restoreBahanBaku
+);
+
+// ========================
+// FORCE DELETE
 // ========================
 router.delete(
-  "/:id",
-  bahanBakuController.deleteBahanBaku
+  "/:id/force",
+  bahanBakuController.forceDeleteBahanBaku
 );
 
 module.exports = router;

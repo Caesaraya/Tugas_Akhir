@@ -3,12 +3,14 @@ class Resep {
   final String namaResep;
   final String deskripsi;
   final List<DetailResep>? bahan;
+  final DateTime? deletedAt;
 
   Resep({
     this.id,
     required this.namaResep,
     required this.deskripsi,
     this.bahan,
+    this.deletedAt,
   });
 
   factory Resep.fromJson(Map<String, dynamic> json) {
@@ -16,9 +18,14 @@ class Resep {
       id: json['id'],
       namaResep: json['nama_resep'] ?? '',
       deskripsi: json['deskripsi'] ?? '',
-      bahan: json['bahan'] != null 
-          ? (json['bahan'] as List).map((e) => DetailResep.fromJson(e)).toList()
+      bahan: json['bahan'] != null
+          ? (json['bahan'] as List)
+              .map((e) => DetailResep.fromJson(e))
+              .toList()
           : [],
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'])
+          : null,
     );
   }
 
@@ -28,6 +35,7 @@ class Resep {
       'nama_resep': namaResep,
       'deskripsi': deskripsi,
       'bahan': bahan?.map((e) => e.toJson()).toList(),
+      'deleted_at': deletedAt?.toIso8601String(),
     };
   }
 
@@ -36,12 +44,14 @@ class Resep {
     String? namaResep,
     String? deskripsi,
     List<DetailResep>? bahan,
+    DateTime? deletedAt,
   }) {
     return Resep(
       id: id ?? this.id,
       namaResep: namaResep ?? this.namaResep,
       deskripsi: deskripsi ?? this.deskripsi,
       bahan: bahan ?? this.bahan,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }

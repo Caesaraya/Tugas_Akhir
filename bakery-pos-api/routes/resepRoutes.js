@@ -38,11 +38,27 @@ router.put(
 );
 
 // ========================
-// DELETE
+// SOFT DELETE
+// ========================
+router.patch(
+  "/:id/delete",
+  resepController.deleteResep
+);
+
+// ========================
+// RESTORE
+// ========================
+router.patch(
+  "/:id/restore",
+  resepController.restoreResep
+);
+
+// ========================
+// FORCE DELETE
 // ========================
 router.delete(
-  "/:id",
-  resepController.deleteResep
+  "/:id/force",
+  resepController.forceDeleteResep
 );
 
 module.exports = router;

@@ -7,13 +7,14 @@ exports.getAllResep = async (req, res) => {
   try {
 
     const [rows] = await db.execute(`
-      SELECT
-        id,
-        nama_resep,
-        deskripsi
-      FROM resep
-      ORDER BY id DESC
-    `);
+  SELECT
+    id,
+    nama_resep,
+    deskripsi,
+    deleted_at
+  FROM resep
+  ORDER BY (deleted_at IS NOT NULL) ASC, id DESC
+`);
 
     res.json({
       success: true,
@@ -42,13 +43,14 @@ exports.getDetailResep = async (req, res) => {
     // HEADER RESEP
     const [resepRows] = await db.execute(
       `
-      SELECT
-        id,
-        nama_resep,
-        deskripsi
-      FROM resep
-      WHERE id = ?
-      `,
+  SELECT
+    id,
+    nama_resep,
+    deskripsi,
+    deleted_at
+  FROM resep
+  WHERE id = ?
+  `,
       [id]
     );
 
@@ -281,36 +283,28 @@ exports.updateResep = async (req, res) => {
 };
 
 // ========================
-// DELETE RESEP
+// SOFT DELETE RESEP
 // ========================
 exports.deleteResep = async (req, res) => {
-  const connection = await db.getConnection();
-
   try {
 
     const { id } = req.params;
 
-    await connection.beginTransaction();
-
-    // HAPUS DETAIL
-    await connection.execute(
+    const [result] = await db.execute(
       `
-      DELETE FROM detail_resep
-      WHERE resep_id = ?
-      `,
-      [id]
-    );
-
-    // HAPUS RESEP
-    await connection.execute(
-      `
-      DELETE FROM resep
+      UPDATE resep
+      SET deleted_at = NOW()
       WHERE id = ?
       `,
       [id]
     );
 
-    await connection.commit();
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Resep tidak ditemukan",
+      });
+    }
 
     res.json({
       success: true,
@@ -319,17 +313,116 @@ exports.deleteResep = async (req, res) => {
 
   } catch (error) {
 
-    await connection.rollback();
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Gagal menghapus resep",
+    });
+  }
+};
+
+// ========================
+// RESTORE RESEP
+// ========================
+exports.restoreResep = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const [result] = await db.execute(
+      `
+      UPDATE resep
+      SET deleted_at = NULL
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Resep tidak ditemukan",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Resep berhasil direstore",
+    });
+
+  } catch (error) {
 
     console.log(error);
 
     res.status(500).json({
       success: false,
-      message: "Gagal hapus resep",
+      message: "Gagal restore resep",
+    });
+  }
+};
+
+// ========================
+// FORCE DELETE RESEP
+// ========================
+exports.forceDeleteResep = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const [usedByProduct] = await db.execute(
+      `
+      SELECT id
+      FROM products
+      WHERE resep_id = ?
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    if (usedByProduct.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Resep tidak bisa dihapus karena masih digunakan pada produk",
+      });
+    }
+
+    await db.execute(
+      `
+      DELETE FROM detail_resep
+      WHERE resep_id = ?
+      `,
+      [id]
+    );
+
+    const [result] = await db.execute(
+      `
+      DELETE FROM resep
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Resep tidak ditemukan",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Resep berhasil dihapus permanen",
     });
 
-  } finally {
+  } catch (error) {
 
-    connection.release();
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Gagal force delete resep",
+    });
   }
 };
