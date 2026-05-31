@@ -513,6 +513,60 @@ class ApiService {
   }
 
   // ========================
+  // SOFT DELETE BAHAN BAKU
+  // ========================
+  static Future<bool> softDeleteBahanBaku(int id) async {
+    try {
+      final response = await http
+          .patch(
+            Uri.parse("$baseUrl/api/bahan-baku/$id/delete"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal soft delete bahan baku: $e");
+    }
+  }
+
+  // ========================
+  // RESTORE BAHAN BAKU
+  // ========================
+  static Future<bool> restoreBahanBaku(int id) async {
+    try {
+      final response = await http
+          .patch(
+            Uri.parse("$baseUrl/api/bahan-baku/$id/restore"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal restore bahan baku: $e");
+    }
+  }
+
+  // ========================
+  // FORCE DELETE BAHAN BAKU
+  // ========================
+  static Future<bool> forceDeleteBahanBaku(int id) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse("$baseUrl/api/bahan-baku/$id/force"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal force delete bahan baku: $e");
+    }
+  }
+
+  // ========================
   // DISKON APIS
   // ========================
   static Future<List<Diskon>> getAllDiskon() async {
@@ -911,6 +965,51 @@ class ApiService {
       return response.statusCode == 200;
     } catch (e) {
       throw Exception("Gagal hapus resep: $e");
+    }
+  }
+
+  // ========================
+  // SOFT DELETE RESEP
+  // ========================
+  static Future<bool> softDeleteResep(int id) async {
+    try {
+      final response = await http
+          .patch(Uri.parse("$baseUrl/api/resep/$id/delete"), headers: headers)
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal soft delete resep: $e");
+    }
+  }
+
+  // ========================
+  // RESTORE RESEP
+  // ========================
+  static Future<bool> restoreResep(int id) async {
+    try {
+      final response = await http
+          .patch(Uri.parse("$baseUrl/api/resep/$id/restore"), headers: headers)
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal restore resep: $e");
+    }
+  }
+
+  // ========================
+  // FORCE DELETE RESEP
+  // ========================
+  static Future<bool> forceDeleteResep(int id) async {
+    try {
+      final response = await http
+          .delete(Uri.parse("$baseUrl/api/resep/$id/force"), headers: headers)
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal force delete resep: $e");
     }
   }
 

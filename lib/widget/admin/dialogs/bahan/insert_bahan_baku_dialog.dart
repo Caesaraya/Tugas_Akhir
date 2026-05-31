@@ -41,19 +41,19 @@ class _InsertBahanBakuDialogState extends State<InsertBahanBakuDialog> {
                 controller: ctrl.namaC,
                 label: 'Nama Bahan Baku',
                 icon: Icons.fastfood_outlined,
-                hint: 'Masukkan nama bahan',
+                hint: 'Masukkan nama bahan baku',
               ),
               const SizedBox(height: 18),
               CustomTextField(
                 controller: ctrl.merkC,
                 label: 'Merk / Produsen',
                 icon: Icons.branding_watermark_outlined,
-                hint: 'Masukkan merk bahan',
+                hint: 'Masukkan merk bahan baku',
               ),
               const SizedBox(height: 18),
               CustomDropdownMenu(
                 controller: ctrl.satuanC,
-                label: 'Satuan Ukur',
+                label: 'Satuan',
                 icon: Icons.scale_outlined,
                 items: dropdownSatuanItems,
               ),
@@ -61,7 +61,8 @@ class _InsertBahanBakuDialogState extends State<InsertBahanBakuDialog> {
               CustomStockStepper(
                 controller: ctrl.stokC,
                 label: 'Stok Awal',
-                isDouble: true,
+                isDouble:
+                    true, // Mendukung tipe desimal/double untuk bahan baku pecahan
               ),
               const SizedBox(height: 18),
               CustomTextField(
@@ -79,7 +80,10 @@ class _InsertBahanBakuDialogState extends State<InsertBahanBakuDialog> {
       actionsPadding: const EdgeInsets.all(16),
       actions: [
         DialogActionButtons(
-          onCancel: () => Get.back(),
+          onCancel: () {
+            ctrl.clearForm();
+            Get.back();
+          },
           onSave: () {
             if (ctrl.namaC.text.isEmpty || ctrl.stokC.text.isEmpty) {
               Get.snackbar(
@@ -96,7 +100,7 @@ class _InsertBahanBakuDialogState extends State<InsertBahanBakuDialog> {
                 _addedSatuan.add(typedSatuan);
               });
             }
-            // Menggunakan method bawaan BaseTableController
+            // Mengeksekusi penambahan data pada controller baru
             ctrl.insertBahanBaku();
           },
           saveLabel: 'Simpan Data',

@@ -36,15 +36,15 @@ class BahanBakuTable extends StatelessWidget {
                 0: FixedColumnWidth(60), // ID
                 1: FlexColumnWidth(2.5), // Nama Bahan
                 2: FlexColumnWidth(1.5), // Merk
-                3: FlexColumnWidth(1.2), // Stok
-                4: FlexColumnWidth(1.2), // Satuan
-                5: FlexColumnWidth(1.8), // Harga Satuan
-                6: FlexColumnWidth(2.0), // Total Nilai (KOLOM BARU)
-                7: FixedColumnWidth(100), // Aksi
+                3: FlexColumnWidth(1.2), // Stok (Double format ready)
+                4: FlexColumnWidth(1.5), // Harga Satuan
+                5: FlexColumnWidth(1.5), // Total Harga
+                6: FixedColumnWidth(110), // Status (KOLOM BARU)
+                7: FixedColumnWidth(200), // Aksi
               },
               defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
-                // --- HEADER TABEL ---
+                // Header Table
                 TableRow(
                   decoration: BoxDecoration(color: headerColor),
                   children: [
@@ -52,25 +52,21 @@ class BahanBakuTable extends StatelessWidget {
                     _buildHeaderCell("Nama Bahan"),
                     _buildHeaderCell("Merk"),
                     _buildHeaderCell("Stok"),
-                    _buildHeaderCell("Satuan"),
                     _buildHeaderCell("Harga Satuan"),
-                    _buildHeaderCell("Total Nilai"), // HEADER BARU
+                    _buildHeaderCell("Total Harga"),
+                    _buildHeaderCell("Status"), // HEADER BARU
                     _buildHeaderCell("Aksi"),
                   ],
                 ),
-
-                // --- DATA BARIS TABEL ---
-                ...ctrl.paginatedList.map((bahan) {
-                  // Sesuai dengan spesifikasi kondisi di UI, stok menipis jika <= 5
-                  final isStokTipis = (bahan.stok) <= 5;
-
-                  // Hitung total harga item (Gunakan dari API jika tersedia, jika tidak hitung manual)
-                  final totalHargaItem =
-                      bahan.totalHarga ?? (bahan.stok * bahan.hargaSatuan);
+                // Data Rows
+                ...ctrl.paginatedList.map((item) {
+                  final isDeleted = item.deletedAt != null;
 
                   return TableRow(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDeleted
+                          ? Colors.red.shade50.withOpacity(0.4)
+                          : Colors.white,
                       border: Border(
                         bottom: BorderSide(
                           color: Colors.grey.shade100,
@@ -79,56 +75,95 @@ class BahanBakuTable extends StatelessWidget {
                       ),
                     ),
                     children: [
-                      _buildDataCell(bahan.id?.toString() ?? '-'),
+                      _buildDataCell("#${item.id}"),
                       _buildDataCell(
-                        bahan.namaBahan,
+                        item.namaBahan,
+                        alignment: Alignment.centerLeft,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      _buildDataCell(
+                        item.merk,
                         alignment: Alignment.centerLeft,
                       ),
+                      // Menampilkan stok format desimal jika berupa pecahan secara aman
                       _buildDataCell(
-                        bahan.merk,
-                        alignment: Alignment.centerLeft,
+                        "${item.stok % 1 == 0 ? item.stok.toInt() : item.stok} ${item.satuan}",
                       ),
                       _buildDataCell(
-                        bahan.stok.toString(),
-                        textColor: isStokTipis
-                            ? Colors.red.shade700
-                            : Colors.grey.shade800,
-                        fontWeight: isStokTipis
-                            ? FontWeight.bold
-                            : FontWeight.w500,
+                        currencyFormatter.format(item.hargaSatuan),
+                        alignment: Alignment.centerRight,
                       ),
-                      _buildDataCell(bahan.satuan),
                       _buildDataCell(
-                        currencyFormatter.format(bahan.hargaSatuan),
+                        currencyFormatter.format(
+                          item.totalHarga ?? (item.stok * item.hargaSatuan),
+                        ),
                         alignment: Alignment.centerRight,
                       ),
 
-                      // --- DATA KOLOM TOTAL HARGA BARU ---
-                      _buildDataCell(
-                        currencyFormatter.format(totalHargaItem),
-                        alignment: Alignment.centerRight,
-                        fontWeight: FontWeight.w600,
-                      ),
-
-                      // --- KOLOM AKSI ---
+                      // BADGE STATUS (BAGIAN BARU)
                       Container(
-                        height: 48,
                         alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDeleted
+                                ? Colors.red.shade100
+                                : Colors.green.shade100,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            isDeleted ? "DIHAPUS" : "AKTIF",
+                            style: TextStyle(
+                              color: isDeleted
+                                  ? Colors.red.shade800
+                                  : Colors.green.shade800,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // DINAMIS ACTION BUTTONS (BAGIAN BARU)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TableActionButton(
-                              icon: Icons.edit_outlined,
-                              color: Colors.blue.shade700,
-                              onTap: () => ctrl.openEditDialog(bahan),
-                            ),
-                            const SizedBox(width: 8),
-                            TableActionButton(
-                              icon: Icons.delete_outline_rounded,
-                              color: Colors.red.shade600,
-                              onTap: () => ctrl.deleteData(bahan.id!),
-                            ),
-                          ],
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: isDeleted
+                              ? [
+                                  TableActionButton(
+                                    icon: Icons.restore_outlined,
+                                    color: Colors.green,
+                                    onTap: () => ctrl.restoreBahan(item.id!),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  TableActionButton(
+                                    icon: Icons.delete_forever_outlined,
+                                    color: Colors.red.shade900,
+                                    onTap: () =>
+                                        ctrl.forceDeleteBahan(item.id!),
+                                  ),
+                                ]
+                              : [
+                                  TableActionButton(
+                                    icon: Icons.edit_outlined,
+                                    color: Colors.blue,
+                                    onTap: () => ctrl.showEditDialog(item),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  TableActionButton(
+                                    icon: Icons.delete_outline,
+                                    color: Colors.red,
+                                    onTap: () => ctrl.softDeleteBahan(item.id!),
+                                  ),
+                                ],
                         ),
                       ),
                     ],
@@ -137,7 +172,6 @@ class BahanBakuTable extends StatelessWidget {
               ],
             ),
           ),
-
           if (ctrl.paginatedList.isEmpty)
             Container(
               height: 150,
@@ -147,9 +181,7 @@ class BahanBakuTable extends StatelessWidget {
                 style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               ),
             ),
-
           const SizedBox(height: 16),
-
           TablePagination(
             currentPage: ctrl.currentPage.value,
             totalPages: ctrl.totalPages.value,
@@ -193,8 +225,8 @@ class BahanBakuTable extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: textColor ?? Colors.grey.shade800,
+          fontWeight: fontWeight ?? FontWeight.normal,
           fontSize: 13,
-          fontWeight: fontWeight ?? FontWeight.w500,
         ),
       ),
     );
