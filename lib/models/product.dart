@@ -7,7 +7,6 @@ class Product {
   final int stock;
   final String jenis;
   final String satuan;
-  final String barcode;
   final String image;
   final int? resepId;
 
@@ -23,7 +22,6 @@ class Product {
     required this.stock,
     required this.jenis,
     required this.satuan,
-    required this.barcode,
     required this.image,
     this.resepId,
     this.deletedAt,
@@ -40,7 +38,6 @@ class Product {
       stock: int.tryParse(json['stock'].toString()) ?? 0,
       jenis: json['jenis'] ?? '',
       satuan: json['satuan'] ?? '',
-      barcode: json['barcode'] ?? '',
       image: json['image'] ?? '',
       resepId: int.tryParse(json['resep_id'].toString()),
 
@@ -58,7 +55,6 @@ class Product {
     int? stock,
     String? jenis,
     String? satuan,
-    String? barcode,
     String? image,
     int? resepId,
     String? deletedAt,
@@ -73,7 +69,6 @@ class Product {
       stock: stock ?? this.stock,
       jenis: jenis ?? this.jenis,
       satuan: satuan ?? this.satuan,
-      barcode: barcode ?? this.barcode,
       image: image ?? this.image,
       resepId: resepId ?? this.resepId,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -90,7 +85,6 @@ class Product {
       'stock': stock,
       'jenis': jenis,
       'satuan': satuan,
-      'barcode': barcode,
       'image': image,
       'resep_id': resepId,
 

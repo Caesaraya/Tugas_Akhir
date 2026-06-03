@@ -105,7 +105,7 @@ exports.getProducts = async (req, res) => {
         stock,
         jenis,
         satuan,
-        barcode,
+
         image,
         resep_id,
         deleted_at
@@ -148,7 +148,7 @@ exports.getProductById = async (req, res) => {
         stock,
         jenis,
         satuan,
-        barcode,
+
         image,
         resep_id,
         deleted_at
@@ -195,7 +195,7 @@ exports.createProduct = async (req, res) => {
       stock,
       jenis,
       satuan,
-      barcode,
+
       resep_id,
     } = req.body;
 
@@ -218,11 +218,11 @@ exports.createProduct = async (req, res) => {
         stock,
         jenis,
         satuan,
-        barcode,
+
         image,
         resep_id
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         name,
@@ -231,7 +231,7 @@ exports.createProduct = async (req, res) => {
         stock,
         jenis,
         satuan,
-        barcode,
+
         image,
         resep_id,
       ]
@@ -245,7 +245,7 @@ exports.createProduct = async (req, res) => {
       stock,
       jenis,
       satuan,
-      barcode,
+
       image,
       resep_id,
       deleted_at: null,
@@ -272,7 +272,7 @@ exports.updateProduct = async (req, res) => {
       stock,
       jenis,
       satuan,
-      barcode,
+
       resep_id,
     } = req.body;
 
@@ -306,7 +306,6 @@ exports.updateProduct = async (req, res) => {
         stock = ?,
         jenis = ?,
         satuan = ?,
-        barcode = ?,
         image = ?,
         resep_id = ?
       WHERE id = ?
@@ -318,7 +317,7 @@ exports.updateProduct = async (req, res) => {
         stock,
         jenis,
         satuan,
-        barcode,
+
         image,
         resep_id,
         req.params.id,
