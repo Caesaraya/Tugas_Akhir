@@ -58,8 +58,7 @@ class DashboardController extends GetxController {
 
       // Cek apakah produk sesuai dengan kata kunci pencarian (nama atau barcode)
       bool matchSearch =
-          product.name.toLowerCase().contains(lastQuery.value.toLowerCase()) ||
-          product.barcode.contains(lastQuery.value);
+          product.name.toLowerCase().contains(lastQuery.value.toLowerCase());
 
       return matchCategory && matchSearch;
     }).toList();

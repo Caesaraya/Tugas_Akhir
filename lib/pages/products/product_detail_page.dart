@@ -337,16 +337,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (_product!.barcode.isNotEmpty) ...[
-                    Row(
-                      children: [
-                        Icon(Icons.barcode_reader, size: 16, color: Colors.grey[600]),
-                        const SizedBox(width: 8),
-                        Text('Barcode: ${_product!.barcode}'),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
                   if (_product!.resepId != null) ...[
                     Row(
                       children: [

@@ -75,7 +75,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
     _priceController.text = product.price.toString();
     _discountController.text = product.discount.toString();
     _stockController.text = product.stock.toString();
-    _barcodeController.text = product.barcode;
     _satuanController.text = product.satuan;
     _selectedJenis = product.jenis;
   }
@@ -171,7 +170,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
           stock: stock,
           jenis: _selectedJenis,
           satuan: _satuanController.text,
-          barcode: _barcodeController.text,
           imageFile: _selectedImage!,
           resepId: widget.product?.resepId,
         );
@@ -186,7 +184,6 @@ class _ProductFormPageState extends State<ProductFormPage> {
           stock: stock,
           jenis: _selectedJenis,
           satuan: _satuanController.text,
-          barcode: _barcodeController.text,
           imageFile: _selectedImage,
           resepId: widget.product?.resepId,
         );

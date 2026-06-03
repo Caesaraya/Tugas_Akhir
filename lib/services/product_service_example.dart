@@ -46,7 +46,6 @@ class ProductServiceExample {
         stock: stock,
         jenis: jenis,
         satuan: satuan,
-        barcode: barcode,
         image: image,
         resepId: resepId,
       );
@@ -70,7 +69,6 @@ class ProductServiceExample {
         stock: product.stock,
         jenis: product.jenis,
         satuan: product.satuan,
-        barcode: product.barcode,
         image: product.image,
         resepId: product.resepId,
       );

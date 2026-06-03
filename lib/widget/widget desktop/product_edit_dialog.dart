@@ -41,7 +41,6 @@ class _ProductEditDialogState extends State<ProductEditDialog> {
     );
     jenisController = TextEditingController(text: widget.product.jenis);
     satuanController = TextEditingController(text: widget.product.satuan);
-    barcodeController = TextEditingController(text: widget.product.barcode);
     imageController = TextEditingController(text: widget.product.image);
   }
 
@@ -76,7 +75,6 @@ Future<void> _saveChanges() async {
       stock: int.tryParse(stockController.text) ?? widget.product.stock,
       jenis: jenisController.text,
       satuan: satuanController.text,
-      barcode: barcodeController.text,
       image: imageController.text.trim().isEmpty
           ? widget.product.image
           : imageController.text.trim(),

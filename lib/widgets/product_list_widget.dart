@@ -243,22 +243,6 @@ class ProductCard extends StatelessWidget {
                   ),
               ],
             ),
-            if (product.barcode.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.barcode_reader, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    product.barcode,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ],
         ),
       ),
