@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/login_controller.dart';
+// 1. IMPORT FILE WARNA KAMU (Sesuaikan dengan path projectmu)
+import 'package:tugas_akhir/utils/app_color.dart';
 import 'package:tugas_akhir/widget/login/login_button.dart';
 import 'package:tugas_akhir/widget/login/login_divider.dart';
 import 'package:tugas_akhir/widget/login/login_email.dart';
@@ -13,7 +15,8 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE89336),
+      // 2. GANTI WARNA DI SINI
+      backgroundColor: AppColors.primaryOrange,
       body: Column(
         children: [
           Expanded(
@@ -32,7 +35,8 @@ class LoginPage extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               decoration: const BoxDecoration(
-                color: Colors.white,
+                // 3. GANTI WARNA DI SINI
+                color: AppColors.white,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(32),
                   topRight: Radius.circular(32),

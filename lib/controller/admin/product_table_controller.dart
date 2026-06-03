@@ -12,22 +12,8 @@ import '../../models/product.dart';
 import '../../controller/admin/table/base_table_controller.dart';
 
 class ProductTableController extends BaseTableController<Product> {
-  ProductTableController() {
-    itemsPerPage = 35;
-    priceC.addListener(() {
-      final raw = priceC.text;
-      final clean = raw.replaceAll(RegExp(r'[^0-9]'), '');
-      if (clean.isEmpty) return;
-      final value = int.tryParse(clean) ?? 0;
-      final formatted = currencyFormatter.format(value);
-      if (formatted != raw) {
-        priceC.value = TextEditingValue(
-          text: formatted,
-          selection: TextSelection.collapsed(offset: formatted.length),
-        );
-      }
-    });
-  }
+  // ── Constructor kosong, semua init pindah ke onInit ──────────────────────
+  ProductTableController();
 
   final nameC = TextEditingController();
   final priceC = TextEditingController();
@@ -38,13 +24,99 @@ class ProductTableController extends BaseTableController<Product> {
   final barcodeC = TextEditingController();
 
   final Rx<File?> selectedImage = Rx<File?>(null);
+  var oldImageUrl = ''.obs;
+  var isFilterStockHabis = false.obs;
 
   final picker = ImagePicker();
-  final currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
+
+  // Formatter tanpa simbol, pemisah ribuan pakai titik (id_ID)
+  final currencyFormatter = NumberFormat('#,###', 'id_ID');
+
+  // ── Lifecycle ────────────────────────────────────────────────────────────
+
+  @override
+  void onInit() {
+    super.onInit();
+    itemsPerPage = 35;
+    // Register listener sekali saja di sini, bukan di constructor
+    priceC.addListener(_onPriceChanged);
+    // Otomatis fetch data saat controller dibuat / di-recreate oleh fenix
+    fetchData();
+  }
+
+  @override
+  void onClose() {
+    // Selalu remove listener sebelum dispose untuk menghindari memory leak
+    priceC.removeListener(_onPriceChanged);
+    // Dispose semua TextEditingController
+    nameC.dispose();
+    priceC.dispose();
+    discountC.dispose();
+    stockC.dispose();
+    jenisC.dispose();
+    satuanC.dispose();
+    barcodeC.dispose();
+    super.onClose();
+  }
+
+  // ── Price listener (dipindah dari constructor ke method terpisah) ─────────
+
+  void _onPriceChanged() {
+    final text = priceC.text;
+    if (text.isEmpty) return;
+
+    final clean = text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (clean.isEmpty) {
+      priceC.value = const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+      return;
+    }
+
+    final value = int.tryParse(clean) ?? 0;
+    final formatted = _formatRibuan(value);
+
+    // Hitung posisi kursor agar tidak melompat ke akhir secara paksa
+    int cursorPosition = priceC.selection.baseOffset;
+    int numCharsBeforeCursor = text
+        .substring(0, max(0, cursorPosition))
+        .replaceAll(RegExp(r'[^0-9]'), '')
+        .length;
+
+    int newCursorPosition = 0;
+    int digitCount = 0;
+    while (newCursorPosition < formatted.length &&
+        digitCount < numCharsBeforeCursor) {
+      if (RegExp(r'[0-9]').hasMatch(formatted[newCursorPosition])) {
+        digitCount++;
+      }
+      newCursorPosition++;
+    }
+
+    if (formatted != text) {
+      priceC.value = TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(
+          offset: min(newCursorPosition, formatted.length),
+        ),
+      );
+    }
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  /// Format int ke string ribuan pakai titik, misal 100000 → "100.000"
+  String _formatRibuan(int value) {
+    return currencyFormatter.format(value);
+  }
+
+  /// Parse string ribuan kembali ke int, misal "100.000" → 100000
+  int _parseRibuan(String text) {
+    return int.tryParse(text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+  }
+
+  // ── Data ─────────────────────────────────────────────────────────────────
 
   @override
   Future<void> fetchData() async {
@@ -53,11 +125,10 @@ class ProductTableController extends BaseTableController<Product> {
 
       final data = await ApiService.getProducts();
 
-      // DIUBAH: Logic Sorting. Produk Aktif di atas, Dihapus di bawah
       data.sort((a, b) {
         if (a.isDeleted && !b.isDeleted) return 1;
         if (!a.isDeleted && b.isDeleted) return -1;
-        return a.id.compareTo(b.id); // Default urutan berdasar ID
+        return a.id.compareTo(b.id);
       });
 
       setData(data);
@@ -92,7 +163,6 @@ class ProductTableController extends BaseTableController<Product> {
           final matchesResep =
               product.resepId?.toString().contains(searchText) ?? false;
 
-          // DIUBAH: Tambahan filter search berdasarkan status
           final statusString = product.isDeleted ? 'dihapus' : 'aktif';
           final matchesStatus = statusString.contains(searchText);
 
@@ -108,8 +178,6 @@ class ProductTableController extends BaseTableController<Product> {
     setupPagination();
   }
 
-  var isFilterStockHabis = false.obs;
-
   void toggleFilterStockHabis() {
     isFilterStockHabis.value = !isFilterStockHabis.value;
 
@@ -123,6 +191,8 @@ class ProductTableController extends BaseTableController<Product> {
     setupPagination();
   }
 
+  // ── Image ────────────────────────────────────────────────────────────────
+
   Future<void> pickImage() async {
     final pickedFile = await ImagePicker().pickImage(
       source: ImageSource.gallery,
@@ -132,10 +202,24 @@ class ProductTableController extends BaseTableController<Product> {
     }
   }
 
+  // ── Form ─────────────────────────────────────────────────────────────────
+
   String generateBarcode() {
     final random = Random();
     return List.generate(12, (index) => random.nextInt(10)).join();
   }
+
+  void clearForm() {
+    nameC.clear();
+    priceC.clear();
+    discountC.clear();
+    stockC.clear();
+    jenisC.clear();
+    satuanC.clear();
+    selectedImage.value = null;
+  }
+
+  // ── CRUD ─────────────────────────────────────────────────────────────────
 
   Future<void> insertProduct() async {
     try {
@@ -146,9 +230,10 @@ class ProductTableController extends BaseTableController<Product> {
 
       await ApiService.createProductWithImage(
         name: nameC.text,
-        price: int.parse(priceC.text.replaceAll(RegExp(r'[^0-9]'), '')),
-        discount: int.parse(discountC.text),
-        stock: int.parse(stockC.text),
+        price: _parseRibuan(priceC.text),
+        discount:
+            int.tryParse(discountC.text) ?? 0, // FIX: tryParse bukan parse
+        stock: int.tryParse(stockC.text) ?? 0, // FIX: tryParse bukan parse
         jenis: jenisC.text,
         satuan: satuanC.text,
         barcode: generateBarcode(),
@@ -164,24 +249,11 @@ class ProductTableController extends BaseTableController<Product> {
     }
   }
 
-  void clearForm() {
-    nameC.clear();
-    priceC.clear();
-    discountC.clear();
-    stockC.clear();
-    jenisC.clear();
-    satuanC.clear();
-    selectedImage.value = null;
-  }
-
-  var oldImageUrl = ''.obs;
-
   void openEditDialog(Product product) {
-    if (product.isDeleted)
-      return; // Proteksi agar produk dihapus tidak bisa diedit
+    if (product.isDeleted) return;
 
     nameC.text = product.name;
-    priceC.text = currencyFormatter.format(product.price);
+    priceC.text = _formatRibuan(product.price);
     discountC.text = product.discount.toString();
     stockC.text = product.stock.toString();
     jenisC.text = product.jenis;
@@ -198,9 +270,10 @@ class ProductTableController extends BaseTableController<Product> {
       await ApiService.updateProductWithImage(
         id: product.id,
         name: nameC.text,
-        price: int.parse(priceC.text.replaceAll(RegExp(r'[^0-9]'), '')),
-        discount: int.parse(discountC.text),
-        stock: int.parse(stockC.text),
+        price: _parseRibuan(priceC.text),
+        discount:
+            int.tryParse(discountC.text) ?? 0, // FIX: tryParse bukan parse
+        stock: int.tryParse(stockC.text) ?? 0, // FIX: tryParse bukan parse
         jenis: jenisC.text,
         satuan: satuanC.text,
         barcode: product.barcode,
@@ -228,7 +301,8 @@ class ProductTableController extends BaseTableController<Product> {
     }
   }
 
-  // DITAMBAHKAN: Soft Delete
+  // ── Delete / Restore ─────────────────────────────────────────────────────
+
   Future<void> softDeleteProduct(int id) async {
     Get.defaultDialog(
       title: "Konfirmasi Hapus",
@@ -239,7 +313,7 @@ class ProductTableController extends BaseTableController<Product> {
       confirmTextColor: Colors.white,
       buttonColor: Colors.red,
       onConfirm: () async {
-        Get.back(); // Tutup dialog
+        Get.back();
         try {
           bool success = await ApiService.softDeleteProduct(id);
           if (success) {
@@ -265,7 +339,6 @@ class ProductTableController extends BaseTableController<Product> {
     );
   }
 
-  // DITAMBAHKAN: Restore Product
   Future<void> restoreProduct(int id) async {
     Get.defaultDialog(
       title: "Konfirmasi Restore",
@@ -301,7 +374,6 @@ class ProductTableController extends BaseTableController<Product> {
     );
   }
 
-  // DITAMBAHKAN: Force Delete
   Future<void> forceDeleteProduct(int id) async {
     Get.defaultDialog(
       title: "Hapus Permanen",

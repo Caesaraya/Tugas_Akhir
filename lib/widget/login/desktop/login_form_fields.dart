@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/login_controller.dart';
+import 'package:tugas_akhir/utils/app_color.dart';
 
 class LoginFormFields extends StatefulWidget {
   final LoginController controller;
@@ -129,9 +130,8 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
           child: Obx(
             () => ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(
-                  0xFFC86A37,
-                ), // Warna oranye kecokelatan sesuai tombol gambar
+                backgroundColor: AppColors
+                    .buttonlogin, // Warna oranye kecokelatan sesuai tombol gambar
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),

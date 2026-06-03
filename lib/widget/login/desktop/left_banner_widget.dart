@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// 1. IMPORT FILE WARNA KAMU
+import 'package:tugas_akhir/utils/app_color.dart';
 
 class LeftBannerWidget extends StatelessWidget {
   const LeftBannerWidget({super.key});
@@ -6,17 +8,18 @@ class LeftBannerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF4A2E1B), // Warna cokelat gelap sesuai gambar
+      // 2. GANTI WARNA DI SINI
+      color: AppColors.buttonlogin,
       child: Stack(
         children: [
-          // Background Icon / Pattern (Bisa disesuaikan opacity-nya)
           Positioned(
             right: -50,
             bottom: -50,
             child: Icon(
               Icons.cookie_outlined,
               size: 400,
-              color: Colors.black.withOpacity(0.05),
+              // 3. GANTI WARNA DI SINI
+              color: AppColors.iconMutedDark,
             ),
           ),
           Positioned(
@@ -25,11 +28,10 @@ class LeftBannerWidget extends StatelessWidget {
             child: Icon(
               Icons.bakery_dining_outlined,
               size: 200,
-              color: Colors.white.withOpacity(0.05),
+              // 4. GANTI WARNA DI SINI
+              color: AppColors.iconMutedLight,
             ),
           ),
-
-          // Konten Teks
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 64.0),
             child: Column(
@@ -39,7 +41,8 @@ class LeftBannerWidget extends StatelessWidget {
                 const Text(
                   "Rumah Lezaa",
                   style: TextStyle(
-                    color: Colors.white,
+                    // 5. GANTI WARNA DI SINI
+                    color: AppColors.textWhite,
                     fontSize: 44,
                     fontWeight: FontWeight.bold,
                   ),
@@ -48,21 +51,21 @@ class LeftBannerWidget extends StatelessWidget {
                 Text(
                   "Kelola data penjualan, stok roti, dan panggangan hanya dalam satu dasbor terintegrasi. Modernitas pengrajin roti dalam setiap data.",
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    // 6. GANTI WARNA DI SINI
+                    color: AppColors.textWhiteMuted,
                     fontSize: 16,
                     height: 1.6,
                   ),
                 ),
                 const SizedBox(height: 32),
-
-                // Indikator halaman (garis oranye & abu-abu)
                 Row(
                   children: [
                     Container(
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFC86A37),
+                        // 7. GANTI WARNA DI SINI
+                        color: AppColors.accentOrange,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -71,7 +74,9 @@ class LeftBannerWidget extends StatelessWidget {
                       width: 16,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
+                        // 8. GANTI WARNA DI SINI
+                        color: AppColors
+                            .textWhiteMuted, // (Bisa pakai AppColors.textWhite.withOpacity(0.3) jika tidak ingin di-hardcode di class)
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -80,7 +85,7 @@ class LeftBannerWidget extends StatelessWidget {
                       width: 16,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
+                        color: AppColors.textWhiteMuted,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),

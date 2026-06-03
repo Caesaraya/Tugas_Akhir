@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // ← TAMBAHAN
 
 class RumahLezaatTheme {
   static const Color primaryColor = Color(0xFFE65100);
@@ -14,6 +15,7 @@ class CustomTextField extends StatelessWidget {
   final double width;
   final TextInputType keyboardType;
   final String? prefixText;
+  final List<TextInputFormatter>? inputFormatters; // ← TAMBAHAN
 
   const CustomTextField({
     super.key,
@@ -24,13 +26,31 @@ class CustomTextField extends StatelessWidget {
     this.width = 440,
     this.keyboardType = TextInputType.text,
     this.prefixText,
+    this.inputFormatters, // ← TAMBAHAN
   });
 
   @override
   Widget build(BuildContext context) {
+    // ← TAMBAHAN: Auto-apply filter angka jika keyboardType adalah number
+    final List<TextInputFormatter> effectiveFormatters =
+        inputFormatters ??
+        (keyboardType == TextInputType.number ||
+                keyboardType ==
+                    const TextInputType.numberWithOptions(decimal: false) ||
+                keyboardType ==
+                    const TextInputType.numberWithOptions(signed: false) ||
+                keyboardType ==
+                    const TextInputType.numberWithOptions(
+                      signed: false,
+                      decimal: false,
+                    )
+            ? [FilteringTextInputFormatter.digitsOnly]
+            : []);
+
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: effectiveFormatters, // ← TAMBAHAN
       style: const TextStyle(
         color: Colors.black,
         fontWeight: FontWeight.w600,
@@ -39,7 +59,6 @@ class CustomTextField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-
         prefixText: prefixText,
         prefixIcon: Icon(icon, size: 22, color: Colors.black),
         labelStyle: const TextStyle(
@@ -131,8 +150,7 @@ class CustomDropdownMenu extends StatelessWidget {
 class CustomStockStepper extends StatelessWidget {
   final TextEditingController controller;
   final String label;
-  final bool
-  isDouble; // true untuk Bahan Baku (double), false untuk Produk (int)
+  final bool isDouble;
 
   const CustomStockStepper({
     super.key,
@@ -176,6 +194,14 @@ class CustomStockStepper extends StatelessWidget {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  // ← TAMBAHAN: Filter sesuai tipe (int atau double)
+                  inputFormatters: isDouble
+                      ? [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d*'),
+                          ),
+                        ]
+                      : [FilteringTextInputFormatter.digitsOnly],
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -202,7 +228,6 @@ class CustomStockStepper extends StatelessWidget {
                           double current =
                               double.tryParse(controller.text) ?? 0.0;
                           if (current > 0) {
-                            // Menghilangkan trailing zero yang tidak perlu jika angkanya bulat
                             double res = current - 1;
                             controller.text = res % 1 == 0
                                 ? res.toInt().toString()

@@ -7,7 +7,7 @@ import '../../admin/table/table_pagination.dart';
 class ResepTable extends StatelessWidget {
   ResepTable({super.key});
 
-  final ctrl = Get.put(ResepTableController());
+  final ctrl = Get.find<ResepTableController>();
 
   @override
   Widget build(BuildContext context) {

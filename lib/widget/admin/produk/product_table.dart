@@ -8,7 +8,7 @@ import '../../admin/table/table_pagination.dart';
 class ProductTable extends StatelessWidget {
   ProductTable({super.key});
 
-  final ctrl = Get.put(ProductTableController());
+  final ctrl = Get.find<ProductTableController>();
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
