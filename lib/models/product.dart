@@ -7,12 +7,11 @@ class Product {
   final int stock;
   final String jenis;
   final String satuan;
-  final String barcode;
   final String image;
   final int? resepId;
 
-  // DIUBAH: Menggunakan DateTime untuk fungsionalitas waktu
-  final DateTime? deletedAt;
+  // NEW
+  final String? deletedAt;
 
   Product({
     required this.id,
@@ -23,7 +22,6 @@ class Product {
     required this.stock,
     required this.jenis,
     required this.satuan,
-    required this.barcode,
     required this.image,
     this.resepId,
     this.deletedAt,
@@ -37,18 +35,14 @@ class Product {
       discount: int.tryParse(json['discount'].toString()) ?? 0,
       priceAfterDiscount:
           int.tryParse(json['price_after_discount'].toString()) ?? 0,
-
       stock: int.tryParse(json['stock'].toString()) ?? 0,
       jenis: json['jenis'] ?? '',
       satuan: json['satuan'] ?? '',
-      barcode: json['barcode'] ?? '',
       image: json['image'] ?? '',
       resepId: int.tryParse(json['resep_id'].toString()),
 
-      // DIUBAH: Parse ke DateTime jika tidak null
-      deletedAt: json['deleted_at'] != null
-          ? DateTime.tryParse(json['deleted_at'].toString())
-          : null,
+      // NEW
+      deletedAt: json['deleted_at'],
     );
   }
 
@@ -61,10 +55,9 @@ class Product {
     int? stock,
     String? jenis,
     String? satuan,
-    String? barcode,
     String? image,
     int? resepId,
-    DateTime? deletedAt, // DIUBAH
+    String? deletedAt,
   }) {
     return Product(
       id: id ?? this.id,
@@ -75,7 +68,6 @@ class Product {
       stock: stock ?? this.stock,
       jenis: jenis ?? this.jenis,
       satuan: satuan ?? this.satuan,
-      barcode: barcode ?? this.barcode,
       image: image ?? this.image,
       resepId: resepId ?? this.resepId,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -92,14 +84,14 @@ class Product {
       'stock': stock,
       'jenis': jenis,
       'satuan': satuan,
-      'barcode': barcode,
       'image': image,
       'resep_id': resepId,
-      // DIUBAH: Konversi balik ke ISO-8601 string jika tidak null
-      'deleted_at': deletedAt?.toIso8601String(),
+
+      // NEW
+      'deleted_at': deletedAt,
     };
   }
 
-  // HELPER: Cek apakah produk dalam state terhapus
+  // HELPER
   bool get isDeleted => deletedAt != null;
 }

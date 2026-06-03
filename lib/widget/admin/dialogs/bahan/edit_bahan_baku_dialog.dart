@@ -88,6 +88,21 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
             Get.back();
           },
           onSave: () {
+            // PERUBAHAN: Validasi memastikan semua field wajib diisi sebelum menyimpan perubahan
+            if (ctrl.namaC.text.trim().isEmpty ||
+                ctrl.merkC.text.trim().isEmpty ||
+                ctrl.satuanC.text.trim().isEmpty ||
+                ctrl.stokC.text.trim().isEmpty ||
+                ctrl.hargaC.text.trim().isEmpty) {
+              Get.snackbar(
+                "Peringatan",
+                "Semua data formulir wajib diisi, tidak boleh ada yang kosong",
+                backgroundColor: Colors.orange,
+                colorText: Colors.white,
+              );
+              return;
+            }
+
             if (widget.item.id != null) {
               final typedSatuan = ctrl.satuanC.text.trim();
               if (typedSatuan.isNotEmpty &&

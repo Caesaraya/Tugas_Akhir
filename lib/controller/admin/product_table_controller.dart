@@ -37,7 +37,7 @@ class ProductTableController extends BaseTableController<Product> {
   @override
   void onInit() {
     super.onInit();
-    itemsPerPage = 35;
+    itemsPerPage = 25;
     // Register listener sekali saja di sini, bukan di constructor
     priceC.addListener(_onPriceChanged);
     // Otomatis fetch data saat controller dibuat / di-recreate oleh fenix
@@ -55,7 +55,6 @@ class ProductTableController extends BaseTableController<Product> {
     stockC.dispose();
     jenisC.dispose();
     satuanC.dispose();
-    barcodeC.dispose();
     super.onClose();
   }
 
@@ -133,7 +132,12 @@ class ProductTableController extends BaseTableController<Product> {
 
       setData(data);
     } catch (e) {
-      Get.snackbar('Error', 'Gagal mengambil data produk: $e');
+      Get.snackbar(
+        'Error',
+        'Gagal mengambil data produk: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -150,7 +154,6 @@ class ProductTableController extends BaseTableController<Product> {
         originalList.where((product) {
           final matchesString =
               product.name.toLowerCase().contains(searchText) ||
-              product.barcode.toLowerCase().contains(searchText) ||
               product.jenis.toLowerCase().contains(searchText) ||
               product.satuan.toLowerCase().contains(searchText);
 
@@ -191,6 +194,8 @@ class ProductTableController extends BaseTableController<Product> {
     setupPagination();
   }
 
+  // ── Fungsi Tambahan Navigasi Angka Langsung ──────────────────────────────
+
   // ── Image ────────────────────────────────────────────────────────────────
 
   Future<void> pickImage() async {
@@ -203,11 +208,6 @@ class ProductTableController extends BaseTableController<Product> {
   }
 
   // ── Form ─────────────────────────────────────────────────────────────────
-
-  String generateBarcode() {
-    final random = Random();
-    return List.generate(12, (index) => random.nextInt(10)).join();
-  }
 
   void clearForm() {
     nameC.clear();
@@ -236,7 +236,6 @@ class ProductTableController extends BaseTableController<Product> {
         stock: int.tryParse(stockC.text) ?? 0, // FIX: tryParse bukan parse
         jenis: jenisC.text,
         satuan: satuanC.text,
-        barcode: generateBarcode(),
         imageFile: selectedImage.value!,
       );
 
@@ -276,7 +275,6 @@ class ProductTableController extends BaseTableController<Product> {
         stock: int.tryParse(stockC.text) ?? 0, // FIX: tryParse bukan parse
         jenis: jenisC.text,
         satuan: satuanC.text,
-        barcode: product.barcode,
         imageFile: selectedImage.value,
         resepId: product.resepId,
       );

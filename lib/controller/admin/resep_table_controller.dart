@@ -31,28 +31,43 @@ class ResepTableController extends BaseTableController<Resep> {
       isLoading.value = true;
       final data = await ApiService.getAllResep();
 
-      // URUTKAN DATA: Resep aktif (deletedAt == null) di atas, dihapus di bawah
+      // URUTKAN DATA: Resep aktif di atas, dihapus di bawah
       data.sort((a, b) {
         if (a.deletedAt == null && b.deletedAt != null) return -1;
         if (a.deletedAt != null && b.deletedAt == null) return 1;
         return 0;
       });
 
-      if (data.isNotEmpty) {
-        print(
-          "Resep pertama: ${data[0].namaResep}, Jumlah Bahan: ${data[0].bahan?.length}",
-        );
-      }
       setData(data);
+      isLoading.value =
+          false; // Matikan loading utama agar tabel langsung muncul dulu
+
+      // --- LOGIKA TAMBAHAN UNTUK UTING DATA BAHAN DI BACKGROUND ---
+      // Ambil detail bahan secara async untuk semua data yang ada tanpa mengunci UI loading
+      for (var resep in data) {
+        if (resep.id != null) {
+          // Jalankan secara fire-and-forget di background
+          ApiService.getDetailResep(resep.id!)
+              .then((detail) {
+                _updateItemInList(
+                  detail,
+                ); // Otomatis memperbarui jumlah bahan di tabel saat data masuk
+              })
+              .catchError((err) {
+                print(
+                  "Gagal memuat detail otomatis untuk ID ${resep.id}: $err",
+                );
+              });
+        }
+      }
     } catch (e) {
+      isLoading.value = false;
       Get.snackbar(
         'Error',
         'Gagal mengambil data resep: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -119,8 +134,13 @@ class ResepTableController extends BaseTableController<Resep> {
   // --- ACTIONS (INSERT, EDIT, DETAIL, DELETE) ---
 
   void openInsertDialog() {
+    // Pastikan form bersih total secara sinkronous sebelum memicu frame baru
     clearForm();
-    Get.dialog(InsertResepDialog());
+
+    // Pastikan UI memperbarui state pembersihan sebelum menampilkan dialog baru
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.dialog(const InsertResepDialog());
+    });
   }
 
   Future<void> insertResep() async {
@@ -146,6 +166,8 @@ class ResepTableController extends BaseTableController<Resep> {
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
+        // Bersihkan form kembali setelah sukses submit data
+        clearForm();
       }
     } catch (e) {
       Get.snackbar('Error', e.toString());
@@ -179,7 +201,7 @@ class ResepTableController extends BaseTableController<Resep> {
       // Jalankan setelah siklus frame UI dibersihkan agar aman dari bentrokan state navigator
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _updateItemInList(detail);
-        clearForm();
+        clearForm(); // Bersihkan sisa data lama terlebih dahulu
         namaResepC.text = detail.namaResep;
         deskripsiC.text = detail.deskripsi;
         tempBahanList.assignAll(detail.bahan ?? []);
@@ -211,9 +233,6 @@ class ResepTableController extends BaseTableController<Resep> {
 
       bool success = await ApiService.updateResep(updatedResep);
       if (success) {
-        // FIX #2: Tutup dialog DULU, baru fetchData
-        // Sebelumnya fetchData() dipanggil tanpa await sebelum Get.back(),
-        // menyebabkan isLoading=true berjalan di background setelah dialog tertutup
         Get.back();
         Get.snackbar(
           'Sukses',
@@ -221,7 +240,9 @@ class ResepTableController extends BaseTableController<Resep> {
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
-        fetchData(); // fire-and-forget setelah dialog sudah bersih dari layar
+        fetchData();
+        // Bersihkan form setelah sukses edit agar state kembali suci/kosong
+        clearForm();
       }
     } catch (e) {
       Get.snackbar(
@@ -337,13 +358,10 @@ class ResepTableController extends BaseTableController<Resep> {
 
       Resep detail = await ApiService.getDetailResep(resep.id!);
 
-      // FIX #1: Tutup loading DULU sebelum mutasi state apapun
       if (Get.isDialogOpen ?? false) {
         Get.back();
       }
 
-      // FIX #1: _updateItemInList dipindah ke SETELAH Get.back()
-      // agar tidak memicu Obx rebuild saat loading dialog masih di layar
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _updateItemInList(detail);
         Get.dialog(DetailResepDialog(resep: detail));
@@ -368,7 +386,6 @@ class ResepTableController extends BaseTableController<Resep> {
 
       Resep detail = await ApiService.getDetailResep(resep.id!);
 
-      // FIX #1: Sama — tutup loading dulu, baru mutasi state
       if (Get.isDialogOpen ?? false) {
         Get.back();
       }

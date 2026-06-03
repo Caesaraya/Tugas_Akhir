@@ -23,6 +23,7 @@ class DashboardController extends GetxController {
     fetchProducts();
     super.onInit();
   }
+
   Future<void> fetchProducts() async {
     try {
       isLoading(true);
@@ -73,9 +74,9 @@ class DashboardController extends GetxController {
       bool matchCategory =
           selectedCategory.value == 'Semua' ||
           product.jenis == selectedCategory.value;
-      bool matchSearch =
-          product.name.toLowerCase().contains(lastQuery.value.toLowerCase()) ||
-          product.barcode.contains(lastQuery.value);
+      bool matchSearch = product.name.toLowerCase().contains(
+        lastQuery.value.toLowerCase(),
+      );
 
       return matchCategory && matchSearch && isAvailable;
     }).toList();

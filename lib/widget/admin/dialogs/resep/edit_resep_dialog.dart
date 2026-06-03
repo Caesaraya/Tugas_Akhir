@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
 import '../../../../controller/admin/resep_table_controller.dart';
@@ -29,78 +30,105 @@ class _EditResepDialogState extends State<EditResepDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Container(
-        width: 800,
-        padding: const EdgeInsets.all(24),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DialogCommonTitle(
-                title: 'Edit Formula Resep',
-                icon: Icons.edit_note_rounded,
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
-              ),
-
-              // --- FORM UTAMA ---
-              CustomTextField(
-                controller: ctrl.namaResepC,
-                label: 'Nama Resep / Menu',
-                hint: 'Contoh: Roti Manis Premium',
-                icon: Icons.restaurant_menu_rounded,
-                width: double.infinity,
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                controller: ctrl.deskripsiC,
-                label: 'Deskripsi / Catatan Produksi',
-                hint: 'Masukkan langkah singkat atau catatan porsi...',
-                icon: Icons.description_rounded,
-                width: double.infinity,
-              ),
-              const SizedBox(height: 24),
-
-              // --- SEKSI FORM INPUT BAHAN ---
-              _buildAddBahanSection(),
-              const SizedBox(height: 16),
-
-              // --- DAFTAR BAHAN YANG SUDAH MASUK FORMULA ---
-              const Text(
-                "Komposisi Formula Bahan Baku",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: _themeColor,
+    return PopScope(
+      canPop: true, // Mengizinkan dialog untuk tetap menutup secara normal
+      onPopInvokedWithResult: (didPop, result) {
+        // Blok ini akan dieksekusi saat dialog ditutup dengan cara APA PUN
+        // termasuk klik area kosong di luar dialog atau tombol back sistem
+        if (didPop) {
+          ctrl.clearForm();
+        }
+      },
+      child: Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Container(
+          width: 800,
+          padding: const EdgeInsets.all(24),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DialogCommonTitle(
+                  title: 'Edit Formula Resep',
+                  icon: Icons.edit_note_rounded,
                 ),
-              ),
-              const SizedBox(height: 8),
-              _buildTempBahanList(),
-              const SizedBox(height: 28),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
+                ),
 
-              // --- ACTION BUTTONS DIALOG ---
-              DialogActionButtons(
-                saveLabel: 'Simpan Perubahan',
-                onCancel: () => Get.back(),
-                onSave: () {
-                  if (widget.resep.id != null) {
-                    ctrl.updateResep(widget.resep.id!);
-                  } else {
-                    Get.snackbar(
-                      "Error",
-                      "ID Resep tidak ditemukan.",
-                      backgroundColor: Colors.red,
-                      colorText: Colors.white,
-                    );
-                  }
-                },
-              ),
-            ],
+                // --- FORM UTAMA ---
+                CustomTextField(
+                  controller: ctrl.namaResepC,
+                  label: 'Nama Resep / Menu',
+                  hint: 'Contoh: Roti Manis Premium',
+                  icon: Icons.restaurant_menu_rounded,
+                  width: double.infinity,
+                ),
+                const SizedBox(height: 16),
+                CustomTextField(
+                  controller: ctrl.deskripsiC,
+                  label: 'Deskripsi / Catatan Produksi',
+                  hint: 'Masukkan langkah singkat atau catatan porsi...',
+                  icon: Icons.description_rounded,
+                  width: double.infinity,
+                ),
+                const SizedBox(height: 24),
+
+                // --- SEKSI FORM INPUT BAHAN ---
+                _buildAddBahanSection(),
+                const SizedBox(height: 16),
+
+                // --- DAFTAR BAHAN YANG SUDAH MASUK FORMULA ---
+                const Text(
+                  "Komposisi Formula Bahan Baku",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: _themeColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildTempBahanList(),
+                const SizedBox(height: 28),
+
+                // --- ACTION BUTTONS DIALOG ---
+                // --- ACTION BUTTONS DIALOG ---
+                DialogActionButtons(
+                  saveLabel: 'Simpan Perubahan',
+                  onCancel: () {
+                    // Cukup panggil Get.back(), pembersihan form sudah di-handle oleh PopScope di atas
+                    Get.back();
+                  },
+                  onSave: () {
+                    // PERUBAHAN: Validasi memastikan semua data terisi & minimal ada 1 bahan saat edit
+                    if (ctrl.namaResepC.text.trim().isEmpty ||
+                        ctrl.deskripsiC.text.trim().isEmpty ||
+                        ctrl.tempBahanList.isEmpty) {
+                      Get.snackbar(
+                        'Peringatan',
+                        'Semua data formulir wajib diisi dan tidak boleh menghapus semua bahan baku resep.',
+                        backgroundColor: Colors.orange,
+                        colorText: Colors.white,
+                      );
+                      return;
+                    }
+
+                    if (widget.resep.id != null) {
+                      ctrl.updateResep(widget.resep.id!);
+                    } else {
+                      Get.snackbar(
+                        "Error",
+                        "ID Resep tidak ditemukan.",
+                        backgroundColor: Colors.red,
+                        colorText: Colors.white,
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -153,12 +181,16 @@ class _EditResepDialogState extends State<EditResepDialog> {
                 flex: 2,
                 child: CustomTextField(
                   controller: ctrl.jumlahBahanC,
-                  label: 'Jumlah Kebutuhan',
-                  hint: '0.00',
-                  icon: Icons.scale_rounded,
+                  label: 'Takaran Kebutuhan',
+                  icon: Icons.scale_outlined,
+                  hint: '0.0',
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  // TAMBAHKAN INI: Membatasi input hanya angka dan titik desimal
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                  ],
                 ),
               ),
               const SizedBox(width: 12),

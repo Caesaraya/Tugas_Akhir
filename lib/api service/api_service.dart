@@ -80,7 +80,6 @@ class ApiService {
     required int stock,
     required String jenis,
     required String satuan,
-    required String barcode,
     required File imageFile,
     int? resepId,
   }) async {
@@ -100,7 +99,7 @@ class ApiService {
       request.fields['stock'] = stock.toString();
       request.fields['jenis'] = jenis;
       request.fields['satuan'] = satuan;
-      request.fields['barcode'] = barcode;
+
       if (resepId != null) {
         request.fields['resep_id'] = resepId.toString();
       }
@@ -141,7 +140,6 @@ class ApiService {
     required int stock,
     required String jenis,
     required String satuan,
-    required String barcode,
     File? imageFile,
     int? resepId,
   }) async {
@@ -161,7 +159,7 @@ class ApiService {
       request.fields['stock'] = stock.toString();
       request.fields['jenis'] = jenis;
       request.fields['satuan'] = satuan;
-      request.fields['barcode'] = barcode;
+
       if (resepId != null) {
         request.fields['resep_id'] = resepId.toString();
       }
@@ -222,7 +220,7 @@ class ApiService {
         "stock": product.stock,
         "jenis": product.jenis,
         "satuan": product.satuan,
-        "barcode": product.barcode,
+
         "image": product.image,
         "resep_id": product.resepId,
       };
@@ -255,7 +253,7 @@ class ApiService {
         "stock": product.stock,
         "jenis": product.jenis,
         "satuan": product.satuan,
-        "barcode": product.barcode,
+
         "image": product.image,
         "resep_id": product.resepId,
       };
@@ -888,12 +886,10 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // FIX: Menambahkan mapping untuk 'deleted_at' agar flow _updateItemInList di Controller tidak mere-aktivasi state
         return Resep.fromJson({
           'id': data['resep']['id'],
           'nama_resep': data['resep']['nama_resep'],
           'deskripsi': data['resep']['deskripsi'],
-          'deleted_at': data['resep']['deleted_at'],
           'bahan': data['bahan'],
         });
       } else {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
 import '../../../../controller/admin/resep_table_controller.dart';
@@ -126,11 +127,13 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
                       ),
                     ),
                     onPressed: () {
-                      if (ctrl.namaResepC.text.isEmpty ||
+                      // PERUBAHAN: Validasi semua field wajib terisi dan minimal 1 bahan
+                      if (ctrl.namaResepC.text.trim().isEmpty ||
+                          ctrl.deskripsiC.text.trim().isEmpty ||
                           ctrl.tempBahanList.isEmpty) {
                         Get.snackbar(
                           'Peringatan',
-                          'Nama resep dan minimal 1 takaran bahan harus diisi.',
+                          'Semua data formulir wajib diisi dan minimal 1 takaran bahan harus dimasukkan.',
                           backgroundColor: Colors.orange,
                           colorText: Colors.white,
                         );
@@ -195,6 +198,10 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              // TAMBAHKAN INI: Membatasi input hanya angka dan titik desimal
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+              ],
             ),
           ),
           const SizedBox(width: 12),
@@ -274,10 +281,21 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
         itemBuilder: (context, index) {
           final item = ctrl.tempBahanList[index];
 
-          final masterBahan = bahanBakuCtrl.originalList.firstWhere(
-            (b) => b.id == item.bahanId,
-            orElse: () => bahanBakuCtrl.originalList.first,
-          );
+          // FIX AMAN: Cek keberadaan ID terlebih dahulu sebelum memanggil firstWhere
+          // Hal ini mencegah error "Bad state: No element" jika list master kosong atau ID tidak cocok.
+          final String namaBahan;
+          final String satuanBahan;
+
+          if (bahanBakuCtrl.originalList.any((b) => b.id == item.bahanId)) {
+            final masterBahan = bahanBakuCtrl.originalList.firstWhere(
+              (b) => b.id == item.bahanId,
+            );
+            namaBahan = masterBahan.namaBahan;
+            satuanBahan = masterBahan.satuan;
+          } else {
+            namaBahan = item.namaBahan ?? "Bahan #${item.bahanId}";
+            satuanBahan = "";
+          }
 
           return ListTile(
             leading: const CircleAvatar(
@@ -285,11 +303,13 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
               child: Icon(Icons.restaurant_menu_rounded, color: _themeColor),
             ),
             title: Text(
-              masterBahan.namaBahan,
+              namaBahan,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text(
-              "Kebutuhan: ${item.jumlahBahan} ${masterBahan.satuan}",
+              satuanBahan.isNotEmpty
+                  ? "Kebutuhan: ${item.jumlahBahan} $satuanBahan"
+                  : "Kebutuhan: ${item.jumlahBahan}",
             ),
             trailing: IconButton(
               icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),

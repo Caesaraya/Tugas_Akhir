@@ -85,15 +85,21 @@ class _InsertBahanBakuDialogState extends State<InsertBahanBakuDialog> {
             Get.back();
           },
           onSave: () {
-            if (ctrl.namaC.text.isEmpty || ctrl.stokC.text.isEmpty) {
+            // PERUBAHAN: Validasi memastikan semua field wajib diisi
+            if (ctrl.namaC.text.trim().isEmpty ||
+                ctrl.merkC.text.trim().isEmpty ||
+                ctrl.satuanC.text.trim().isEmpty ||
+                ctrl.stokC.text.trim().isEmpty ||
+                ctrl.hargaC.text.trim().isEmpty) {
               Get.snackbar(
                 "Peringatan",
-                "Nama dan Stok tidak boleh kosong",
+                "Semua data formulir wajib diisi, tidak boleh ada yang kosong",
                 backgroundColor: Colors.orange,
                 colorText: Colors.white,
               );
               return;
             }
+
             final typedSatuan = ctrl.satuanC.text.trim();
             if (typedSatuan.isNotEmpty && !_addedSatuan.contains(typedSatuan)) {
               setState(() {

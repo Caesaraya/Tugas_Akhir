@@ -64,6 +64,13 @@ abstract class BaseTableController<T> extends GetxController {
     }
   }
 
+  void goToPage(int page) {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+      setupPagination();
+    }
+  }
+
   void previousPage() {
     if (currentPage.value > 1) {
       currentPage.value--;

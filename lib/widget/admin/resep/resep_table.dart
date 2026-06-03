@@ -38,7 +38,7 @@ class ResepTable extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: Table(
               columnWidths: const {
-                0: FixedColumnWidth(60), // ID
+                0: FixedColumnWidth(60), // No (Sebelumnya ID)
                 1: FlexColumnWidth(2.5), // Nama Resep
                 2: FlexColumnWidth(3.5), // Deskripsi
                 3: FlexColumnWidth(1.5), // Jumlah Bahan
@@ -51,7 +51,7 @@ class ResepTable extends StatelessWidget {
                 TableRow(
                   decoration: BoxDecoration(color: headerColor),
                   children: [
-                    _buildHeaderCell('ID'),
+                    _buildHeaderCell('No'), // UBAH: Dari 'ID' menjadi 'No'
                     _buildHeaderCell('Nama Resep'),
                     _buildHeaderCell('Deskripsi'),
                     _buildHeaderCell('Jumlah Bahan'),
@@ -60,8 +60,15 @@ class ResepTable extends StatelessWidget {
                   ],
                 ),
                 // Body Data
-                ...ctrl.paginatedList.map((item) {
+                ...ctrl.paginatedList.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  var item = entry.value;
                   bool isDeleted = item.deletedAt != null;
+
+                  // HITUNG ANGKA URUT: (Halaman_Sekarang - 1) * Item_Per_Halaman + (Index + 1)
+                  int nomorUrut =
+                      ((ctrl.currentPage.value - 1) * ctrl.itemsPerPage) +
+                      (index + 1);
 
                   return TableRow(
                     decoration: BoxDecoration(
@@ -74,7 +81,9 @@ class ResepTable extends StatelessWidget {
                       ),
                     ),
                     children: [
-                      _buildDataCell(item.id.toString()),
+                      _buildDataCell(
+                        nomorUrut.toString(),
+                      ), // UBAH: Menggunakan nomorUrut hasil perhitungan
                       _buildDataCell(
                         item.namaResep,
                         alignment: Alignment.centerLeft,
@@ -83,7 +92,18 @@ class ResepTable extends StatelessWidget {
                         item.deskripsi,
                         alignment: Alignment.centerLeft,
                       ),
-                      _buildDataCell((item.bahan?.length ?? 0).toString()),
+                      // Sebelumnya: _buildDataCell((item.bahan?.length ?? 0).toString()),
+
+                      // Diubah menjadi:
+                      _buildDataCell(
+                        item.bahan != null && item.bahan!.isNotEmpty
+                            ? item.bahan!.length
+                                  .toString() // Tampilkan angka jika data sudah dimuat
+                            : '-', // Tampilkan strip atau teks netral jika data belum dimuat dari API utama
+                        textColor: item.bahan != null && item.bahan!.isNotEmpty
+                            ? Colors.grey.shade800
+                            : Colors.grey.shade400,
+                      ),
 
                       // Kolom Status
                       _buildStatusCell(isDeleted),
@@ -163,16 +183,23 @@ class ResepTable extends StatelessWidget {
             ),
 
           const SizedBox(height: 16),
-          TablePagination(
-            currentPage: ctrl.currentPage.value,
-            totalPages: ctrl.totalPages.value,
-            onNext: ctrl.nextPage,
-            onPrevious: ctrl.previousPage,
+          Obx(
+            () => TablePagination(
+              currentPage: ctrl.currentPage.value,
+              totalPages: ctrl.totalPages.value,
+              onNext: () => ctrl.nextPage(),
+              onPrevious: () => ctrl.previousPage(),
+              onPageSelected: (targetPage) {
+                ctrl.goToPage(targetPage);
+              },
+            ),
           ),
         ],
       );
     });
   }
+
+  // ... (Sisa fungsi _buildHeaderCell, _buildDataCell, dan _buildStatusCell tetap sama di bawah)
 
   Widget _buildHeaderCell(String title) {
     return Container(

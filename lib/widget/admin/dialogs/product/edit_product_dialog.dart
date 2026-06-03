@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // ← Tambahkan import ini untuk TextInputFormatter
 import 'package:get/get.dart';
 import '../../../../controller/admin/product_table_controller.dart';
 import '../../../../models/product.dart';
@@ -63,6 +64,23 @@ class _EditProductDialogState extends State<EditProductDialog> {
                 icon: Icons.percent_rounded,
                 hint: '0',
                 keyboardType: TextInputType.number,
+                // Mengirimkan formatters kustom yang kompatibel dengan custom_form_fields.dart
+                inputFormatters: [
+                  FilteringTextInputFormatter
+                      .digitsOnly, // Pastikan hanya angka
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    if (newValue.text.isEmpty) return newValue;
+                    final int? val = int.tryParse(newValue.text);
+                    // Jika nilai lebih dari 100, kunci teks di angka '100'
+                    if (val != null && val > 100) {
+                      return const TextEditingValue(
+                        text: '100',
+                        selection: TextSelection.collapsed(offset: 3),
+                      );
+                    }
+                    return newValue;
+                  }),
+                ],
               ),
               const SizedBox(height: 18),
               CustomStockStepper(
@@ -96,6 +114,29 @@ class _EditProductDialogState extends State<EditProductDialog> {
             Get.back();
           },
           onSave: () {
+            // Memeriksa apakah ada field wajib yang kosong
+            // ATAU tidak ada gambar sama sekali (gambar baru kosong DAN gambar lama juga kosong)
+            if (_ctrl.nameC.text.trim().isEmpty ||
+                _ctrl.priceC.text.trim().isEmpty ||
+                _ctrl.stockC.text.trim().isEmpty ||
+                _ctrl.jenisC.text.trim().isEmpty ||
+                _ctrl.satuanC.text.trim().isEmpty ||
+                (_ctrl.selectedImage.value == null &&
+                    widget.product.image.isEmpty)) {
+              Get.snackbar(
+                "Peringatan",
+                "Semua field wajib diisi dan gambar harus tersedia (kecuali diskon)",
+                backgroundColor: Colors.orange,
+                colorText: Colors.white,
+              );
+              return;
+            }
+
+            // Jika diskon dikosongkan oleh user, set otomatis ke '0'
+            if (_ctrl.discountC.text.trim().isEmpty) {
+              _ctrl.discountC.text = '0';
+            }
+
             _ctrl.updateProductData(widget.product);
           },
           saveLabel: 'Simpan Perubahan',

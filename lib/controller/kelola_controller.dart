@@ -237,7 +237,6 @@ class KelolaProdukController extends GetxController {
         stock: int.tryParse(stockController.text) ?? 0,
         jenis: jenisController.text,
         satuan: satuanController.text,
-        barcode: oldProduct.barcode,
         resepId: oldProduct.resepId,
         imageFile: selectedImage.value,
       );

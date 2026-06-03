@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // ← Tambahkan import ini untuk TextInputFormatter
 import 'package:get/get.dart';
 import '../../../../controller/admin/product_table_controller.dart';
 import '../../../../models/product.dart';
@@ -21,7 +22,6 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
   @override
   void initState() {
     super.initState();
-    _ctrl.barcodeC.text = _ctrl.generateBarcode();
   }
 
   @override
@@ -68,6 +68,23 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
                 icon: Icons.percent_rounded,
                 hint: '0',
                 keyboardType: TextInputType.number,
+                // Mengirimkan formatters kustom yang kompatibel dengan custom_form_fields.dart
+                inputFormatters: [
+                  FilteringTextInputFormatter
+                      .digitsOnly, // Pastikan hanya angka
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    if (newValue.text.isEmpty) return newValue;
+                    final int? val = int.tryParse(newValue.text);
+                    // Jika nilai lebih dari 100, kunci teks di angka '100'
+                    if (val != null && val > 100) {
+                      return const TextEditingValue(
+                        text: '100',
+                        selection: TextSelection.collapsed(offset: 3),
+                      );
+                    }
+                    return newValue;
+                  }),
+                ],
               ),
               const SizedBox(height: 18),
               CustomStockStepper(
@@ -88,13 +105,6 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
                 label: 'Satuan Jual',
                 icon: Icons.layers_outlined,
                 items: [...baseSatuan, ..._addedSatuan],
-              ),
-              const SizedBox(height: 18),
-              CustomTextField(
-                controller: _ctrl.barcodeC,
-                label: 'Kode Barcode / SKU',
-                icon: Icons.qr_code_scanner_rounded,
-                hint: 'Scan atau ketik kode',
               ),
             ],
           ),
@@ -125,16 +135,31 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
         .toList();
   }
 
+  // ... kode bagian atas tetap sama ...
+
   void _handleSave() {
-    if (_ctrl.nameC.text.isEmpty || _ctrl.priceC.text.isEmpty) {
+    // Memeriksa apakah ada field wajib yang kosong ATAU gambar belum dipilih
+    if (_ctrl.nameC.text.trim().isEmpty ||
+        _ctrl.priceC.text.trim().isEmpty ||
+        _ctrl.stockC.text.trim().isEmpty ||
+        _ctrl.jenisC.text.trim().isEmpty ||
+        _ctrl.satuanC.text.trim().isEmpty ||
+        _ctrl.selectedImage.value == null) {
+      // ← Kondisi gambar dimasukkan di sini
       Get.snackbar(
         "Peringatan",
-        "Nama produk dan harga tidak boleh kosong",
+        "Semua field wajib diisi dan gambar harus dipilih (kecuali diskon)",
         backgroundColor: Colors.orange,
         colorText: Colors.white,
       );
       return;
     }
+
+    // Jika diskon kosong, set otomatis ke '0'
+    if (_ctrl.discountC.text.trim().isEmpty) {
+      _ctrl.discountC.text = '0';
+    }
+
     if (_ctrl.jenisC.text.trim().isNotEmpty &&
         !_addedJenis.contains(_ctrl.jenisC.text.trim())) {
       _addedJenis.add(_ctrl.jenisC.text.trim());
@@ -145,6 +170,8 @@ class _InsertProductDialogState extends State<InsertProductDialog> {
     }
     _ctrl.insertProduct();
   }
+
+  // ... kode bagian bawah tetap sama ...
 
   Widget _buildImageSection() {
     return Center(

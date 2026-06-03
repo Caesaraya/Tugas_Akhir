@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/bahan/edit_bahan_baku_dialog.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/bahan/insert_bahan_baku_dialog.dart';
 
 import '../../api service/api_service.dart';
 import '../../models/bahan_baku.dart';
@@ -28,17 +31,23 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
       }
     });
   }
+  @override
+  void onInit() {
+    super.onInit();
+    itemsPerPage = 25;
+    // Register listener sekali saja di sini, bukan di constructor
+    hargaC.addListener(_onPriceChanged);
+
+    // Otomatis fetch data saat controller dibuat / di-recreate oleh fenix
+    fetchData();
+  }
 
   final namaC = TextEditingController();
   final merkC = TextEditingController();
   final stokC = TextEditingController();
   final satuanC = TextEditingController();
   final hargaC = TextEditingController();
-  final currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
+  final currencyFormatter = NumberFormat('#,###', 'id_ID');
 
   // SATU FUNGSI FETCH DATA GABUNGAN (Aman untuk Desktop & Mobile)
   @override
@@ -46,16 +55,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     isLoading.value = true;
     try {
       final data = await ApiService.getAllBahanBaku();
-
-      // === SEKARANG AKAN PASTI TER-PRINT DI CONSOLE DESKTOP / MOBILE ===
-      print("=========================================");
-      print("=== DEBUG JSON BAHAN BAKU ===");
-      try {
-        print(data.map((e) => e.toJson()).toList());
-      } catch (logError) {
-        print("Gagal print format JSON: $logError");
-      }
-      print("=========================================");
 
       // Menjalankan penyaringan filterStockHabis bawaan Desktop Anda jika aktif
       List<BahanBaku> processedData = data;
@@ -81,6 +80,58 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
       );
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  String _formatRibuan(int value) {
+    return currencyFormatter.format(value);
+  }
+
+  /// Parse string ribuan kembali ke int, misal "100.000" → 100000
+  int _parseRibuan(String text) {
+    return int.tryParse(text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+  }
+
+  void _onPriceChanged() {
+    final text = hargaC.text;
+    if (text.isEmpty) return;
+
+    final clean = text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (clean.isEmpty) {
+      hargaC.value = const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+      return;
+    }
+
+    final value = int.tryParse(clean) ?? 0;
+    final formatted = _formatRibuan(value);
+
+    // Hitung posisi kursor agar tidak melompat ke akhir secara paksa
+    int cursorPosition = hargaC.selection.baseOffset;
+    int numCharsBeforeCursor = text
+        .substring(0, max(0, cursorPosition))
+        .replaceAll(RegExp(r'[^0-9]'), '')
+        .length;
+
+    int newCursorPosition = 0;
+    int digitCount = 0;
+    while (newCursorPosition < formatted.length &&
+        digitCount < numCharsBeforeCursor) {
+      if (RegExp(r'[0-9]').hasMatch(formatted[newCursorPosition])) {
+        digitCount++;
+      }
+      newCursorPosition++;
+    }
+
+    if (formatted != text) {
+      hargaC.value = TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(
+          offset: min(newCursorPosition, formatted.length),
+        ),
+      );
     }
   }
 
@@ -195,6 +246,35 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
         colorText: Colors.white,
       );
     }
+  }
+
+  // --- METHOD UNTUK MEMBUKA DIALOG INSERT ---
+  void openInsertDialog() {
+    // Bersihkan data formulir sisa sebelumnya agar kembali suci
+    clearForm();
+
+    // Pastikan UI memperbarui state sebelum menampilkan dialog baru
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.dialog(const InsertBahanBakuDialog());
+    });
+  }
+
+  // --- METHOD UNTUK MEMBUKA DIALOG EDIT ---
+  void openEditDialog(BahanBaku item) {
+    // Bersihkan formulir terlebih dahulu
+    clearForm();
+
+    // Isi controller dengan data item bahan baku yang dipilih
+    namaC.text = item.namaBahan;
+    merkC.text = item.merk ?? '';
+    satuanC.text = item.satuan;
+    stokC.text = item.stok.toString();
+    hargaC.text = currencyFormatter.format(item.hargaSatuan);
+
+    // Buka dialog edit bahan baku
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.dialog(EditBahanBakuDialog(item: item));
+    });
   }
 
   Future<void> softDeleteBahan(int id) async {
