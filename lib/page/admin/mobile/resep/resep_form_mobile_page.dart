@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
 import 'package:tugas_akhir/controller/admin/resep_table_controller.dart';
 import 'package:tugas_akhir/models/resep.dart';
+import 'package:tugas_akhir/utils/app_color.dart';
 
 class ResepFormMobilePage extends StatelessWidget {
   final bool isEdit;
@@ -79,7 +80,7 @@ class ResepFormMobilePage extends StatelessWidget {
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 50),
-            backgroundColor: Colors.cyan,
+            backgroundColor: AppColors.black,
           ),
           onPressed: () =>
               isEdit ? ctrl.updateResep(resep!.id!) : ctrl.submitResep(),

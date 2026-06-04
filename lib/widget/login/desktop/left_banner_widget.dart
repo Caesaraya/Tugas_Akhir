@@ -19,7 +19,7 @@ class LeftBannerWidget extends StatelessWidget {
               Icons.cookie_outlined,
               size: 400,
               // 3. GANTI WARNA DI SINI
-              color: AppColors.iconMutedDark,
+              color: AppColors.iconMutedLight,
             ),
           ),
           Positioned(

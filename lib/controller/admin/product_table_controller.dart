@@ -242,7 +242,12 @@ class ProductTableController extends BaseTableController<Product> {
       clearForm();
       fetchData();
       Get.back();
-      Get.snackbar('Sukses', 'Produk berhasil ditambahkan');
+      Get.snackbar(
+        'Sukses',
+        'Produk berhasil ditambahkan',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } catch (e) {
       Get.snackbar('Error', e.toString());
     }

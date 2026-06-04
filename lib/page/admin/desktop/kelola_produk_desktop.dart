@@ -148,7 +148,7 @@ class KelolaProdukDeskPage extends StatelessWidget {
                           icon: Icons.refresh_outlined,
                           color: Colors.grey.shade400,
                           onTap: () {
-                            ctrl.refreshData();
+                            ctrl.fetchData();
                           },
                         ),
                       ],

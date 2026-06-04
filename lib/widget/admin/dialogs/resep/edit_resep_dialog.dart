@@ -30,20 +30,33 @@ class _EditResepDialogState extends State<EditResepDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // --- RESPONSIF: Deteksi lebar layar ---
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     return PopScope(
-      canPop: true, // Mengizinkan dialog untuk tetap menutup secara normal
+      canPop: true,
       onPopInvokedWithResult: (didPop, result) {
-        // Blok ini akan dieksekusi saat dialog ditutup dengan cara APA PUN
-        // termasuk klik area kosong di luar dialog atau tombol back sistem
         if (didPop) {
           ctrl.clearForm();
         }
       },
       child: Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        // --- RESPONSIF: Sesuaikan inset agar dialog tidak terpotong di mobile ---
+        insetPadding: isMobile
+            ? const EdgeInsets.symmetric(horizontal: 12, vertical: 24)
+            : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
+        ),
         child: Container(
-          width: 800,
-          padding: const EdgeInsets.all(24),
+          // --- RESPONSIF: Lebar maksimum disesuaikan layar ---
+          width: isMobile ? double.maxFinite : 800,
+          // --- RESPONSIF: Batas tinggi agar scrollable di layar kecil ---
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.88,
+          ),
+          padding: EdgeInsets.all(isMobile ? 16 : 24),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -77,7 +90,8 @@ class _EditResepDialogState extends State<EditResepDialog> {
                 const SizedBox(height: 24),
 
                 // --- SEKSI FORM INPUT BAHAN ---
-                _buildAddBahanSection(),
+                // --- RESPONSIF: Layout bahan menyesuaikan layar ---
+                _buildAddBahanSection(isMobile),
                 const SizedBox(height: 16),
 
                 // --- DAFTAR BAHAN YANG SUDAH MASUK FORMULA ---
@@ -94,39 +108,21 @@ class _EditResepDialogState extends State<EditResepDialog> {
                 const SizedBox(height: 28),
 
                 // --- ACTION BUTTONS DIALOG ---
-                // --- ACTION BUTTONS DIALOG ---
-                DialogActionButtons(
-                  saveLabel: 'Simpan Perubahan',
-                  onCancel: () {
-                    // Cukup panggil Get.back(), pembersihan form sudah di-handle oleh PopScope di atas
-                    Get.back();
-                  },
-                  onSave: () {
-                    // PERUBAHAN: Validasi memastikan semua data terisi & minimal ada 1 bahan saat edit
-                    if (ctrl.namaResepC.text.trim().isEmpty ||
-                        ctrl.deskripsiC.text.trim().isEmpty ||
-                        ctrl.tempBahanList.isEmpty) {
-                      Get.snackbar(
-                        'Peringatan',
-                        'Semua data formulir wajib diisi dan tidak boleh menghapus semua bahan baku resep.',
-                        backgroundColor: Colors.orange,
-                        colorText: Colors.white,
-                      );
-                      return;
-                    }
-
-                    if (widget.resep.id != null) {
-                      ctrl.updateResep(widget.resep.id!);
-                    } else {
-                      Get.snackbar(
-                        "Error",
-                        "ID Resep tidak ditemukan.",
-                        backgroundColor: Colors.red,
-                        colorText: Colors.white,
-                      );
-                    }
-                  },
-                ),
+                // --- RESPONSIF: Tombol full-width di mobile ---
+                isMobile
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildSaveButton(),
+                          const SizedBox(height: 8),
+                          _buildCancelButton(),
+                        ],
+                      )
+                    : DialogActionButtons(
+                        saveLabel: 'Simpan Perubahan',
+                        onCancel: () => Get.back(),
+                        onSave: _onSave,
+                      ),
               ],
             ),
           ),
@@ -135,9 +131,64 @@ class _EditResepDialogState extends State<EditResepDialog> {
     );
   }
 
-  Widget _buildAddBahanSection() {
+  void _onSave() {
+    if (ctrl.namaResepC.text.trim().isEmpty ||
+        ctrl.deskripsiC.text.trim().isEmpty ||
+        ctrl.tempBahanList.isEmpty) {
+      Get.snackbar(
+        'Peringatan',
+        'Semua data formulir wajib diisi dan tidak boleh menghapus semua bahan baku resep.',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (widget.resep.id != null) {
+      ctrl.updateResep(widget.resep.id!);
+    } else {
+      Get.snackbar(
+        "Error",
+        "ID Resep tidak ditemukan.",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  Widget _buildSaveButton() {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _themeColor,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onPressed: _onSave,
+      child: const Text(
+        'Simpan Perubahan',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildCancelButton() {
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onPressed: () => Get.back(),
+      child: const Text(
+        'Batal',
+        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildAddBahanSection(bool isMobile) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isMobile ? 12 : 16),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(16),
@@ -155,95 +206,125 @@ class _EditResepDialogState extends State<EditResepDialog> {
             ),
           ),
           const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 3,
-                child: Obx(() {
-                  final listOptions = bahanBakuCtrl.originalList
-                      .where((b) => b.deletedAt == null)
-                      .map((b) => "${b.id} - ${b.namaBahan} (${b.satuan})")
-                      .toList();
-
-                  // FIX: Menggunakan CustomDropdownMenu dari custom_form_fields.dart
-                  return CustomDropdownMenu(
-                    controller: _bahanDropdownC,
-                    label: 'Pilih Bahan Baku',
-
-                    icon: Icons.search_rounded,
-                    items: listOptions,
-                  );
-                }),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 2,
-                child: CustomTextField(
-                  controller: ctrl.jumlahBahanC,
-                  label: 'Takaran Kebutuhan',
-                  icon: Icons.scale_outlined,
-                  hint: '0.0',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  // TAMBAHKAN INI: Membatasi input hanya angka dan titik desimal
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _themeColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 20,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text(
-                    'Tambah',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  onPressed: () {
-                    if (_bahanDropdownC.text.isEmpty) {
-                      Get.snackbar(
-                        "Peringatan",
-                        "Pilih bahan baku terlebih dahulu.",
-                      );
-                      return;
-                    }
-                    final String val = _bahanDropdownC.text;
-                    final String rawId = val.split(' - ')[0];
-                    final int? idBahan = num.tryParse(rawId)?.toInt();
-
-                    if (idBahan == null) {
-                      Get.snackbar(
-                        "Error",
-                        "Format ID Bahan baku tidak valid.",
-                      );
-                      return;
-                    }
-
-                    ctrl.selectedBahanId.value = idBahan;
-                    ctrl.addBahanToTempList();
-                    _bahanDropdownC.clear();
-                  },
-                ),
-              ),
-            ],
-          ),
+          // --- RESPONSIF: Di mobile susun vertikal, di desktop susun horizontal ---
+          isMobile ? _buildAddBahanMobile() : _buildAddBahanDesktop(),
         ],
       ),
+    );
+  }
+
+  // Layout horizontal (desktop) — sama persis dengan kode asli
+  Widget _buildAddBahanDesktop() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: Obx(() {
+            final listOptions = bahanBakuCtrl.originalList
+                .where((b) => b.deletedAt == null)
+                .map((b) => "${b.id} - ${b.namaBahan} (${b.satuan})")
+                .toList();
+            return CustomDropdownMenu(
+              controller: _bahanDropdownC,
+              label: 'Pilih Bahan Baku',
+              icon: Icons.search_rounded,
+              items: listOptions,
+            );
+          }),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          flex: 2,
+          child: CustomTextField(
+            controller: ctrl.jumlahBahanC,
+            label: 'Takaran Kebutuhan',
+            icon: Icons.scale_outlined,
+            hint: '0.0',
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: _buildTambahButton(),
+        ),
+      ],
+    );
+  }
+
+  // Layout vertikal (mobile) — dropdown & field full-width, tombol di bawah
+  Widget _buildAddBahanMobile() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Obx(() {
+          final listOptions = bahanBakuCtrl.originalList
+              .where((b) => b.deletedAt == null)
+              .map((b) => "${b.id} - ${b.namaBahan} (${b.satuan})")
+              .toList();
+          return CustomDropdownMenu(
+            controller: _bahanDropdownC,
+            label: 'Pilih Bahan Baku',
+            icon: Icons.search_rounded,
+            items: listOptions,
+          );
+        }),
+        const SizedBox(height: 10),
+        CustomTextField(
+          controller: ctrl.jumlahBahanC,
+          label: 'Takaran Kebutuhan',
+          icon: Icons.scale_outlined,
+          hint: '0.0',
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+          ],
+        ),
+        const SizedBox(height: 10),
+        _buildTambahButton(fullWidth: true),
+      ],
+    );
+  }
+
+  Widget _buildTambahButton({bool fullWidth = false}) {
+    return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _themeColor,
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(
+          horizontal: fullWidth ? 16 : 16,
+          vertical: fullWidth ? 14 : 20,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 0,
+      ),
+      icon: const Icon(Icons.add, size: 18),
+      label: const Text(
+        'Tambah',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      onPressed: () {
+        if (_bahanDropdownC.text.isEmpty) {
+          Get.snackbar("Peringatan", "Pilih bahan baku terlebih dahulu.");
+          return;
+        }
+        final String val = _bahanDropdownC.text;
+        final String rawId = val.split(' - ')[0];
+        final int? idBahan = num.tryParse(rawId)?.toInt();
+
+        if (idBahan == null) {
+          Get.snackbar("Error", "Format ID Bahan baku tidak valid.");
+          return;
+        }
+
+        ctrl.selectedBahanId.value = idBahan;
+        ctrl.addBahanToTempList();
+        _bahanDropdownC.clear();
+      },
     );
   }
 

@@ -197,12 +197,7 @@ class DetailResepMobilePage extends StatelessWidget {
                             controller.tempBahanList.assignAll(
                               latestResep.bahan ?? [],
                             );
-                            Get.to(
-                              () => ResepFormMobilePage(
-                                isEdit: true,
-                                resep: latestResep,
-                              ),
-                            );
+                            controller.openEditDialog(resep);
                           },
                         ),
                       ),

@@ -79,11 +79,17 @@ class ProductListPage extends StatelessWidget {
           ProductPaginationFooter(controller: controller),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        onPressed: () => Get.dialog(InsertProductDialog()),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 60.0),
+        child: FloatingActionButton(
+          backgroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          onPressed: () => Get.dialog(InsertProductDialog()),
+          child: const Icon(Icons.add, color: Colors.white, size: 28),
+        ),
       ),
     );
   }

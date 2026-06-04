@@ -103,7 +103,7 @@ class BahanBakuScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         ToolbarButton(
-                          title: "Stock menipis",
+                          title: "Stock habis",
                           icon: Icons.warning_amber_rounded,
                           color: Colors.grey.shade700,
                           onTap: () {
@@ -116,7 +116,7 @@ class BahanBakuScreen extends StatelessWidget {
                           icon: Icons.refresh_outlined,
                           color: Colors.grey.shade400,
                           onTap: () {
-                            ctrl.refreshData();
+                            ctrl.fetchData();
                           },
                         ),
                       ],

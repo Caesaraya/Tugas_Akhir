@@ -12,7 +12,7 @@ class LoginFormFields extends StatefulWidget {
 }
 
 class _LoginFormFieldsState extends State<LoginFormFields> {
-  bool _rememberMe = false;
+  // bool _rememberMe = false;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +46,7 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
         ),
         const SizedBox(height: 20),
 
-        // Input Password dengan Lupa Password
+        // Input Password
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -92,46 +92,18 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
             ),
           ),
         ),
-        const SizedBox(height: 16),
-
-        // // Checkbox Ingat Saya
-        // Row(
-        //   children: [
-        //     SizedBox(
-        //       width: 24,
-        //       height: 24,
-        //       child: Checkbox(
-        //         value: _rememberMe,
-        //         activeColor: const Color(0xFFC86A37),
-        //         shape: RoundedRectangleBorder(
-        //           borderRadius: BorderRadius.circular(4),
-        //         ),
-        //         side: BorderSide(color: Colors.grey[300]!, width: 1.5),
-        //         onChanged: (value) {
-        //           setState(() {
-        //             _rememberMe = value ?? false;
-        //           });
-        //         },
-        //       ),
-        //     ),
-        //     const SizedBox(width: 8),
-        //     const Text(
-        //       "Ingat saya di perangkat ini",
-        //       style: TextStyle(color: Colors.black54, fontSize: 13),
-        //     ),
-        //   ],
-        // ),
         const SizedBox(height: 32),
 
-        // Tombol Masuk ke Dasbor
+        // Tombol Masuk ke Dasbor (Menggunakan FilledButton agar warna akurat)
         SizedBox(
           width: double.infinity,
           height: 52,
           child: Obx(
-            () => ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors
-                    .buttonlogin, // Warna oranye kecokelatan sesuai tombol gambar
+            () => FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.buttonlogin,
+                overlayColor: Colors
+                    .transparent, // Menghilangkan bayangan hitam tipis saat hover
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -149,25 +121,20 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
                         strokeWidth: 2,
                       ),
                     )
-                  : const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Login",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                  : const Text(
+                      "Login",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
             ),
           ),
         ),
         const SizedBox(height: 40),
 
-        // Footer & Syarat Ketentuan sesuai Gambar
+        // Footer & Syarat Ketentuan
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

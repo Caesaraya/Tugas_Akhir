@@ -182,7 +182,11 @@ class ResepTableController extends BaseTableController<Resep> {
   void _updateItemInList(Resep detail) {
     int index = originalList.indexWhere((element) => element.id == detail.id);
     if (index != -1) {
-      originalList[index] = detail;
+      // Preserve deletedAt dari data asli agar soft delete tidak hilang
+      final existingDeletedAt = originalList[index].deletedAt;
+      originalList[index] = detail.copyWith(
+        deletedAt: detail.deletedAt ?? existingDeletedAt,
+      );
       filteredList.assignAll(originalList);
       setupPagination();
     }

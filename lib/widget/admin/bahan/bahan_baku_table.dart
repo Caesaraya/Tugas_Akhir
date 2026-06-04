@@ -58,7 +58,7 @@ class BahanBakuTable extends StatelessWidget {
                     _buildHeaderCell('Merk'),
                     _buildHeaderCell('Stok'),
                     _buildHeaderCell('Satuan'),
-                    _buildHeaderCell('Estimasi Harga'),
+                    _buildHeaderCell('Harga satuan'),
                     _buildHeaderCell('Status'),
                     _buildHeaderCell('Aksi'),
                   ],
