@@ -17,7 +17,7 @@ class KasirMobileDrawer extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(color: Color(0xFFF8D8A2)),
+              decoration: const BoxDecoration(color: Color(0xFFE89336)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,

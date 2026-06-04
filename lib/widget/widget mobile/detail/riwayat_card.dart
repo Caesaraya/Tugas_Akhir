@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/utils/currency.dart';
@@ -34,7 +33,7 @@ class RiwayatCard extends StatelessWidget {
           child: const Icon(Icons.receipt, color: Color(0xFFE89336)),
         ),
         title: Text(
-          "Nota #${trx['id']}",
+          "Nota ${trx['id']}",
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(

@@ -62,7 +62,6 @@ class ProductTable extends StatelessWidget {
                 TableRowCell(text: item.stock.toString(), width: 60),
                 TableRowCell(text: item.jenis, width: 90),
                 TableRowCell(text: item.satuan, width: 60),
-                TableRowCell(text: item.barcode, width: 90),
 
                 // ===== UPDATE DI SINI =====
                 TableRowCell(

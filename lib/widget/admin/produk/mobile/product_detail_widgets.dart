@@ -51,10 +51,6 @@ class ProductDetailBody extends StatelessWidget {
                     value: '#${product.id}',
                   ),
                   ProductDetailFieldRow(
-                    label: 'Barcode',
-                    value: product.barcode.isEmpty ? '-' : product.barcode,
-                  ),
-                  ProductDetailFieldRow(
                     label: 'Kategori/Jenis',
                     value: product.jenis,
                   ),

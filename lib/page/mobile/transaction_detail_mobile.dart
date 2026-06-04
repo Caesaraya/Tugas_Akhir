@@ -21,17 +21,17 @@ class TransactionDetailMobile extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Detail Transaksi',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFE89336),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('ID: ${detailController.transactionId}'),
+            Text('NO: ${detailController.transactionId}'),
             Text('Tanggal: ${detailController.tanggal}'),
             Text('Metode: ${detailController.methodLabel}'),
             const SizedBox(height: 20),

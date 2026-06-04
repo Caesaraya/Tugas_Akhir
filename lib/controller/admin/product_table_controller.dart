@@ -71,7 +71,6 @@ class ProductTableController extends BaseTableController<Product> {
           // Cek string fields
           final matchesString =
               product.name.toLowerCase().contains(searchText) ||
-              product.barcode.toLowerCase().contains(searchText) ||
               product.jenis.toLowerCase().contains(searchText) ||
               product.satuan.toLowerCase().contains(searchText);
 
@@ -144,7 +143,6 @@ class ProductTableController extends BaseTableController<Product> {
         stock: int.parse(stockC.text),
         jenis: jenisC.text,
         satuan: satuanC.text,
-        barcode: generateBarcode(),
         imageFile: selectedImage.value!,
       );
 
@@ -203,9 +201,8 @@ class ProductTableController extends BaseTableController<Product> {
         stock: int.parse(stockC.text),
         jenis: jenisC.text,
         satuan: satuanC.text,
-        barcode: product.barcode, // Pertahankan barcode lama
         imageFile: selectedImage
-            .value, // Akan null jika user tidak pilih foto baru (API service sudah handle File?)
+            .value,
         resepId: product.resepId, // Pertahankan resepId lama
       );
 

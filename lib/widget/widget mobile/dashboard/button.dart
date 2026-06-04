@@ -4,9 +4,9 @@ import 'package:get/get.dart';
 
 class LoadMoreButton extends StatelessWidget {
   final DashboardController ctrl;
- 
+
   const LoadMoreButton({required this.ctrl});
- 
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -29,11 +29,8 @@ class LoadMoreButton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
           child: const Text(
-            'Muat Lebih',
-            style: TextStyle(
-              color: Colors.orange,
-              fontWeight: FontWeight.bold,
-            ),
+            'Muat Lebih Banyak',
+            style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
           ),
         ),
       );

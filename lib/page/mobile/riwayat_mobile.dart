@@ -20,16 +20,9 @@ class RiwayatMobile extends StatelessWidget {
           'Riwayat Transaksi',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFE89336),
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          IconButton(
-            onPressed: () => riwayatController.fetchHistory(),
-            icon: const Icon(Icons.refresh, color: Colors.black),
-          ),
-        ],
       ),
       body: Obx(() {
         if (riwayatController.isLoading.value) {
