@@ -88,10 +88,24 @@ exports.getDetailResep = async (req, res) => {
       [id]
     );
 
+    // PRODUK YANG MENGGUNAKAN RESEP
+    const [productRows] = await db.execute(
+      `
+      SELECT
+        id,
+        name,
+        stock
+      FROM products
+      WHERE resep_id = ?
+      `,
+      [id]
+    );
+
     res.json({
       success: true,
       resep: resepRows[0],
       bahan: detailRows,
+      products: productRows,
     });
 
   } catch (error) {
@@ -118,6 +132,13 @@ exports.createResep = async (req, res) => {
       deskripsi,
       bahan,
     } = req.body;
+
+    if (!bahan || bahan.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Minimal harus ada 1 bahan",
+      });
+    }
 
     await connection.beginTransaction();
 
@@ -206,6 +227,13 @@ exports.updateResep = async (req, res) => {
       deskripsi,
       bahan,
     } = req.body;
+
+    if (!bahan || bahan.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Minimal harus ada 1 bahan",
+      });
+    }
 
     await connection.beginTransaction();
 
@@ -375,6 +403,7 @@ exports.forceDeleteResep = async (req, res) => {
       SELECT id
       FROM products
       WHERE resep_id = ?
+      AND deleted_at IS NULL
       LIMIT 1
       `,
       [id]

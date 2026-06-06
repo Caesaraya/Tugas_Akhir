@@ -29,6 +29,7 @@ const produksiRoutes = require("./routes/produksiRoutes");
 const supplierRoutes = require("./routes/supplierRoutes");
 const diskonRoutes = require("./routes/diskonRoutes");
 const userRoutes = require("./routes/userRoutes");
+const bakeryRoutes = require("./routes/bakeryRoutes");
 
 app.use("/api/products", productRoutes);
 app.use("/api/transactions", transactionRoutes);
@@ -38,6 +39,7 @@ app.use("/api/produksi", produksiRoutes);
 app.use("/api/supplier", supplierRoutes);
 app.use("/api/diskon", diskonRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/bakery", bakeryRoutes);
 
 // ======================
 // AUTO CLEANUP SOFT DELETE

@@ -61,4 +61,20 @@ router.delete(
   bahanBakuController.forceDeleteBahanBaku
 );
 
+// ========================
+// CEK DIGUNAKAN DI RESEP
+// ========================
+router.get(
+  "/:id/check-usage",
+  bahanBakuController.checkUsage
+);
+
+// ========================
+// GET STOK SUMMARY
+// ========================
+router.get(
+  "/summary/stock",
+  bahanBakuController.getStockSummary
+);
+
 module.exports = router;

@@ -21,4 +21,12 @@ router.post(
   produksiController.createProduksi
 );
 
+// ========================
+// GET PRODUKSI BY ID
+// ========================
+router.get(
+  "/:id",
+  produksiController.getProduksiById
+);
+
 module.exports = router;

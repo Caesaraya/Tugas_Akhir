@@ -3,6 +3,7 @@ class Resep {
   final String namaResep;
   final String deskripsi;
   final List<DetailResep>? bahan;
+  final List<Map<String, dynamic>>? products;
   final DateTime? deletedAt;
 
   Resep({
@@ -10,6 +11,7 @@ class Resep {
     required this.namaResep,
     required this.deskripsi,
     this.bahan,
+    this.products,
     this.deletedAt,
   });
 
@@ -21,6 +23,11 @@ class Resep {
       bahan: json['bahan'] != null
           ? (json['bahan'] as List)
               .map((e) => DetailResep.fromJson(e))
+              .toList()
+          : [],
+      products: json['products'] != null
+          ? (json['products'] as List)
+              .map((e) => e as Map<String, dynamic>)
               .toList()
           : [],
       deletedAt: json['deleted_at'] != null
@@ -35,6 +42,7 @@ class Resep {
       'nama_resep': namaResep,
       'deskripsi': deskripsi,
       'bahan': bahan?.map((e) => e.toJson()).toList(),
+      'products': products,
       'deleted_at': deletedAt?.toIso8601String(),
     };
   }
@@ -44,6 +52,7 @@ class Resep {
     String? namaResep,
     String? deskripsi,
     List<DetailResep>? bahan,
+    List<Map<String, dynamic>>? products,
     DateTime? deletedAt,
   }) {
     return Resep(
@@ -51,6 +60,7 @@ class Resep {
       namaResep: namaResep ?? this.namaResep,
       deskripsi: deskripsi ?? this.deskripsi,
       bahan: bahan ?? this.bahan,
+      products: products ?? this.products,
       deletedAt: deletedAt ?? this.deletedAt,
     );
   }

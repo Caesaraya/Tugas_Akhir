@@ -104,7 +104,6 @@ exports.createBahanBaku = async (req, res) => {
 
     if (
       !nama_bahan ||
-      !merk ||
       !satuan
     ) {
       return res.status(400).json({
@@ -340,6 +339,74 @@ exports.forceDeleteBahanBaku = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Gagal force delete bahan baku",
+    });
+  }
+};
+
+// ========================
+// CEK DIGUNAKAN DI RESEP
+// ========================
+exports.checkUsage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [rows] = await db.execute(
+      `
+      SELECT
+        r.id,
+        r.nama_resep
+      FROM detail_resep dr
+      JOIN resep r
+      ON dr.resep_id = r.id
+      WHERE dr.bahan_id = ?
+      `,
+      [id]
+    );
+
+    res.json({
+      success: true,
+      total_digunakan: rows.length,
+      resep: rows,
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Gagal cek penggunaan bahan",
+    });
+  }
+};
+
+// ========================
+// GET STOK SUMMARY
+// ========================
+exports.getStockSummary = async (req, res) => {
+  try {
+
+    const [rows] = await db.execute(`
+      SELECT
+        COUNT(*) AS total_bahan,
+        SUM(stok) AS total_stok,
+        SUM(stok * harga_satuan) AS total_nilai
+      FROM bahan_baku
+      WHERE deleted_at IS NULL
+    `);
+
+    res.json({
+      success: true,
+      data: rows[0],
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Gagal mengambil summary stok",
     });
   }
 };

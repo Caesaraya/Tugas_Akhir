@@ -57,6 +57,12 @@ exports.createProduksi = async (req, res) => {
       jumlah_produksi,
     } = req.body;
 
+    if (!jumlah_produksi || jumlah_produksi <= 0) {
+      throw new Error(
+        "Jumlah produksi harus lebih dari 0"
+      );
+    }
+
     await connection.beginTransaction();
 
     // ========================
@@ -109,6 +115,7 @@ exports.createProduksi = async (req, res) => {
       ON dr.bahan_id = bb.id
 
       WHERE dr.resep_id = ?
+      AND bb.deleted_at IS NULL
       `,
       [product.resep_id]
     );
@@ -137,17 +144,26 @@ exports.createProduksi = async (req, res) => {
       const totalKebutuhan =
         item.jumlah_bahan * jumlah_produksi;
 
-      await connection.execute(
-        `
+      const [updateResult] =
+        await connection.execute(
+          `
         UPDATE bahan_baku
         SET stok = stok - ?
         WHERE id = ?
+        AND stok >= ?
         `,
-        [
-          totalKebutuhan,
-          item.bahan_id,
-        ]
-      );
+          [
+            totalKebutuhan,
+            item.bahan_id,
+            totalKebutuhan,
+          ]
+        );
+
+      if (updateResult.affectedRows === 0) {
+        throw new Error(
+          `Stok bahan ${item.nama_bahan} tidak cukup`
+        );
+      }
     }
 
     // ========================
@@ -193,6 +209,9 @@ exports.createProduksi = async (req, res) => {
       success: true,
       message: "Produksi berhasil",
       produksi_id: result.insertId,
+      product_id,
+      nama_produk: product.name,
+      jumlah_produksi,
     });
 
   } catch (error) {
@@ -209,5 +228,53 @@ exports.createProduksi = async (req, res) => {
   } finally {
 
     connection.release();
+  }
+};
+
+// ========================
+// GET PRODUKSI BY ID
+// ========================
+exports.getProduksiById = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const [rows] = await db.execute(
+      `
+      SELECT
+        pr.*,
+        p.name,
+        p.jenis,
+        p.satuan
+      FROM produksi pr
+      JOIN products p
+      ON pr.product_id = p.id
+      WHERE pr.id = ?
+      `,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Data produksi tidak ditemukan",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: rows[0],
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Gagal mengambil detail produksi",
+    });
   }
 };

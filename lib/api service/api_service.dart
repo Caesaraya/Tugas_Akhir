@@ -11,6 +11,7 @@ import 'package:tugas_akhir/models/produksi.dart';
 import 'package:tugas_akhir/models/resep.dart';
 import 'package:tugas_akhir/models/supplier.dart';
 import 'package:tugas_akhir/models/user.dart';
+import 'package:tugas_akhir/models/bahan_baku_requirement.dart';
 
 class ApiService {
   static const String baseUrl =
@@ -565,6 +566,52 @@ class ApiService {
   }
 
   // ========================
+  // CHECK USAGE BAHAN BAKU
+  // ========================
+  static Future<BahanUsageResult> checkUsageBahanBaku(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bahan-baku/$id/check-usage"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return BahanUsageResult.fromJson(data);
+      } else {
+        throw Exception("Failed to check bahan usage");
+      }
+    } catch (e) {
+      throw Exception("Gagal cek penggunaan bahan: $e");
+    }
+  }
+
+  // ========================
+  // GET STOCK SUMMARY
+  // ========================
+  static Future<StockSummaryResult> getStockSummary() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bahan-baku/summary/stock"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return StockSummaryResult.fromJson(data);
+      } else {
+        throw Exception("Failed to get stock summary");
+      }
+    } catch (e) {
+      throw Exception("Gagal mengambil summary stok: $e");
+    }
+  }
+
+  // ========================
   // DISKON APIS
   // ========================
   static Future<List<Diskon>> getAllDiskon() async {
@@ -852,6 +899,26 @@ class ApiService {
     }
   }
 
+  static Future<Produksi> getProduksiById(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/produksi/$id"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return Produksi.fromJson(data['data']);
+      } else {
+        throw Exception("Failed to get produksi detail");
+      }
+    } catch (e) {
+      throw Exception("Gagal mengambil detail produksi: $e");
+    }
+  }
+
   // ========================
   // RESEP APIS
   // ========================
@@ -1067,6 +1134,120 @@ class ApiService {
       }
     } catch (e) {
       throw Exception("Gagal memuat users: $e");
+    }
+  }
+
+  // ========================
+  // BAKERY CALCULATION APIS
+  // ========================
+  static Future<BakeryCalculationResult> hitungKebutuhanBahan({
+    required int produkId,
+    required int quantity,
+  }) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bakery/hitung-kebutuhan")
+                .replace(queryParameters: {
+              'produk_id': produkId.toString(),
+              'quantity': quantity.toString(),
+            }),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return BakeryCalculationResult.fromJson(data);
+      } else {
+        throw Exception("Failed to calculate ingredient requirements");
+      }
+    } catch (e) {
+      throw Exception("Gagal menghitung kebutuhan bahan: $e");
+    }
+  }
+
+  static Future<BakeryAvailabilityResult> cekKetersediaanBahan({
+    required int produkId,
+    required int quantity,
+  }) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bakery/cek-ketersediaan")
+                .replace(queryParameters: {
+              'produk_id': produkId.toString(),
+              'quantity': quantity.toString(),
+            }),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return BakeryAvailabilityResult.fromJson(data);
+      } else {
+        throw Exception("Failed to check ingredient availability");
+      }
+    } catch (e) {
+      throw Exception("Gagal cek ketersediaan bahan: $e");
+    }
+  }
+
+  static Future<BakeryCostResult> hitungBiayaProduksi({
+    required int produkId,
+    required int quantity,
+  }) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bakery/hitung-biaya")
+                .replace(queryParameters: {
+              'produk_id': produkId.toString(),
+              'quantity': quantity.toString(),
+            }),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return BakeryCostResult.fromJson(data);
+      } else {
+        throw Exception("Failed to calculate production cost");
+      }
+    } catch (e) {
+      throw Exception("Gagal hitung biaya produksi: $e");
+    }
+  }
+
+  static Future<List<ProduksiPossibleItem>> getProduksiPossible({
+    int? quantity,
+  }) async {
+    try {
+      final queryParams = <String, String>{};
+      if (quantity != null) {
+        queryParams['quantity'] = quantity.toString();
+      }
+
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bakery/produksi-possible")
+                .replace(queryParameters: queryParams),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return (data['data'] as List)
+            .map((e) => ProduksiPossibleItem.fromJson(e))
+            .toList();
+      } else {
+        throw Exception("Failed to get production possibilities");
+      }
+    } catch (e) {
+      throw Exception("Gagal get produksi possible: $e");
     }
   }
 }
