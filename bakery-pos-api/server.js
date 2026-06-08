@@ -1,8 +1,33 @@
 const express = require("express");
 const cors = require("cors");
 const cron = require("node-cron");
+const fs = require("fs");
+const path = require("path");
 
 const db = require("./config/db");
+
+// ========================
+// HELPER: CHECK DEFAULT IMAGE
+// ========================
+function isDefaultImage(imageName) {
+  const defaultImages = [
+    "cake.jpg",
+    "bread.jpg",
+    "pasta.jpg",
+    "kue_kering.jpg",
+    "konsinyasi.jpg",
+    "minuman.jpg",
+    "tart.jpg",
+    "pastry.jpg",
+    "basahan.jpg",
+    "hantaran.jpg",
+    "packaging.jpg",
+    "putus.jpg",
+    "grosir.jpg",
+    "default.jpg",
+  ];
+  return defaultImages.includes(imageName);
+}
 
 const app = express();
 
@@ -48,57 +73,101 @@ cron.schedule("0 0 * * *", async () => {
   try {
     console.log("Running auto cleanup deleted records...");
 
-    // Cleanup products (cascade delete from produksi first)
-    const [productIds] = await db.query(`
-      SELECT id FROM products
+    // Cleanup products (cascade delete from produksi first + delete image files)
+    const [productsToDelete] = await db.query(`
+      SELECT id, image FROM products
       WHERE deleted_at IS NOT NULL
       AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
     `);
 
-    if (productIds.length > 0) {
-      const ids = productIds.map(p => p.id);
+    if (productsToDelete.length > 0) {
+      const ids = productsToDelete.map(p => p.id);
+
+      // Delete from produksi first
       await db.query(`
         DELETE FROM produksi
         WHERE product_id IN (${ids.join(',')})
       `);
+
+      // Delete image files from uploads folder
+      const uploadsDir = path.join(__dirname, "uploads");
+      productsToDelete.forEach((product) => {
+        const imageName = product.image;
+        if (imageName && !isDefaultImage(imageName)) {
+          const imagePath = path.join(uploadsDir, imageName);
+          if (fs.existsSync(imagePath)) {
+            try {
+              fs.unlinkSync(imagePath);
+              console.log(`  Deleted image file: ${imageName}`);
+            } catch (err) {
+              console.error(`  Failed to delete image ${imageName}:`, err.message);
+            }
+          }
+        }
+      });
+
+      // Delete from database
+      const [productsResult] = await db.query(`
+        DELETE FROM products
+        WHERE id IN (${ids.join(',')})
+      `);
+      console.log(`Auto cleanup: Deleted ${productsResult.affectedRows} products`);
     }
 
-    const [productsResult] = await db.query(`
-      DELETE FROM products
-      WHERE deleted_at IS NOT NULL
-      AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
-    `);
-    console.log(`Auto cleanup: Deleted ${productsResult.affectedRows} products`);
-
-    // Cleanup bahan_baku
-    const [bahanBakuResult] = await db.query(`
-      DELETE FROM bahan_baku
-      WHERE deleted_at IS NOT NULL
-      AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
-    `);
-    console.log(`Auto cleanup: Deleted ${bahanBakuResult.affectedRows} bahan_baku`);
-
-    // Cleanup resep (cascade delete detail_resep)
-    const [resepIds] = await db.query(`
-      SELECT id FROM resep
+    // Cleanup bahan_baku (cascade delete from detail_resep first)
+    const [bahanBakuIds] = await db.query(`
+      SELECT id FROM bahan_baku
       WHERE deleted_at IS NOT NULL
       AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
     `);
 
-    if (resepIds.length > 0) {
-      const ids = resepIds.map(r => r.id);
+    if (bahanBakuIds.length > 0) {
+      const ids = bahanBakuIds.map(b => b.id);
+
+      // Delete from detail_resep first
+      await db.query(`
+        DELETE FROM detail_resep
+        WHERE bahan_id IN (${ids.join(',')})
+      `);
+
+      // Delete from database
+      const [bahanBakuResult] = await db.query(`
+        DELETE FROM bahan_baku
+        WHERE id IN (${ids.join(',')})
+      `);
+      console.log(`Auto cleanup: Deleted ${bahanBakuResult.affectedRows} bahan_baku`);
+    }
+
+    // Cleanup resep (check if used by active products first)
+    const [resepToDelete] = await db.query(`
+      SELECT r.id FROM resep r
+      WHERE r.deleted_at IS NOT NULL
+      AND r.deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      AND NOT EXISTS (
+        SELECT 1 FROM products p
+        WHERE p.resep_id = r.id
+        AND p.deleted_at IS NULL
+      )
+    `);
+
+    if (resepToDelete.length > 0) {
+      const ids = resepToDelete.map(r => r.id);
+
+      // Delete from detail_resep first
       await db.query(`
         DELETE FROM detail_resep
         WHERE resep_id IN (${ids.join(',')})
       `);
-    }
 
-    const [resepResult] = await db.query(`
-      DELETE FROM resep
-      WHERE deleted_at IS NOT NULL
-      AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
-    `);
-    console.log(`Auto cleanup: Deleted ${resepResult.affectedRows} resep`);
+      // Delete from database
+      const [resepResult] = await db.query(`
+        DELETE FROM resep
+        WHERE id IN (${ids.join(',')})
+      `);
+      console.log(`Auto cleanup: Deleted ${resepResult.affectedRows} resep`);
+    } else {
+      console.log(`Auto cleanup: Skipped resep deletion (some are still used by active products)`);
+    }
 
   } catch (error) {
     console.error("Auto cleanup failed:", error.message);
