@@ -46,17 +46,60 @@ app.use("/api/bakery", bakeryRoutes);
 // ======================
 cron.schedule("0 0 * * *", async () => {
   try {
-    console.log("Running auto cleanup deleted products...");
+    console.log("Running auto cleanup deleted records...");
 
-    const [result] = await db.query(`
-      DELETE FROM products
+    // Cleanup products (cascade delete from produksi first)
+    const [productIds] = await db.query(`
+      SELECT id FROM products
       WHERE deleted_at IS NOT NULL
-      AND deleted_at < NOW() - INTERVAL 14 DAY
+      AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
     `);
 
-    console.log(
-      `Auto cleanup success. Deleted ${result.affectedRows} products`
-    );
+    if (productIds.length > 0) {
+      const ids = productIds.map(p => p.id);
+      await db.query(`
+        DELETE FROM produksi
+        WHERE product_id IN (${ids.join(',')})
+      `);
+    }
+
+    const [productsResult] = await db.query(`
+      DELETE FROM products
+      WHERE deleted_at IS NOT NULL
+      AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    `);
+    console.log(`Auto cleanup: Deleted ${productsResult.affectedRows} products`);
+
+    // Cleanup bahan_baku
+    const [bahanBakuResult] = await db.query(`
+      DELETE FROM bahan_baku
+      WHERE deleted_at IS NOT NULL
+      AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    `);
+    console.log(`Auto cleanup: Deleted ${bahanBakuResult.affectedRows} bahan_baku`);
+
+    // Cleanup resep (cascade delete detail_resep)
+    const [resepIds] = await db.query(`
+      SELECT id FROM resep
+      WHERE deleted_at IS NOT NULL
+      AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    `);
+
+    if (resepIds.length > 0) {
+      const ids = resepIds.map(r => r.id);
+      await db.query(`
+        DELETE FROM detail_resep
+        WHERE resep_id IN (${ids.join(',')})
+      `);
+    }
+
+    const [resepResult] = await db.query(`
+      DELETE FROM resep
+      WHERE deleted_at IS NOT NULL
+      AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    `);
+    console.log(`Auto cleanup: Deleted ${resepResult.affectedRows} resep`);
+
   } catch (error) {
     console.error("Auto cleanup failed:", error.message);
   }

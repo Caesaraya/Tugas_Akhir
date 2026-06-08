@@ -294,23 +294,14 @@ exports.forceDeleteBahanBaku = async (req, res) => {
 
     const { id } = req.params;
 
-    const [usedByRecipe] = await db.execute(
+    // Cascade delete: remove from detail_resep first
+    await db.execute(
       `
-      SELECT id
-      FROM detail_resep
+      DELETE FROM detail_resep
       WHERE bahan_id = ?
-      LIMIT 1
       `,
       [id]
     );
-
-    if (usedByRecipe.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Bahan baku tidak bisa dihapus karena masih digunakan pada resep",
-      });
-    }
 
     const [result] = await db.execute(
       `

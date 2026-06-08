@@ -1,4 +1,6 @@
 const db = require("../config/db");
+const fs = require("fs");
+const path = require("path");
 
 // ========================
 // AUTO IMAGE BY JENIS
@@ -408,6 +410,18 @@ exports.restoreProduct = async (req, res) => {
 // ========================
 exports.forceDeleteProduct = async (req, res) => {
   try {
+    // Get product image before deletion
+    const [product] = await db.query(
+      "SELECT image FROM products WHERE id = ?",
+      [req.params.id]
+    );
+
+    if (product.length === 0) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
     const [result] = await db.query(
       "DELETE FROM products WHERE id = ?",
       [req.params.id]
@@ -417,6 +431,15 @@ exports.forceDeleteProduct = async (req, res) => {
       return res.status(404).json({
         message: "Product not found",
       });
+    }
+
+    // Delete image file if it's not a default image
+    const imageName = product[0].image;
+    if (imageName && !isDefaultImage(imageName)) {
+      const imagePath = path.join(__dirname, "../uploads", imageName);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
     }
 
     res.json({
