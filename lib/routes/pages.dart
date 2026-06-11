@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
-import 'package:tugas_akhir/bindings/bindings.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_bahan_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_produk_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_resep_desktop.dart';
+import 'package:tugas_akhir/page/admin/desktop/monitoring_keuangan_desktop.dart';
 import 'package:tugas_akhir/page/admin/mobile/bahanbaku/kelola_bahan_baku_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/produk/kelola_produk_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/resep/kelola_resep_mobile.dart';
@@ -81,6 +81,10 @@ class AppPages {
     ),
     GetPage(name: AppRoutes.kelolabahandesk, page: () => BahanBakuScreen()),
     GetPage(name: AppRoutes.kelolaresepdesk, page: () => KelolaResepDeskPage()),
+    GetPage(
+      name: AppRoutes.monitoringuang,
+      page: () => MonitoringKeuanganPage(),
+    ),
 
     // ── Admin Mobile ───────────────────────────────────────────────────────
     GetPage(name: AppRoutes.kelolaProdukMob, page: () => ProductListPage()),

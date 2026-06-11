@@ -6,7 +6,6 @@ import 'package:tugas_akhir/controller/admin/navigation_controller.dart';
 import 'package:tugas_akhir/widget/admin/bahan/bahan_baku_table.dart';
 import 'package:tugas_akhir/widget/admin/bahan/summary_card.dart';
 import 'package:tugas_akhir/widget/admin/custom_sidebar.dart';
-import 'package:tugas_akhir/widget/admin/dialogs/bahan/insert_bahan_baku_dialog.dart';
 import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 
@@ -105,7 +104,7 @@ class BahanBakuScreen extends StatelessWidget {
                         ToolbarButton(
                           title: "Stock habis",
                           icon: Icons.warning_amber_rounded,
-                          color: Colors.grey.shade700,
+                          color: Colors.black54,
                           onTap: () {
                             ctrl.toggleFilterStockHabis();
                           },
