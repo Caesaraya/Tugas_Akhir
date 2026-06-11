@@ -127,15 +127,14 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
     Get.back();
   }
 
+  // Cari baris fungsi _onSave di dalam edit_bahan_baku_dialog.dart Anda
   void _onSave() {
     if (ctrl.namaC.text.trim().isEmpty ||
-        ctrl.merkC.text.trim().isEmpty ||
-        ctrl.satuanC.text.trim().isEmpty ||
         ctrl.stokC.text.trim().isEmpty ||
         ctrl.hargaC.text.trim().isEmpty) {
       Get.snackbar(
-        "Peringatan",
-        "Semua data formulir wajib diisi, tidak boleh ada yang kosong",
+        'Peringatan',
+        'Form tidak boleh kosong',
         backgroundColor: Colors.orange,
         colorText: Colors.white,
       );
@@ -143,19 +142,13 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
     }
 
     if (widget.item.id != null) {
-      final typedSatuan = ctrl.satuanC.text.trim();
-      if (typedSatuan.isNotEmpty && !_addedSatuan.contains(typedSatuan)) {
-        setState(() {
-          _addedSatuan.add(typedSatuan);
-        });
-      }
+      // MODIFIKASI: Menggunakan tracking pengeluaran berbasis data penambahan stok
       ctrl.updateBahanBaku(widget.item.id!);
     } else {
       Get.snackbar(
         'Error',
         'ID Bahan Baku tidak ditemukan',
         backgroundColor: Colors.red,
-        colorText: Colors.white,
       );
     }
   }

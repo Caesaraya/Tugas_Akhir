@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart'; // Tambahan untuk local tracking
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/bahan/edit_bahan_baku_dialog.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/bahan/insert_bahan_baku_dialog.dart';
@@ -13,6 +14,7 @@ import '../../controller/admin/table/base_table_controller.dart';
 class BahanBakuTableController extends BaseTableController<BahanBaku> {
   // Properti filter bawaan desktop Anda tetap dipertahankan
   final RxBool filterStockHabis = false.obs;
+  final _storage = GetStorage(); // Inisialisasi GetStorage
 
   BahanBakuTableController() {
     itemsPerPage = 10;
@@ -216,6 +218,37 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
       final hg = hargaC.text.replaceAll(RegExp(r'[^0-9]'), '');
       final harga = double.tryParse(hg) ?? 0;
       final stok = double.tryParse(stokC.text) ?? 0.0;
+
+      // =======================================================================
+      // LOGIKA INTERSEPTOR TRACKING PENGELUARAN (LOCAL STORAGE)
+      // =======================================================================
+      // Mencari data lama dari list internal untuk dicari selisih stoknya
+      final oldItem = originalList.firstWhereOrNull(
+        (element) => element.id == id,
+      );
+
+      if (oldItem != null && stok > oldItem.stok) {
+        final double selisih = stok - oldItem.stok;
+        final double totalBiaya = selisih * harga;
+
+        // Struktur data penambahan stok yang disimpan ke lokal device
+        final mapHistori = {
+          'tanggal': DateTime.now().toIso8601String(),
+          'bahan_baku_id': id,
+          'nama_bahan': namaC.text.trim(),
+          'stok_sebelum': oldItem.stok,
+          'stok_sesudah': stok,
+          'jumlah_penambahan': selisih,
+          'harga_satuan': harga,
+          'total_pengeluaran': totalBiaya,
+        };
+
+        // Membaca histori lama, menambahkan data baru, lalu disimpan kembali
+        List<dynamic> localData = _storage.read('histori_pengeluaran') ?? [];
+        localData.add(mapHistori);
+        await _storage.write('histori_pengeluaran', localData);
+      }
+      // =======================================================================
 
       final updateData = BahanBaku(
         id: id,
