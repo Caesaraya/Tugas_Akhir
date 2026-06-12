@@ -84,8 +84,6 @@ class KeuanganController extends GetxController {
           .toList();
 
       // 2. Ambil Data Pengeluaran Bahan Baku (Pembelian) SECARA ONLINE dari API
-      //    Dibungkus try/catch sendiri: kalau endpoint ini gagal, data lain
-      //    (pemasukan, pengeluaran manual, dsb) tetap lanjut dimuat.
       try {
         final rawPembelian = await ApiService.getAllPembelian();
         allHistoriStok.value = rawPembelian.map<HistoriStokModel>((p) {
@@ -144,26 +142,40 @@ class KeuanganController extends GetxController {
         }
       }
 
-      // PERBAIKAN: Inisialisasi secara dinamis dari database listCategories
-      // Agar kategori baru yang ditambahkan user otomatis ter-mapping di chart
-      Map<String, double> tempKomposisi = {
-        'Bahan Baku': totalBahanBakuBulanIni,
-      };
+      // --- PERBAIKAN LOGIKA KOMPOSISI PENGELUARAN ---
+      Map<String, double> tempKomposisi = {};
+
+      // Masukkan semua kategori resmi dari database terlebih dahulu dengan nilai default 0.0
       for (var cat in listCategories) {
-        if (cat.name != 'Bahan Baku') {
-          tempKomposisi[cat.name] = 0.0;
-        }
+        tempKomposisi[cat.name] = 0.0;
+      }
+
+      // Berikan fallback jika 'Bahan Baku' atau 'Lainnya' belum terdaftar di database
+      if (!tempKomposisi.containsKey('Bahan Baku')) {
+        tempKomposisi['Bahan Baku'] = 0.0;
       }
       if (!tempKomposisi.containsKey('Lainnya')) {
         tempKomposisi['Lainnya'] = 0.0;
       }
 
+      // Cari penulisan nama kategori bahan baku yang valid dari database (Case-Insensitive)
+      final bahanBakuCategory = listCategories.firstWhereOrNull(
+        (c) => c.name.toLowerCase() == 'bahan baku',
+      );
+      String namaKategoriBahanBaku = bahanBakuCategory?.name ?? 'Bahan Baku';
+
+      // Plot total pengeluaran dari histori stok (pembelian) ke kategori Bahan Baku
+      tempKomposisi[namaKategoriBahanBaku] = totalBahanBakuBulanIni;
+
+      // Hitung akumulasi dari pengeluaran manual bulanan
       double totalManualBulanIni = 0;
       for (var exp in listExpensesBulanIni) {
         totalManualBulanIni += exp.nominal;
         String catName = exp.categoryName.isEmpty
             ? 'Lainnya'
             : exp.categoryName;
+
+        // Akumulasikan nilai pengeluaran manual (jika ada input manual dengan kategori Bahan Baku, data akan digabung secara aman)
         tempKomposisi[catName] = (tempKomposisi[catName] ?? 0.0) + exp.nominal;
       }
 
@@ -191,7 +203,6 @@ class KeuanganController extends GetxController {
     hitungUlangLaporanTahunan(year);
   }
 
-  // PERBAIKAN UTAMA: Optimasi hitungUlangLaporanTahunan dari 12x Request menjadi 1x Request
   Future<void> hitungUlangLaporanTahunan(int year) async {
     Map<int, double> mapPemasukan = {};
     Map<int, double> mapPengeluaran = {};
@@ -213,7 +224,6 @@ class KeuanganController extends GetxController {
       }
     }
 
-    // OPTIMASI: Menembak API pengeluaran manual 1 tahun sekaligus (1x hit API)
     try {
       final firstDayOfYear = DateTime(year, 1, 1);
       final lastDayOfYear = DateTime(year, 12, 31);
@@ -223,7 +233,6 @@ class KeuanganController extends GetxController {
         endDate: _formatDate(lastDayOfYear),
       );
 
-      // Kelompokkan pengeluaran tahunan ke masing-masing bulan di lokal aplikasi
       for (var exp in yearlyExpenses) {
         final date = DateTime.tryParse(exp.tanggal);
         if (date != null && date.year == year) {
