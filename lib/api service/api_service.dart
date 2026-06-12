@@ -12,6 +12,7 @@ import 'package:tugas_akhir/models/resep.dart';
 import 'package:tugas_akhir/models/supplier.dart';
 import 'package:tugas_akhir/models/user.dart';
 import 'package:tugas_akhir/models/bahan_baku_requirement.dart';
+import 'package:tugas_akhir/models/financial_report.dart';
 
 class ApiService {
   static const String baseUrl =
@@ -1248,6 +1249,115 @@ class ApiService {
       }
     } catch (e) {
       throw Exception("Gagal get produksi possible: $e");
+    }
+  }
+
+  // ========================
+  // FINANCIAL REPORTS
+  // ========================
+  static Future<List<FinancialReport>> getFinancialReports() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/financial"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return (data['data'] as List)
+              .map((e) => FinancialReport.fromJson(e))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception("Failed to load financial reports");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat laporan keuangan: $e");
+    }
+  }
+
+  static Future<FinancialReport?> getFinancialReportByMonth(
+      int tahun, int bulan) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/financial/$tahun/$bulan"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return FinancialReport.fromJson(data['data']);
+        }
+        return null;
+      } else {
+        throw Exception("Failed to load financial report");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat laporan keuangan: $e");
+    }
+  }
+
+  static Future<FinancialSummary?> getFinancialSummary() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/financial/summary"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return FinancialSummary.fromJson(data['data']);
+        }
+        return null;
+      } else {
+        throw Exception("Failed to load financial summary");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat summary keuangan: $e");
+    }
+  }
+
+  static Future<bool> generateFinancialReport(int tahun, int bulan) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/financial/generate"),
+            headers: headers,
+            body: jsonEncode({
+              "tahun": tahun,
+              "bulan": bulan,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal generate laporan keuangan: $e");
+    }
+  }
+
+  static Future<bool> deleteFinancialReport(int tahun, int bulan) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse("$baseUrl/api/financial/$tahun/$bulan"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal hapus laporan keuangan: $e");
     }
   }
 }
