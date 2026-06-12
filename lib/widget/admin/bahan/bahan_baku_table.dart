@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/bahan/edit_bahan_baku_dialog.dart';
 import '../../../controller/admin/bahan_baku_table_controller.dart';
 import '../../admin/table/table_action_button.dart';
 import '../../admin/table/table_pagination.dart';
@@ -165,7 +166,9 @@ class BahanBakuTable extends StatelessWidget {
                                   TableActionButton(
                                     icon: Icons.edit_outlined,
                                     color: Colors.blue.shade700,
-                                    onTap: () => ctrl.openEditDialog(item),
+                                    onTap: () => Get.dialog(
+                                      EditBahanBakuDialog(item: item),
+                                    ),
                                   ),
                                   const SizedBox(width: 8),
                                   TableActionButton(

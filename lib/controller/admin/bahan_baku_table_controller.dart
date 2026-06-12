@@ -1,24 +1,20 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart'; // Tambahan untuk local tracking
+import 'package:get_storage/get_storage.dart'; // Package untuk tracking lokal
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/bahan/edit_bahan_baku_dialog.dart';
-import 'package:tugas_akhir/widget/admin/dialogs/bahan/insert_bahan_baku_dialog.dart';
 
 import '../../api service/api_service.dart';
 import '../../models/bahan_baku.dart';
 import '../../controller/admin/table/base_table_controller.dart';
 
 class BahanBakuTableController extends BaseTableController<BahanBaku> {
-  // Properti filter bawaan desktop Anda tetap dipertahankan
   final RxBool filterStockHabis = false.obs;
-  final _storage = GetStorage(); // Inisialisasi GetStorage
+  final _storage = GetStorage(); // Inisialisasi storage tracker
 
   BahanBakuTableController() {
     itemsPerPage = 10;
-    // Format harga saat input
+    // Format harga saat input (Bawaan asli Anda)
     hargaC.addListener(() {
       final raw = hargaC.text;
       final clean = raw.replaceAll(RegExp(r'[^0-9]'), '');
@@ -33,16 +29,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
       }
     });
   }
-  @override
-  void onInit() {
-    super.onInit();
-    itemsPerPage = 25;
-    // Register listener sekali saja di sini, bukan di constructor
-    hargaC.addListener(_onPriceChanged);
-
-    // Otomatis fetch data saat controller dibuat / di-recreate oleh fenix
-    fetchData();
-  }
 
   final namaC = TextEditingController();
   final merkC = TextEditingController();
@@ -51,20 +37,17 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
   final hargaC = TextEditingController();
   final currencyFormatter = NumberFormat('#,###', 'id_ID');
 
-  // SATU FUNGSI FETCH DATA GABUNGAN (Aman untuk Desktop & Mobile)
   @override
   Future<void> fetchData() async {
     isLoading.value = true;
     try {
       final data = await ApiService.getAllBahanBaku();
 
-      // Menjalankan penyaringan filterStockHabis bawaan Desktop Anda jika aktif
       List<BahanBaku> processedData = data;
       if (filterStockHabis.value) {
         processedData = processedData.where((item) => item.stok <= 0).toList();
       }
 
-      // Urutkan data secara aman: Data aktif di atas, data terhapus (Soft-Delete) di bawah
       processedData.sort((a, b) {
         if (a.deletedAt == null && b.deletedAt != null) return -1;
         if (a.deletedAt != null && b.deletedAt == null) return 1;
@@ -85,62 +68,9 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     }
   }
 
-  String _formatRibuan(int value) {
-    return currencyFormatter.format(value);
-  }
-
-  /// Parse string ribuan kembali ke int, misal "100.000" → 100000
-  int _parseRibuan(String text) {
-    return int.tryParse(text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-  }
-
-  void _onPriceChanged() {
-    final text = hargaC.text;
-    if (text.isEmpty) return;
-
-    final clean = text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (clean.isEmpty) {
-      hargaC.value = const TextEditingValue(
-        text: '',
-        selection: TextSelection.collapsed(offset: 0),
-      );
-      return;
-    }
-
-    final value = int.tryParse(clean) ?? 0;
-    final formatted = _formatRibuan(value);
-
-    // Hitung posisi kursor agar tidak melompat ke akhir secara paksa
-    int cursorPosition = hargaC.selection.baseOffset;
-    int numCharsBeforeCursor = text
-        .substring(0, max(0, cursorPosition))
-        .replaceAll(RegExp(r'[^0-9]'), '')
-        .length;
-
-    int newCursorPosition = 0;
-    int digitCount = 0;
-    while (newCursorPosition < formatted.length &&
-        digitCount < numCharsBeforeCursor) {
-      if (RegExp(r'[0-9]').hasMatch(formatted[newCursorPosition])) {
-        digitCount++;
-      }
-      newCursorPosition++;
-    }
-
-    if (formatted != text) {
-      hargaC.value = TextEditingValue(
-        text: formatted,
-        selection: TextSelection.collapsed(
-          offset: min(newCursorPosition, formatted.length),
-        ),
-      );
-    }
-  }
-
-  // Fungsi toggle filter bawaan Desktop Anda tetap utuh
   void toggleFilterStockHabis() {
     filterStockHabis.value = !filterStockHabis.value;
-    fetchData(); // Panggil ulang data setelah filter diubah
+    fetchData();
   }
 
   void search(String query) {
@@ -164,10 +94,10 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     fetchData();
   }
 
+  // Tetap menggunakan nama fungsi asli bawaan Anda agar dialog terbuka dengan benar
   void showEditDialog(BahanBaku bahan) {
     namaC.text = bahan.namaBahan;
     merkC.text = bahan.merk;
-    // Mengamankan tampilan angka stok di dalam input form (.0 dibuang)
     stokC.text = bahan.stok == bahan.stok.roundToDouble()
         ? bahan.stok.toInt().toString()
         : bahan.stok.toString();
@@ -193,6 +123,30 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
 
       final success = await ApiService.createBahanBaku(baru);
       if (success) {
+        // =======================================================================
+        // TRACKING PENGELUARAN UNTUK BAHAN BAKU BARU (Hanya jika stok awal > 0)
+        // =======================================================================
+        if (stok > 0) {
+          final double totalBiaya = stok * harga;
+
+          final mapHistori = {
+            'tanggal': DateTime.now().toIso8601String(),
+            'bahan_baku_id': DateTime.now()
+                .millisecondsSinceEpoch, // ID sementara sebelum reload data
+            'nama_bahan': namaC.text.trim(),
+            'stok_sebelum': 0.0,
+            'stok_sesudah': stok,
+            'jumlah_penambahan': stok,
+            'harga_satuan': harga,
+            'total_pengeluaran': totalBiaya,
+          };
+
+          List<dynamic> localData = _storage.read('histori_pengeluaran') ?? [];
+          localData.add(mapHistori);
+          await _storage.write('histori_pengeluaran', localData);
+        }
+        // =======================================================================
+
         Get.back();
         clearForm();
         fetchData();
@@ -220,9 +174,8 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
       final stok = double.tryParse(stokC.text) ?? 0.0;
 
       // =======================================================================
-      // LOGIKA INTERSEPTOR TRACKING PENGELUARAN (LOCAL STORAGE)
+      // TRACKING PENGELUARAN UNTUK UPDATE/TAMBAH STOK (Bahan Baku Lama)
       // =======================================================================
-      // Mencari data lama dari list internal untuk dicari selisih stoknya
       final oldItem = originalList.firstWhereOrNull(
         (element) => element.id == id,
       );
@@ -231,7 +184,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
         final double selisih = stok - oldItem.stok;
         final double totalBiaya = selisih * harga;
 
-        // Struktur data penambahan stok yang disimpan ke lokal device
         final mapHistori = {
           'tanggal': DateTime.now().toIso8601String(),
           'bahan_baku_id': id,
@@ -243,7 +195,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
           'total_pengeluaran': totalBiaya,
         };
 
-        // Membaca histori lama, menambahkan data baru, lalu disimpan kembali
         List<dynamic> localData = _storage.read('histori_pengeluaran') ?? [];
         localData.add(mapHistori);
         await _storage.write('histori_pengeluaran', localData);
@@ -279,35 +230,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
         colorText: Colors.white,
       );
     }
-  }
-
-  // --- METHOD UNTUK MEMBUKA DIALOG INSERT ---
-  void openInsertDialog() {
-    // Bersihkan data formulir sisa sebelumnya agar kembali suci
-    clearForm();
-
-    // Pastikan UI memperbarui state sebelum menampilkan dialog baru
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.dialog(const InsertBahanBakuDialog());
-    });
-  }
-
-  // --- METHOD UNTUK MEMBUKA DIALOG EDIT ---
-  void openEditDialog(BahanBaku item) {
-    // Bersihkan formulir terlebih dahulu
-    clearForm();
-
-    // Isi controller dengan data item bahan baku yang dipilih
-    namaC.text = item.namaBahan;
-    merkC.text = item.merk ?? '';
-    satuanC.text = item.satuan;
-    stokC.text = item.stok.toString();
-    hargaC.text = currencyFormatter.format(item.hargaSatuan);
-
-    // Buka dialog edit bahan baku
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Get.dialog(EditBahanBakuDialog(item: item));
-    });
   }
 
   Future<void> softDeleteBahan(int id) async {
@@ -459,7 +381,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     super.onClose();
   }
 
-  // Perhitungan Ringkasan / Summary Card Utama (Mendukung tipe double secara presisi)
   double get totalNilaiInventory {
     return originalList.fold(
       0.0,
