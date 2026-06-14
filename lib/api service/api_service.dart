@@ -16,7 +16,7 @@ import 'package:tugas_akhir/models/financial_report.dart';
 
 class ApiService {
   static const String baseUrl =
-      "https://porthole-popcorn-winter.ngrok-free.dev";
+      "http://103.67.78.70";
 
   // ========================
   // COMMON HEADERS
