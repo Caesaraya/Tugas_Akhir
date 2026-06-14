@@ -79,7 +79,7 @@ function isDefaultImage(imageName) {
 // BUILD IMAGE URL
 // ========================
 function buildImageUrl(product) {
-  const baseUrl = "https://porthole-popcorn-winter.ngrok-free.dev";
+  const baseUrl = "http://103.67.78.70";
 
   if (!product.image) {
     return `${baseUrl}/images/${getImageByJenis(product.jenis)}`;

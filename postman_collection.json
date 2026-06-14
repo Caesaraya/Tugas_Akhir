@@ -7,7 +7,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "https://porthole-popcorn-winter.ngrok-free.dev",
+      "value": "http://103.67.78.70",
       "type": "string"
     }
   ],

@@ -107,7 +107,7 @@ DELETE /api/users/:id        - Delete user
 - **Library**: Multer
 - **Storage**: Local storage di folder `uploads/`
 - **Naming**: Unique filename dengan timestamp dan random number
-- **URL Building**: Base URL ngrok untuk image access
+- **URL Building**: Base URL VPS production server (http://103.67.78.70) untuk image access
 - **Default Images**: Auto-assign default images berdasarkan jenis produk
 
 ---
@@ -129,7 +129,7 @@ DELETE /api/users/:id        - Delete user
 **Jawaban:**
 "Backend menggunakan library **Multer** untuk menangani file upload:
 1. **Storage Configuration**: File disimpan di folder `uploads/` dengan unique filename (timestamp + random number)
-2. **Image URL Building**: Backend membangun URL lengkap menggunakan base URL ngrok untuk frontend access
+2. **Image URL Building**: Backend membangun URL lengkap menggunakan base URL VPS production server untuk frontend access
 3. **Default Images**: Jika produk tidak memiliki gambar, backend otomatis menetapkan default image berdasarkan jenis produk (cake.jpg untuk CAKE, bread.jpg untuk BREAD, dll)
 4. **Validation**: File hanya diterima jika format sesuai dan ukuran reasonable
 5. **Static Files**: Express static middleware digunakan untuk serve images di `/uploads` dan `/images` endpoints"
@@ -229,7 +229,7 @@ DELETE /api/users/:id        - Delete user
 
 **Jawaban:**
 "Beberapa challenges yang kami hadapi:
-1. **Image URL Management**: Mengelola base URL untuk image access, terutama dengan ngrok yang berubah-ubah
+1. **Image URL Management**: Mengelola base URL untuk image access dengan production environment yang stabil
 2. **Discount Calculation Logic**: Memastikan perhitungan diskon konsisten antara frontend dan backend
 3. **File Upload Handling**: Menangani file upload dengan Multer dan memastikan storage yang efisien
 4. **Database Relationship**: Mengelola complex relationship antara produk, bahan baku, dan resep

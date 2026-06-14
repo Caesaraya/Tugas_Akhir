@@ -5,7 +5,7 @@ const db = require("../config/db");
 // ========================
 function buildImageUrl(image) {
   const baseUrl =
-    "https://porthole-popcorn-winter.ngrok-free.dev";
+    "http://103.67.78.70";
 
   if (!image) return null;
 
