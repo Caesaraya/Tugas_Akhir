@@ -32,12 +32,24 @@ class ProductDetailPage extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
       ),
-      body: Column(
-        children: [
-          ProductDetailBody(product: product, currency: currency),
-          ProductDetailActions(product: product, controller: controller),
-        ],
-      ),
+      // Menggunakan Obx agar halaman detail memantau perubahan data terbaru di controller secara real-time
+      body: Obx(() {
+        // Cari data ter-update dari originalList di controller berdasarkan id produk
+        final latestProduct = controller.originalList.firstWhere(
+          (p) => p.id == product.id,
+          orElse: () => product, // Fallback jika tidak ditemukan
+        );
+
+        return Column(
+          children: [
+            ProductDetailBody(product: latestProduct, currency: currency),
+            ProductDetailActions(
+              product: latestProduct,
+              controller: controller,
+            ),
+          ],
+        );
+      }),
     );
   }
 }

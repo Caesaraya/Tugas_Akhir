@@ -19,23 +19,36 @@ class ToolbarButton extends StatelessWidget {
     final isIconOnly = title == null || title!.isEmpty;
 
     return SizedBox(
-      width: isIconOnly ? 56 : null,
-      height: 56,
+      height: 42, // Membuat tinggi tombol lebih kompak & proporsional
+      width: isIconOnly ? 42 : null,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(isIconOnly ? 100 : 16),
+            borderRadius: BorderRadius.circular(
+              8,
+            ), // Mengikuti sudut rounded sidebar baru
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: isIconOnly ? 0 : 16),
         ),
         child: isIconOnly
-            ? Icon(icon)
+            ? Icon(icon, size: 20)
             : Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [Icon(icon), const SizedBox(width: 8), Text(title!)],
+                children: [
+                  Icon(icon, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    title!,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
       ),
     );

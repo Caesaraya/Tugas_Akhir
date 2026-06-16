@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
-import 'package:tugas_akhir/widget/admin/dialogs/product/insert_product_dialog.dart';
-import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
-import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 
 class ProductListHeader extends StatelessWidget {
   final ProductTableController controller;
@@ -12,22 +9,62 @@ class ProductListHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final categories = ['Semua', 'Roti', 'Kue', 'Pastry', 'Minuman'];
+    final selectedCategory = 'Semua'.obs;
+
     return Container(
-      padding: const EdgeInsets.all(16),
       color: Colors.white,
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        12,
+      ), // Mengurangi padding atas agar lebih compact
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: TableSearchBar(
-              controller: controller.searchC,
-              hint: 'Cari produk...',
+          // TableSearchBar telah dihapus dari sini karena dipindah ke AppBar
+
+          // Horizontal Scroll Filter Chips dipertahankan penuh
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: categories.map((cat) {
+                return Obx(() {
+                  bool isSelected = selectedCategory.value == cat;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(cat),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) {
+                          selectedCategory.value = cat;
+                          controller.search(cat == 'Semua' ? '' : cat);
+                        }
+                      },
+                      selectedColor: Colors.black,
+                      backgroundColor: Colors.white,
+                      labelStyle: TextStyle(
+                        color: isSelected ? Colors.white : Colors.black87,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(
+                          color: isSelected
+                              ? Colors.black
+                              : Colors.grey.shade300,
+                        ),
+                      ),
+                      showCheckmark: false,
+                    ),
+                  );
+                });
+              }).toList(),
             ),
-          ),
-          const SizedBox(width: 12),
-          ToolbarButton(
-            icon: Icons.add,
-            color: const Color(0xFF5D4037),
-            onTap: () => Get.dialog(InsertProductDialog()),
           ),
         ],
       ),

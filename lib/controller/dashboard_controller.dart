@@ -24,6 +24,7 @@ class DashboardController extends GetxController {
     fetchProducts();
     super.onInit();
   }
+
   Future<void> fetchProducts() async {
     try {
       isLoading(true);

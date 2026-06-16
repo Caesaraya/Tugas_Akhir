@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:tugas_akhir/bindings/bindings.dart';
 import 'package:tugas_akhir/routes/pages.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 
-void main() {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
+
   runApp(const MyApp());
 }
 
@@ -21,7 +26,7 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF26C6DA)),
       ),
       initialBinding: AppBinding(),
-      initialRoute: AppRoutes.dashboardMobile,
+      initialRoute: AppRoutes.bakery,
       getPages: AppPages.pages,
     );
   }

@@ -12,23 +12,35 @@ class KelolaResepMobileList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(
+          child: CircularProgressIndicator(color: Colors.black),
+        );
       }
 
       if (controller.paginatedList.isEmpty) {
-        return const Center(child: Text('Tidak ada data resep'));
+        return const Center(
+          child: Text(
+            'Data resep tidak ditemukan',
+            style: TextStyle(color: Colors.grey),
+          ),
+        );
       }
 
-      return ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: controller.paginatedList.length,
-        itemBuilder: (context, index) {
-          final item = controller.paginatedList[index];
-          return ResepItemCard(
-            resep: item,
-            onTap: () => controller.goToDetailMobile(item),
-          );
-        },
+      return RefreshIndicator(
+        color: Colors.black,
+        onRefresh: () => controller.fetchData(),
+        child: ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          itemCount: controller.paginatedList.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final item = controller.paginatedList[index];
+            return ResepItemCard(
+              resep: item,
+              onTap: () => controller.goToDetailMobile(item),
+            );
+          },
+        ),
       );
     });
   }

@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as http_parser;
+import 'package:tugas_akhir/models/bahan_baku_requirment.dart';
+import 'package:tugas_akhir/models/finacial_report.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/bahan_baku.dart';
@@ -14,7 +17,7 @@ import 'package:tugas_akhir/models/user.dart';
 
 class ApiService {
   static const String baseUrl =
-      "https://porthole-popcorn-winter.ngrok-free.dev";
+      "http://103.67.78.70";
 
   // ========================
   // COMMON HEADERS
@@ -565,6 +568,52 @@ class ApiService {
   }
 
   // ========================
+  // CHECK USAGE BAHAN BAKU
+  // ========================
+  static Future<BahanUsageResult> checkUsageBahanBaku(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bahan-baku/$id/check-usage"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return BahanUsageResult.fromJson(data);
+      } else {
+        throw Exception("Failed to check bahan usage");
+      }
+    } catch (e) {
+      throw Exception("Gagal cek penggunaan bahan: $e");
+    }
+  }
+
+  // ========================
+  // GET STOCK SUMMARY
+  // ========================
+  static Future<StockSummaryResult> getStockSummary() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bahan-baku/summary/stock"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return StockSummaryResult.fromJson(data);
+      } else {
+        throw Exception("Failed to get stock summary");
+      }
+    } catch (e) {
+      throw Exception("Gagal mengambil summary stok: $e");
+    }
+  }
+
+  // ========================
   // DISKON APIS
   // ========================
   static Future<List<Diskon>> getAllDiskon() async {
@@ -852,6 +901,26 @@ class ApiService {
     }
   }
 
+  static Future<Produksi> getProduksiById(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/produksi/$id"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return Produksi.fromJson(data['data']);
+      } else {
+        throw Exception("Failed to get produksi detail");
+      }
+    } catch (e) {
+      throw Exception("Gagal mengambil detail produksi: $e");
+    }
+  }
+
   // ========================
   // RESEP APIS
   // ========================
@@ -1067,6 +1136,237 @@ class ApiService {
       }
     } catch (e) {
       throw Exception("Gagal memuat users: $e");
+    }
+  }
+
+  // ========================
+  // BAKERY CALCULATION APIS
+  // ========================
+  static Future<BakeryCalculationResult> hitungKebutuhanBahan({
+    required int resepId,
+    required int quantity,
+  }) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bakery/hitung-kebutuhan")
+                .replace(queryParameters: {
+              'resep_id': resepId.toString(),
+              'quantity': quantity.toString(),
+            }),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return BakeryCalculationResult.fromJson(data);
+      } else {
+        throw Exception("Failed to calculate ingredient requirements");
+      }
+    } catch (e) {
+      throw Exception("Gagal menghitung kebutuhan bahan: $e");
+    }
+  }
+
+ static Future<BakeryAvailabilityResult> cekKetersediaanBahan({
+  required int resepId,
+  required int quantity,
+}) async {
+  try {
+    final uri = Uri.parse("$baseUrl/api/bakery/cek-ketersediaan")
+        .replace(queryParameters: {
+      'produk_id': resepId.toString(),
+      'quantity': quantity.toString(),
+    });
+    
+    debugPrint('=== CEK URL: $uri ===');
+    
+    final response = await http
+        .get(uri, headers: {"Connection": "close"})
+        .timeout(const Duration(seconds: 10));
+    
+    debugPrint('=== CEK STATUS: ${response.statusCode} ===');
+    debugPrint('=== CEK BODY: ${response.body} ===');
+    
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return BakeryAvailabilityResult.fromJson(data);
+    } else {
+      throw Exception("Failed to check ingredient availability");
+    }
+  } catch (e) {
+    throw Exception("Gagal cek ketersediaan bahan: $e");
+  }
+}
+
+ static Future<BakeryCostResult> hitungBiayaProduksi({
+  required int resepId,
+  required int quantity,
+}) async {
+  try {
+    final uri = Uri.parse("$baseUrl/api/bakery/hitung-biaya")
+        .replace(queryParameters: {
+      'produk_id': resepId.toString(),
+      'quantity': quantity.toString(),
+    });
+    
+    debugPrint('=== BAKERY URL: $uri ===');
+    
+    final response = await http
+        .get(uri, headers: {"Connection": "close"})
+        .timeout(const Duration(seconds: 10));
+    
+    debugPrint('=== BAKERY STATUS: ${response.statusCode} ===');
+    debugPrint('=== BAKERY BODY: ${response.body} ===');
+    
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return BakeryCostResult.fromJson(data);
+    } else {
+      throw Exception("Failed to calculate production cost");
+    }
+  } catch (e) {
+    throw Exception("Gagal hitung biaya produksi: $e");
+  }
+}
+
+  static Future<List<ProduksiPossibleItem>> getProduksiPossible({
+    int? quantity,
+  }) async {
+    try {
+      final queryParams = <String, String>{};
+      if (quantity != null) {
+        queryParams['quantity'] = quantity.toString();
+      }
+
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bakery/produksi-possible")
+                .replace(queryParameters: queryParams),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return (data['data'] as List)
+            .map((e) => ProduksiPossibleItem.fromJson(e))
+            .toList();
+      } else {
+        throw Exception("Failed to get production possibilities");
+      }
+    } catch (e) {
+      throw Exception("Gagal get produksi possible: $e");
+    }
+  }
+
+  // ========================
+  // FINANCIAL REPORTS
+  // ========================
+  static Future<List<FinancialReport>> getFinancialReports() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/financial"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return (data['data'] as List)
+              .map((e) => FinancialReport.fromJson(e))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception("Failed to load financial reports");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat laporan keuangan: $e");
+    }
+  }
+
+  static Future<FinancialReport?> getFinancialReportByMonth(
+      int tahun, int bulan) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/financial/$tahun/$bulan"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return FinancialReport.fromJson(data['data']);
+        }
+        return null;
+      } else {
+        throw Exception("Failed to load financial report");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat laporan keuangan: $e");
+    }
+  }
+
+  static Future<FinancialSummary?> getFinancialSummary() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/financial/summary"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return FinancialSummary.fromJson(data['data']);
+        }
+        return null;
+      } else {
+        throw Exception("Failed to load financial summary");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat summary keuangan: $e");
+    }
+  }
+
+  static Future<bool> generateFinancialReport(int tahun, int bulan) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/financial/generate"),
+            headers: headers,
+            body: jsonEncode({
+              "tahun": tahun,
+              "bulan": bulan,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal generate laporan keuangan: $e");
+    }
+  }
+
+  static Future<bool> deleteFinancialReport(int tahun, int bulan) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse("$baseUrl/api/financial/$tahun/$bulan"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal hapus laporan keuangan: $e");
     }
   }
 }

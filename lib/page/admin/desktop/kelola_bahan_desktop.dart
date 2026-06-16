@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
 import 'package:tugas_akhir/controller/admin/navigation_controller.dart';
 import 'package:tugas_akhir/widget/admin/bahan/bahan_baku_table.dart';
-
-import 'package:tugas_akhir/widget/admin/custom_drawer.dart';
+import 'package:tugas_akhir/widget/admin/bahan/summary_card.dart';
+import 'package:tugas_akhir/widget/admin/custom_sidebar.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/bahan/insert_bahan_baku_dialog.dart';
 import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
@@ -17,64 +17,123 @@ class BahanBakuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Pastikan controller teregistrasi (jika belum di-inject global)
     final ctrl = Get.find<BahanBakuTableController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: const Color(0xFFFAFAFA),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AdminSidebar(),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      TableSearchBar(
-                        controller: ctrl.searchC,
-                        hint: 'Cari produk...',
+            child: SingleChildScrollView(
+              // ← Membungkus seluruh konten kanan agar bisa di-scroll
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Kelola Bahan Baku',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E1E1E),
                       ),
-                      const SizedBox(width: 20),
-                      ToolbarButton(
-                        title: 'Insert Bahan',
-                        icon: Icons.add,
-                        color: Colors.cyan,
-                        onTap: () {
-                          ctrl.clearForm();
-                          Get.dialog(InsertBahanBakuDialog());
-                        },
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manajemen stok dan harga bahan baku produksi kue',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
                       ),
-                      const SizedBox(width: 12),
-                      ToolbarButton(
-                        title: "Sortir Stok Habis",
-                        icon: Icons.sort,
-                        color: Colors.orange,
-                        onTap: () {
-                          ctrl.toggleFilterStockHabis();
-                        },
+                    ),
+                    const SizedBox(height: 24),
+                    Obx(() {
+                      return Row(
+                        children: [
+                          SummaryCard(
+                            title: 'Nilai Inventory',
+                            value: ctrl.formatRingkasanMataUang(
+                              ctrl.totalNilaiInventory,
+                            ),
+                            subtitle: 'total nilai inventory',
+                            subtitleColor: Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 16),
+                          SummaryCard(
+                            title: 'Total Bahan',
+                            value: ctrl.totalBahanAktif.toString(),
+                            subtitle: 'Aktif di sistem',
+                            subtitleColor: Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 16),
+                          SummaryCard(
+                            title: 'Stok Menipis',
+                            value: ctrl.jumlahStokMenipis.toString(),
+                            subtitle: 'Perlu restok segera',
+                            subtitleColor: Colors.orange.shade700,
+                          ),
+                        ],
+                      );
+                    }),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        const Text(
+                          "Daftar Bahan Baku",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const Spacer(),
+                        TableSearchBar(controller: ctrl.searchC),
+                        const SizedBox(width: 12),
+                        ToolbarButton(
+                          title: 'Tambah Bahan',
+                          icon: Icons.add_rounded,
+                          color: const Color(0xFF1E1E1E),
+                          onTap: () {
+                            ctrl.clearForm();
+                            ctrl.openInsertDialog();
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                        ToolbarButton(
+                          title: "Stock habis",
+                          icon: Icons.warning_amber_rounded,
+                          color: Colors.grey.shade700,
+                          onTap: () {
+                            ctrl.toggleFilterStockHabis();
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                        ToolbarButton(
+                          title: "",
+                          icon: Icons.refresh_outlined,
+                          color: Colors.grey.shade400,
+                          onTap: () {
+                            ctrl.fetchData();
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // ← Menghapus Expanded dan SingleChildScrollView bawaan tabel agar menyatu dengan scroll utama
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200),
                       ),
-                      const SizedBox(width: 12),
-                      ToolbarButton(
-                        title: "",
-                        icon: Icons.refresh,
-                        color: Colors.green,
-                        onTap: () {
-                          ctrl.refreshData();
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
+                      clipBehavior: Clip.antiAlias,
                       child: BahanBakuTable(),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

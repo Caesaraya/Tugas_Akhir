@@ -14,16 +14,21 @@ class TableActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(8),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.08), // Efek soft background tipis
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: color.withOpacity(0.15), width: 1),
+          ),
+          child: Icon(icon, color: color, size: 16),
         ),
-        child: Icon(icon, color: Colors.white, size: 18),
       ),
     );
   }

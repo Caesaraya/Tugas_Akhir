@@ -23,6 +23,8 @@ class TransactionCardDesktop extends StatelessWidget {
     final List<dynamic> items = transaction['items'] ?? [];
 
     return Card(
+        color: Colors.white,
+        margin: const EdgeInsets.only(bottom: 12),  
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(

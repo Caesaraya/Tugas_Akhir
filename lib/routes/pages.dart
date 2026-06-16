@@ -16,6 +16,8 @@ import 'package:tugas_akhir/page/login/desktop_login_page.dart';
 import 'package:tugas_akhir/page/media_query.dart';
 import 'package:tugas_akhir/page/mobile/Kasir_dashboard_mobile.dart';
 import 'package:tugas_akhir/page/login/login_page.dart';
+import 'package:tugas_akhir/page/mobile/bakery_mobile.dart';
+import 'package:tugas_akhir/page/mobile/bakery_mobile_detail.dart';
 import 'package:tugas_akhir/page/mobile/drawer_mobile.dart';
 import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
 import 'package:tugas_akhir/page/mobile/keranjang_mobile.dart';
@@ -89,5 +91,15 @@ class AppPages {
       name: AppRoutes.kelolaResepMob,
       page: () => KelolaResepMobilePage(),
     ),
+    
+    // ── Bakery ──────────────────────────────────────────────────────
+    GetPage(
+      name: AppRoutes.bakery,
+      page: () => BakeryPage(),
+    ),
+    GetPage(
+  name: AppRoutes.bakerydetail,
+  page: () => BakeryDetailPage(resep: Get.arguments),
+),
   ];
 }

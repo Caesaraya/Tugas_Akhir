@@ -15,6 +15,16 @@ class BahanBakuDetailInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Format stok desimal agar rapi (.0 dibuang, angka pecahan tetap muncul)
+    final String displayStok = bahanBaku.stok == bahanBaku.stok.roundToDouble()
+        ? bahanBaku.stok.toInt().toString()
+        : bahanBaku.stok.toString();
+
+    // Pastikan perhitungan perkalian mengembalikan tipe double yang aman
+    final double hitungTotalHarga =
+        bahanBaku.totalHarga ??
+        (double.parse(bahanBaku.stok.toString()) * bahanBaku.hargaSatuan);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -24,10 +34,13 @@ class BahanBakuDetailInfo extends StatelessWidget {
         ),
         const SizedBox(height: 15),
         BahanBakuDetailRow(label: 'Nama Bahan', value: bahanBaku.namaBahan),
-        BahanBakuDetailRow(label: 'Merk', value: bahanBaku.merk),
+        BahanBakuDetailRow(
+          label: 'Merk',
+          value: bahanBaku.merk.isEmpty ? '-' : bahanBaku.merk,
+        ),
         BahanBakuDetailRow(
           label: 'Stok Tersedia',
-          value: '${bahanBaku.stok} ${bahanBaku.satuan}',
+          value: '$displayStok ${bahanBaku.satuan}',
         ),
         BahanBakuDetailRow(label: 'Satuan', value: bahanBaku.satuan),
         BahanBakuDetailRow(
@@ -50,10 +63,7 @@ class BahanBakuDetailInfo extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
-                currency.format(
-                  bahanBaku.totalHarga ??
-                      (bahanBaku.stok * bahanBaku.hargaSatuan),
-                ),
+                currency.format(hitungTotalHarga),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -68,6 +78,7 @@ class BahanBakuDetailInfo extends StatelessWidget {
             label: 'Terakhir Diupdate',
             value: DateFormat(
               'dd MMM yyyy, HH:mm',
+              'id',
             ).format(bahanBaku.createdAt!),
           ),
       ],

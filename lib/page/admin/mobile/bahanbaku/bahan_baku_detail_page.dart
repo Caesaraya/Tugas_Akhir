@@ -35,26 +35,37 @@ class BahanBakuDetailPage extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  BahanBakuDetailHeader(bahanBaku: bahanBaku),
-                  BahanBakuDetailInfo(bahanBaku: bahanBaku, currency: currency),
-                ],
+      body: Obx(() {
+        // Cari data terbaru dari state controller agar real-time saat soft-delete / restore dilakukan
+        final currentBahan = controller.originalList.firstWhere(
+          (element) => element.id == bahanBaku.id,
+          orElse: () => bahanBaku,
+        );
+
+        return Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    BahanBakuDetailHeader(bahanBaku: currentBahan),
+                    BahanBakuDetailInfo(
+                      bahanBaku: currentBahan,
+                      currency: currency,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          BahanBakuDetailActionBar(
-            controller: controller,
-            bahanBaku: bahanBaku,
-          ),
-        ],
-      ),
+            BahanBakuDetailActionBar(
+              controller: controller,
+              bahanBaku: currentBahan,
+            ),
+          ],
+        );
+      }),
     );
   }
 }

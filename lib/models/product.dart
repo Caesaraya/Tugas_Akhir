@@ -13,6 +13,7 @@ class Product {
   // NEW
   final String? deletedAt;
 
+
   Product({
     required this.id,
     required this.name,

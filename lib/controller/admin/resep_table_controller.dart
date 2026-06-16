@@ -19,7 +19,8 @@ class ResepTableController extends BaseTableController<Resep> {
 
   // Controller untuk Input Bahan di dalam Dialog
   final jumlahBahanC = TextEditingController();
-  var selectedBahanId = Rxn<int>(); // Menampung ID bahan baku yang dipilih
+  var selectedBahanId =
+      Rxn<int>(); // Menampung ID bahan baku yang dipilih (Aman bertipe int)
 
   // List reaktif untuk menampung bahan sementara (untuk Insert & Edit)
   var tempBahanList = <DetailResep>[].obs;
@@ -30,22 +31,43 @@ class ResepTableController extends BaseTableController<Resep> {
       isLoading.value = true;
       final data = await ApiService.getAllResep();
 
-      // CEK DI CONSOLE LOG:
-      if (data.isNotEmpty) {
-        print(
-          "Resep pertama: ${data[0].namaResep}, Jumlah Bahan: ${data[0].bahan?.length}",
-        );
-      }
+      // URUTKAN DATA: Resep aktif di atas, dihapus di bawah
+      data.sort((a, b) {
+        if (a.deletedAt == null && b.deletedAt != null) return -1;
+        if (a.deletedAt != null && b.deletedAt == null) return 1;
+        return 0;
+      });
+
       setData(data);
+      isLoading.value =
+          false; // Matikan loading utama agar tabel langsung muncul dulu
+
+      // --- LOGIKA TAMBAHAN UNTUK UTING DATA BAHAN DI BACKGROUND ---
+      // Ambil detail bahan secara async untuk semua data yang ada tanpa mengunci UI loading
+      for (var resep in data) {
+        if (resep.id != null) {
+          // Jalankan secara fire-and-forget di background
+          ApiService.getDetailResep(resep.id!)
+              .then((detail) {
+                _updateItemInList(
+                  detail,
+                ); // Otomatis memperbarui jumlah bahan di tabel saat data masuk
+              })
+              .catchError((err) {
+                print(
+                  "Gagal memuat detail otomatis untuk ID ${resep.id}: $err",
+                );
+              });
+        }
+      }
     } catch (e) {
+      isLoading.value = false;
       Get.snackbar(
         'Error',
         'Gagal mengambil data resep: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -70,7 +92,7 @@ class ResepTableController extends BaseTableController<Resep> {
   // --- LOGIKA MANAJEMEN BAHAN (TEMP LIST) ---
 
   void addBahanToTempList() {
-    if (selectedBahanId.value == null || jumlahBahanC.text.isEmpty) {
+    if (selectedBahanId.value == null || jumlahBahanC.text.trim().isEmpty) {
       Get.snackbar(
         "Peringatan",
         "Pilih bahan dan isi jumlahnya",
@@ -79,21 +101,26 @@ class ResepTableController extends BaseTableController<Resep> {
       return;
     }
 
-    // Tambah ke list sementara
+    // Mengamankan parsing jumlah bahan ke double dari string input teks
+    final double parsedJumlah =
+        double.tryParse(jumlahBahanC.text.trim()) ?? 0.0;
+
     tempBahanList.add(
-      DetailResep(
-        bahanId: selectedBahanId.value!,
-        jumlahBahan: double.tryParse(jumlahBahanC.text) ?? 0,
-      ),
+      DetailResep(bahanId: selectedBahanId.value!, jumlahBahan: parsedJumlah),
     );
 
-    // Reset input bahan
+    // Reset input bahan baku di dalam dialog form setelah klik tambah
     jumlahBahanC.clear();
     selectedBahanId.value = null;
   }
 
   void removeBahanFromTemp(int index) {
     tempBahanList.removeAt(index);
+  }
+
+  // Alias method untuk menjaga kompatibilitas pemanggilan pada UI dialog lama Anda
+  void removeBahanFromTempList(int index) {
+    removeBahanFromTemp(index);
   }
 
   void clearForm() {
@@ -107,8 +134,13 @@ class ResepTableController extends BaseTableController<Resep> {
   // --- ACTIONS (INSERT, EDIT, DETAIL, DELETE) ---
 
   void openInsertDialog() {
+    // Pastikan form bersih total secara sinkronous sebelum memicu frame baru
     clearForm();
-    Get.dialog(InsertResepDialog());
+
+    // Pastikan UI memperbarui state pembersihan sebelum menampilkan dialog baru
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.dialog(const InsertResepDialog());
+    });
   }
 
   Future<void> insertResep() async {
@@ -134,18 +166,28 @@ class ResepTableController extends BaseTableController<Resep> {
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
+        // Bersihkan form kembali setelah sukses submit data
+        clearForm();
       }
     } catch (e) {
       Get.snackbar('Error', e.toString());
     }
   }
 
+  // Alias method submitResep agar tombol simpan di dialog insert tetap bekerja normal
+  Future<void> submitResep() async {
+    await insertResep();
+  }
+
   void _updateItemInList(Resep detail) {
     int index = originalList.indexWhere((element) => element.id == detail.id);
     if (index != -1) {
-      originalList[index] =
-          detail; // Timpa data lama (0 bahan) dengan data baru (lengkap)
-      filteredList.assignAll(originalList); // Trigger UI Tabel untuk refresh
+      // Preserve deletedAt dari data asli agar soft delete tidak hilang
+      final existingDeletedAt = originalList[index].deletedAt;
+      originalList[index] = detail.copyWith(
+        deletedAt: detail.deletedAt ?? existingDeletedAt,
+      );
+      filteredList.assignAll(originalList);
       setupPagination();
     }
   }
@@ -158,17 +200,17 @@ class ResepTableController extends BaseTableController<Resep> {
       );
       Resep detail = await ApiService.getDetailResep(resep.id!);
 
-      // Sinkronkan ke tabel utama
-      _updateItemInList(detail);
+      Get.back(); // FIX STUCK: Tutup dialog loading terlebih dahulu sebelum memicu re-render UI Obx
 
-      Get.back(); // Tutup loading
-
-      clearForm();
-      namaResepC.text = detail.namaResep;
-      deskripsiC.text = detail.deskripsi;
-      tempBahanList.assignAll(detail.bahan ?? []);
-
-      Get.dialog(EditResepDialog(resep: detail));
+      // Jalankan setelah siklus frame UI dibersihkan agar aman dari bentrokan state navigator
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateItemInList(detail);
+        clearForm(); // Bersihkan sisa data lama terlebih dahulu
+        namaResepC.text = detail.namaResep;
+        deskripsiC.text = detail.deskripsi;
+        tempBahanList.assignAll(detail.bahan ?? []);
+        Get.dialog(EditResepDialog(resep: detail));
+      });
     } catch (e) {
       Get.back();
       Get.snackbar("Error", "Gagal memuat data: $e");
@@ -177,6 +219,16 @@ class ResepTableController extends BaseTableController<Resep> {
 
   Future<void> updateResepData(Resep resep) async {
     try {
+      if (namaResepC.text.isEmpty) {
+        Get.snackbar(
+          'Error',
+          'Nama resep wajib diisi',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
       Resep updatedResep = resep.copyWith(
         namaResep: namaResepC.text,
         deskripsi: deskripsiC.text,
@@ -185,7 +237,6 @@ class ResepTableController extends BaseTableController<Resep> {
 
       bool success = await ApiService.updateResep(updatedResep);
       if (success) {
-        fetchData();
         Get.back();
         Get.snackbar(
           'Sukses',
@@ -193,35 +244,34 @@ class ResepTableController extends BaseTableController<Resep> {
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
+        fetchData();
+        // Bersihkan form setelah sukses edit agar state kembali suci/kosong
+        clearForm();
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
-  void showDetailBahan(Resep resep) async {
-    try {
-      Get.dialog(
-        const Center(child: CircularProgressIndicator()),
-        barrierDismissible: false,
-      );
-      Resep detail = await ApiService.getDetailResep(resep.id!);
-
-      // Sinkronkan ke tabel utama
-      _updateItemInList(detail);
-
-      Get.back(); // Tutup loading
-      Get.dialog(DetailResepDialog(resep: detail));
-    } catch (e) {
-      Get.back();
-      Get.snackbar("Error", "Gagal memuat detail: $e");
-    }
+  // Alias method updateResep yang dipanggil dari EditResepDialog
+  Future<void> updateResep(int id) async {
+    Resep resepData = Resep(
+      id: id,
+      namaResep: namaResepC.text,
+      deskripsi: deskripsiC.text,
+    );
+    await updateResepData(resepData);
   }
 
   Future<void> deleteData(int id) async {
     Get.defaultDialog(
       title: "Konfirmasi Hapus",
-      middleText: "Hapus resep ini? Data bahan di dalamnya juga akan terhapus.",
+      middleText: "Hapus resep ini? Data akan dipindahkan ke daftar terhapus.",
       textConfirm: "Ya, Hapus",
       textCancel: "Batal",
       confirmTextColor: Colors.white,
@@ -229,7 +279,7 @@ class ResepTableController extends BaseTableController<Resep> {
       onConfirm: () async {
         Get.back();
         try {
-          bool success = await ApiService.deleteResep(id);
+          bool success = await ApiService.softDeleteResep(id);
           if (success) {
             Get.snackbar(
               "Berhasil",
@@ -237,7 +287,6 @@ class ResepTableController extends BaseTableController<Resep> {
               backgroundColor: Colors.green,
               colorText: Colors.white,
             );
-            Get.back(); // Kembali ke halaman utama setelah hapus
             fetchData();
           }
         } catch (e) {
@@ -247,19 +296,116 @@ class ResepTableController extends BaseTableController<Resep> {
     );
   }
 
+  Future<void> restoreData(int id) async {
+    Get.defaultDialog(
+      title: "Konfirmasi Restore",
+      middleText: "Kembalikan resep ini ke daftar aktif?",
+      textConfirm: "Ya, Restore",
+      textCancel: "Batal",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.green,
+      onConfirm: () async {
+        Get.back();
+        try {
+          bool success = await ApiService.restoreResep(id);
+          if (success) {
+            Get.snackbar(
+              "Berhasil",
+              "Resep berhasil direstore",
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+            );
+            fetchData();
+          }
+        } catch (e) {
+          Get.snackbar("Error", e.toString(), backgroundColor: Colors.red);
+        }
+      },
+    );
+  }
+
+  Future<void> forceDeleteData(int id) async {
+    Get.defaultDialog(
+      title: "Konfirmasi Hapus Permanen",
+      middleText:
+          "Hapus resep ini secara permanen? Data bahan di dalamnya juga akan terhapus selamanya.",
+      textConfirm: "Ya, Hapus Permanen",
+      textCancel: "Batal",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.red,
+      onConfirm: () async {
+        Get.back();
+        try {
+          bool success = await ApiService.forceDeleteResep(id);
+          if (success) {
+            Get.snackbar(
+              "Berhasil",
+              "Resep berhasil dihapus permanen",
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+            );
+            fetchData();
+          }
+        } catch (e) {
+          Get.snackbar("Error", e.toString(), backgroundColor: Colors.red);
+        }
+      },
+    );
+  }
+
+  void goToDetailDesktop(Resep resep) async {
+    try {
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      Resep detail = await ApiService.getDetailResep(resep.id!);
+
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateItemInList(detail);
+        Get.dialog(DetailResepDialog(resep: detail));
+      });
+    } catch (e) {
+      if (Get.isDialogOpen ?? false) Get.back();
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
   void goToDetailMobile(Resep resep) async {
     try {
       Get.dialog(
         const Center(child: CircularProgressIndicator()),
         barrierDismissible: false,
       );
+
       Resep detail = await ApiService.getDetailResep(resep.id!);
-      _updateItemInList(detail); // Update data tabel utama
-      Get.back();
-      Get.to(() => DetailResepMobilePage(resep: detail));
+
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateItemInList(detail);
+        Get.to(() => DetailResepMobilePage(resep: detail));
+      });
     } catch (e) {
-      Get.back();
-      Get.snackbar("Error", e.toString());
+      if (Get.isDialogOpen ?? false) Get.back();
+      Get.snackbar(
+        "Error",
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 }

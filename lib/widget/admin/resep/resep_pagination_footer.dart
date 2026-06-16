@@ -10,58 +10,41 @@ class ResepPaginationFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      // Mengambil reactive state halaman langsung dari BaseTableController
+      final int current = controller.currentPage.value;
+      final int total = controller.totalPages.value;
+
+      // Jika total halaman kurang dari atau sama dengan 1, footer tidak perlu muncul (sama seperti produk)
+      if (total <= 1) return const SizedBox.shrink();
+
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Colors.grey.shade200)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        color: const Color(
+          0xFFF8F9FA,
+        ), // Latar belakang abu-abu terang sesuai product footer
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Halaman ${controller.currentPage.value} dari ${controller.totalPages.value}',
-              style: TextStyle(
-                color: Colors.grey[700],
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            // Baris Navigasi Tombol Angka (Maksimal 4 Pilihan Kotak Sesuai Produk)
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _PageButton(
+                _buildSquareNavButton(
                   icon: Icons.chevron_left,
-                  onPressed: controller.currentPage.value > 1
-                      ? controller.previousPage
-                      : null,
+                  // Menggunakan previousPage bawaan controller
+                  onPressed: current > 1 ? controller.previousPage : null,
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(
-                      0xFF5D4037,
-                    ), // Warna cyan sesuai tema resep
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '${controller.currentPage.value}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                _PageButton(
+                const SizedBox(width: 4),
+
+                // Memanggil pembentuk item pagination kotak maksimal 4 komponen
+                ..._buildStrictFourItems(current, total),
+
+                const SizedBox(width: 4),
+                _buildSquareNavButton(
                   icon: Icons.chevron_right,
-                  onPressed:
-                      controller.currentPage.value < controller.totalPages.value
-                      ? controller.nextPage
-                      : null,
+                  // Menggunakan nextPage bawaan controller
+                  onPressed: current < total ? controller.nextPage : null,
                 ),
               ],
             ),
@@ -70,28 +53,150 @@ class ResepPaginationFooter extends StatelessWidget {
       );
     });
   }
-}
 
-class _PageButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onPressed;
+  /// Algoritma untuk menghasilkan susunan item kotak halaman (Maksimal 4 Komponen)
+  List<Widget> _buildStrictFourItems(int current, int total) {
+    List<Widget> items = [];
 
-  const _PageButton({required this.icon, required this.onPressed});
+    if (total <= 4) {
+      for (int i = 1; i <= total; i++) {
+        items.add(
+          _buildPageNumberBox(
+            i.toString(),
+            isActive: i == current,
+            pageTarget: i,
+          ),
+        );
+        if (i < total) items.add(const SizedBox(width: 4));
+      }
+    } else {
+      if (current <= 2) {
+        items.add(
+          _buildPageNumberBox('1', isActive: current == 1, pageTarget: 1),
+        );
+        items.add(const SizedBox(width: 4));
+        items.add(
+          _buildPageNumberBox('2', isActive: current == 2, pageTarget: 2),
+        );
+        items.add(const SizedBox(width: 4));
+        items.add(_buildPageNumberBox('3', isActive: false, pageTarget: 3));
+        items.add(const SizedBox(width: 4));
+        items.add(_buildEllipsisSign());
+      } else if (current >= total - 1) {
+        items.add(_buildPageNumberBox('1', isActive: false, pageTarget: 1));
+        items.add(const SizedBox(width: 4));
+        items.add(_buildEllipsisSign());
+        items.add(const SizedBox(width: 4));
+        items.add(
+          _buildPageNumberBox(
+            '${total - 2}',
+            isActive: false,
+            pageTarget: total - 2,
+          ),
+        );
+        items.add(const SizedBox(width: 4));
+        items.add(
+          _buildPageNumberBox(
+            '${total - 1}',
+            isActive: current == total - 1,
+            pageTarget: total - 1,
+          ),
+        );
+        items.add(const SizedBox(width: 4));
+        items.add(
+          _buildPageNumberBox(
+            '$total',
+            isActive: current == total,
+            pageTarget: total,
+          ),
+        );
+      } else {
+        items.add(_buildPageNumberBox('1', isActive: false, pageTarget: 1));
+        items.add(const SizedBox(width: 4));
+        items.add(_buildEllipsisSign());
+        items.add(const SizedBox(width: 4));
+        items.add(
+          _buildPageNumberBox('$current', isActive: true, pageTarget: current),
+        );
+        items.add(const SizedBox(width: 4));
+        items.add(_buildEllipsisSign());
+      }
 
-  @override
-  Widget build(BuildContext context) {
+      if (current < total - 1) {
+        items.add(const SizedBox(width: 4));
+        items.add(
+          _buildPageNumberBox('$total', isActive: false, pageTarget: total),
+        );
+      }
+    }
+
+    return items;
+  }
+
+  Widget _buildPageNumberBox(
+    String label, {
+    required bool isActive,
+    required int pageTarget,
+  }) {
+    return InkWell(
+      // Solusi tanpa goToPage: langsung mutasi nilai RxInt currentPage dan panggil fetchData()
+      onTap: isActive
+          ? null
+          : () {
+              controller.currentPage.value = pageTarget;
+              controller.fetchData();
+            },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.black : Colors.white,
+          border: isActive ? null : Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEllipsisSign() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: Text(
+        '...',
+        style: TextStyle(
+          color: Colors.grey[600],
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSquareNavButton({
+    required IconData icon,
+    VoidCallback? onPressed,
+  }) {
+    bool isDisable = onPressed == null;
     return InkWell(
       onTap: onPressed,
       child: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
+          color: isDisable ? Colors.grey[100] : Colors.white,
           border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
-          color: onPressed == null ? Colors.grey[100] : Colors.white,
+          borderRadius: BorderRadius.circular(6),
         ),
         child: Icon(
           icon,
-          color: onPressed == null ? Colors.grey : Colors.black,
+          color: isDisable ? Colors.grey.shade400 : Colors.black87,
+          size: 20,
         ),
       ),
     );

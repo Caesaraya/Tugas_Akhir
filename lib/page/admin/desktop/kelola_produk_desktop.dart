@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/navigation_controller.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
-import 'package:tugas_akhir/widget/admin/custom_drawer.dart';
+import 'package:tugas_akhir/widget/admin/custom_sidebar.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/product/insert_product_dialog.dart';
 import 'package:tugas_akhir/widget/admin/produk/product_table.dart';
 import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
+import 'package:tugas_akhir/widget/admin/bahan/summary_card.dart';
 
 class KelolaProdukDeskPage extends StatelessWidget {
   KelolaProdukDeskPage({super.key}) {
@@ -18,59 +19,153 @@ class KelolaProdukDeskPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: const Color(0xFFFAFAFA),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AdminSidebar(),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      TableSearchBar(
-                        controller: ctrl.searchC,
-                        hint: 'Cari produk...',
+            child: SingleChildScrollView(
+              // ← Membungkus seluruh konten kanan agar bisa di-scroll
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Kelola Produk',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E1E1E),
                       ),
-                      const SizedBox(width: 20),
-                      ToolbarButton(
-                        title: 'Insert Product',
-                        icon: Icons.add,
-                        color: Colors.cyan,
-                        onTap: () {
-                          Get.dialog(InsertProductDialog());
-                        },
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Manajemen data produk, harga jual, dan stok kue',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
                       ),
-                      const SizedBox(width: 12),
-                      ToolbarButton(
-                        title: "Sortir Stok Habis",
-                        icon: Icons.sort,
-                        color: Colors.orange,
-                        onTap: () {
-                          ctrl.toggleFilterStockHabis();
-                        },
+                    ),
+                    const SizedBox(height: 24),
+                    Obx(() {
+                      final allProducts = ctrl.originalList;
+                      final totalProduk = allProducts.length;
+                      final totalStok = allProducts.fold<int>(
+                        0,
+                        (sum, p) => sum + p.stock,
+                      );
+                      final stokHabis = allProducts
+                          .where((p) => p.stock <= 0)
+                          .length;
+
+                      return Row(
+                        children: [
+                          SummaryCard(
+                            title: 'Total Produk',
+                            value: '$totalProduk',
+                            subtitle: 'Jenis produk terdaftar',
+                            subtitleColor: Colors.blue.shade600,
+                            trailingGraph: Icon(
+                              Icons.inventory_2_outlined,
+                              size: 40,
+                              color: Colors.blue.shade100,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          SummaryCard(
+                            title: 'Total Stok',
+                            value: '$totalStok',
+                            subtitle: 'Unit tersedia di seluruh produk',
+                            subtitleColor: Colors.green.shade600,
+                            trailingGraph: Icon(
+                              Icons.layers_outlined,
+                              size: 40,
+                              color: Colors.green.shade100,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          SummaryCard(
+                            title: 'Stok Habis',
+                            value: '$stokHabis',
+                            subtitle: stokHabis > 0
+                                ? '$stokHabis produk perlu diisi ulang'
+                                : 'Semua produk tersedia',
+                            subtitleColor: stokHabis > 0
+                                ? Colors.red.shade600
+                                : Colors.green.shade600,
+                            trailingGraph: Icon(
+                              stokHabis > 0
+                                  ? Icons.warning_amber_rounded
+                                  : Icons.check_circle_outline,
+                              size: 40,
+                              color: stokHabis > 0
+                                  ? Colors.red.shade100
+                                  : Colors.green.shade100,
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        const Text(
+                          "Daftar Produk",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const Spacer(),
+                        TableSearchBar(
+                          controller: ctrl.searchC,
+                          hint: 'Cari produk...',
+                        ),
+                        const SizedBox(width: 12),
+                        ToolbarButton(
+                          title: 'Insert Product',
+                          icon: Icons.add_rounded,
+                          color: const Color(0xFF1E1E1E),
+                          onTap: () {
+                            Get.dialog(InsertProductDialog());
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                        ToolbarButton(
+                          title: "Sortir Stok Habis",
+                          icon: Icons.sort_rounded,
+                          color: Colors.grey.shade700,
+                          onTap: () {
+                            ctrl.toggleFilterStockHabis();
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                        ToolbarButton(
+                          title: "",
+                          icon: Icons.refresh_outlined,
+                          color: Colors.grey.shade400,
+                          onTap: () {
+                            ctrl.fetchData();
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // ← Menghapus Expanded dan SingleChildScrollView bawaan tabel agar menyatu dengan scroll utama
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200),
                       ),
-                      const SizedBox(width: 12),
-                      ToolbarButton(
-                        title: "",
-                        icon: Icons.refresh,
-                        color: Colors.green,
-                        onTap: () {
-                          ctrl.refreshData();
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
+                      clipBehavior: Clip.antiAlias,
                       child: ProductTable(),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

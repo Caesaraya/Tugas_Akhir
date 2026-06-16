@@ -3,27 +3,36 @@ class Resep {
   final String namaResep;
   final String deskripsi;
   final List<DetailResep>? bahan;
+  final List<Map<String, dynamic>>? products;
+  final DateTime? deletedAt;
 
   Resep({
     this.id,
     required this.namaResep,
     required this.deskripsi,
     this.bahan,
+    this.products,
+    this.deletedAt,
   });
 
   factory Resep.fromJson(Map<String, dynamic> json) {
-    // Debugging: cetak isi JSON jika Anda ragu apa nama key-nya
-    // print("Isi JSON Resep: $json");
-
     return Resep(
       id: json['id'],
       namaResep: json['nama_resep'] ?? '',
       deskripsi: json['deskripsi'] ?? '',
-      // Coba ganti 'bahan' dengan key yang sesuai dari API,
-      // misal json['details'] atau json['resep_details'] jika 'bahan' tidak bekerja.
       bahan: json['bahan'] != null
-          ? (json['bahan'] as List).map((e) => DetailResep.fromJson(e)).toList()
+          ? (json['bahan'] as List)
+              .map((e) => DetailResep.fromJson(e))
+              .toList()
           : [],
+      products: json['products'] != null
+          ? (json['products'] as List)
+              .map((e) => e as Map<String, dynamic>)
+              .toList()
+          : [],
+      deletedAt: json['deleted_at'] != null
+          ? DateTime.parse(json['deleted_at'])
+          : null,
     );
   }
 
@@ -33,6 +42,8 @@ class Resep {
       'nama_resep': namaResep,
       'deskripsi': deskripsi,
       'bahan': bahan?.map((e) => e.toJson()).toList(),
+      'products': products,
+      'deleted_at': deletedAt?.toIso8601String(),
     };
   }
 
@@ -41,12 +52,16 @@ class Resep {
     String? namaResep,
     String? deskripsi,
     List<DetailResep>? bahan,
+    List<Map<String, dynamic>>? products,
+    DateTime? deletedAt,
   }) {
     return Resep(
       id: id ?? this.id,
       namaResep: namaResep ?? this.namaResep,
       deskripsi: deskripsi ?? this.deskripsi,
       bahan: bahan ?? this.bahan,
+      products: products ?? this.products,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }
@@ -74,29 +89,19 @@ class DetailResep {
     this.totalHargaBahan,
   });
 
-  factory DetailResep.fromJson(Map<String, dynamic> json) {
-    return DetailResep(
-      id: json['id'],
-      resepId: json['resep_id'],
-      bahanId: json['bahan_id'] ?? 0,
-      // Perbaikan di sini: Gunakan helper function untuk handling String/Double
-      jumlahBahan: _toDouble(json['jumlah_bahan']),
-      namaBahan: json['nama_bahan'],
-      merk: json['merk'],
-      satuan: json['satuan'],
-      hargaSatuan: _toDouble(json['harga_satuan']),
-      totalHargaBahan: _toDouble(json['total_harga_bahan']),
-    );
-  }
-
-  // Tambahkan helper function ini di luar class atau di dalam class sebagai static
-  static double _toDouble(dynamic value) {
-    if (value == null) return 0.0;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0.0;
-    return 0.0;
-  }
+ factory DetailResep.fromJson(Map<String, dynamic> json) {
+  return DetailResep(
+    id: json['id'],
+    resepId: json['resep_id'],
+    bahanId: json['bahan_id'] ?? 0,
+    jumlahBahan: double.tryParse(json['jumlah_bahan'].toString()) ?? 0.0,
+    namaBahan: json['nama_bahan'],
+    merk: json['merk'],
+    satuan: json['satuan'],
+    hargaSatuan: double.tryParse(json['harga_satuan'].toString()),
+    totalHargaBahan: double.tryParse(json['total_harga_bahan'].toString()),
+  );
+}
 
   Map<String, dynamic> toJson() {
     return {

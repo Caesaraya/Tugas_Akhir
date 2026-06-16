@@ -22,7 +22,7 @@ class DesktopNavigationDrawer extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: const [
                 Text(
-                  'Menu Navigasi',
+                  'Rumah Lezzaaa',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
