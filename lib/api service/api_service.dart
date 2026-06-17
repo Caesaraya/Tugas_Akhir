@@ -13,6 +13,8 @@ import 'package:tugas_akhir/models/supplier.dart';
 import 'package:tugas_akhir/models/user.dart';
 import 'package:tugas_akhir/models/bahan_baku_requirement.dart';
 import 'package:tugas_akhir/models/financial_report.dart';
+import 'package:tugas_akhir/models/expense_category.dart';
+import 'package:tugas_akhir/models/expense.dart';
 
 class ApiService {
   static const String baseUrl =
@@ -1358,6 +1360,276 @@ class ApiService {
       return response.statusCode == 200;
     } catch (e) {
       throw Exception("Gagal hapus laporan keuangan: $e");
+    }
+  }
+
+  // ========================
+  // EXPENSE CATEGORY APIS
+  // ========================
+  static Future<List<ExpenseCategory>> getAllExpenseCategories() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/expenses/categories"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return (data['data'] as List)
+              .map((e) => ExpenseCategory.fromJson(e))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception("Failed to load expense categories");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat kategori pengeluaran: $e");
+    }
+  }
+
+  static Future<ExpenseCategory> getExpenseCategoryById(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/expenses/categories/$id"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return ExpenseCategory.fromJson(data['data']);
+        }
+        throw Exception("Expense category not found");
+      } else {
+        throw Exception("Failed to load expense category");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat kategori pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> createExpenseCategory({
+    required String name,
+    String? description,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/expenses/categories"),
+            headers: headers,
+            body: jsonEncode({
+              "name": name,
+              "description": description,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal membuat kategori pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> updateExpenseCategory({
+    required int id,
+    required String name,
+    String? description,
+  }) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse("$baseUrl/api/expenses/categories/$id"),
+            headers: headers,
+            body: jsonEncode({
+              "name": name,
+              "description": description,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal update kategori pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> deleteExpenseCategory(int id) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse("$baseUrl/api/expenses/categories/$id"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal hapus kategori pengeluaran: $e");
+    }
+  }
+
+  // ========================
+  // EXPENSE APIS
+  // ========================
+  static Future<List<Expense>> getAllExpenses({
+    int? categoryId,
+    String? startDate,
+    String? endDate,
+  }) async {
+    try {
+      final queryParams = <String, String>{};
+      if (categoryId != null) {
+        queryParams['category_id'] = categoryId.toString();
+      }
+      if (startDate != null) {
+        queryParams['start_date'] = startDate;
+      }
+      if (endDate != null) {
+        queryParams['end_date'] = endDate;
+      }
+
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/expenses")
+                .replace(queryParameters: queryParams),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return (data['data'] as List)
+              .map((e) => Expense.fromJson(e))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception("Failed to load expenses");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat pengeluaran: $e");
+    }
+  }
+
+  static Future<Expense> getExpenseById(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/expenses/$id"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return Expense.fromJson(data['data']);
+        }
+        throw Exception("Expense not found");
+      } else {
+        throw Exception("Failed to load expense");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> createExpense({
+    required String tanggal,
+    required int categoryId,
+    required double nominal,
+    String? keterangan,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/expenses"),
+            headers: headers,
+            body: jsonEncode({
+              "tanggal": tanggal,
+              "category_id": categoryId,
+              "nominal": nominal,
+              "keterangan": keterangan,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal membuat pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> updateExpense({
+    required int id,
+    required String tanggal,
+    required int categoryId,
+    required double nominal,
+    String? keterangan,
+  }) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse("$baseUrl/api/expenses/$id"),
+            headers: headers,
+            body: jsonEncode({
+              "tanggal": tanggal,
+              "category_id": categoryId,
+              "nominal": nominal,
+              "keterangan": keterangan,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal update pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> deleteExpense(int id) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse("$baseUrl/api/expenses/$id"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal hapus pengeluaran: $e");
+    }
+  }
+
+  static Future<Map<String, dynamic>> getExpenseSummaryByMonth(
+      int tahun, int bulan) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/expenses/summary/$tahun/$bulan"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['data'];
+        }
+        return {};
+      } else {
+        throw Exception("Failed to load expense summary");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat summary pengeluaran: $e");
     }
   }
 }
