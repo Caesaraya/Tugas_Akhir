@@ -54,6 +54,14 @@ class MobileAdminDrawer extends StatelessWidget {
             routeName: AppRoutes.kelolaResepMob,
             selected: currentRoute == AppRoutes.kelolaResepMob,
           ),
+          _buildDrawerItem(
+            context,
+            icon: Icons
+                .monetization_on_outlined, // Ikon tetesan air untuk Kelola Bahan
+            title: 'Monitoring Keuangan',
+            selected: currentRoute == AppRoutes.monitoringUangMob,
+            routeName: AppRoutes.monitoringUangMob,
+          ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout),

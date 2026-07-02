@@ -13,6 +13,7 @@ class AppRoutes {
   static const String kelolaProdukMob = '/kelolaProdukmobile';
   static const String kelolaBahanMob = '/kelolaBahanMobile';
   static const String kelolaResepMob = '/kelolaResepMobile';
+  static const String monitoringUangMob = '/monitoringKeuanganMobile';
   //media query
   static const String mediaQuery = '/mediaQuery';
   //===KASIR===

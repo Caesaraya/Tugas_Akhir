@@ -6,6 +6,7 @@ import 'package:tugas_akhir/page/admin/desktop/monitoring_keuangan_desktop.dart'
 import 'package:tugas_akhir/page/admin/mobile/bahanbaku/kelola_bahan_baku_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/produk/kelola_produk_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/resep/kelola_resep_mobile.dart';
+import 'package:tugas_akhir/page/admin/mobile/uang/monitoring_keuangan_mobile.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_dashboard_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_pembayaran_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_selesai_desktop.dart';
@@ -92,6 +93,10 @@ class AppPages {
     GetPage(
       name: AppRoutes.kelolaResepMob,
       page: () => KelolaResepMobilePage(),
+    ),
+    GetPage(
+      name: AppRoutes.monitoringUangMob,
+      page: () => MonitoringKeuanganMobilePage(),
     ),
   ];
 }
