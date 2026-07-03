@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class DashboardGreeting extends StatelessWidget {
-  const DashboardGreeting({super.key});
+class Header extends StatelessWidget {
+  const Header({super.key});
 
   @override
   Widget build(BuildContext context) {

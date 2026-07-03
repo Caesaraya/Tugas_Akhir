@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/dashboard_controller.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter/services.dart';
 
 class KelolaProdukController extends GetxController {
   var products = <Product>[].obs;
@@ -28,6 +29,18 @@ class KelolaProdukController extends GetxController {
   final stockController = TextEditingController();
   final jenisController = TextEditingController();
   final satuanController = TextEditingController();
+  final listJenis = [
+  'BREAD', 'CAKE', 'TART', 'BASAHAN', 'PASTRY', 'PASTA',
+  'GROSIR RESILEDO', 'HANTARAN', 'KONSINYASI', 'KUE KERING',
+  'MINUMAN', 'PACKAGING', 'PUTUS'
+].obs;
+
+final listSatuan = [
+  'pcs', 'piece', 'slice', 'loyang', 'box', 'cup', 'botol',
+  'toples', 'porsi', 'slop', 'pouch', 'kg', 'gram', 'lusin'
+].obs;
+final selectedJenis = ''.obs;
+final selectedSatuan = ''.obs;
 
   @override
   void onInit() {
@@ -75,131 +88,169 @@ class KelolaProdukController extends GetxController {
     }
   }
 
-  void showEditForm(BuildContext context, Product product) {
-    selectedImage.value = null;
+ void showEditForm(BuildContext context, Product product) {
+  selectedImage.value = null;
+  nameController.text = product.name;
+  priceController.text = currencyFormatter.format(product.price);
+  discountPercentController.text = product.discount.toString();
+  stockController.text = product.stock.toString();
+  jenisController.text = product.jenis;
+  satuanController.text = product.satuan;
+  selectedJenis.value = listJenis.contains(product.jenis) ? product.jenis : listJenis.first;
+  selectedSatuan.value = listSatuan.contains(product.satuan) ? product.satuan : listSatuan.first;
 
-    nameController.text = product.name;
-    priceController.text = currencyFormatter.format(product.price);
-    discountPercentController.text = product.discount.toString();
-    stockController.text = product.stock.toString();
-    jenisController.text = product.jenis;
-    satuanController.text = product.satuan;
-
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Text(
-          "Edit Produk",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Obx(
-                () => GestureDetector(
-                  onTap: pickImage,
-                  child: Container(
-                    height: 120,
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 15),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey[400]!),
-                    ),
-                    child: selectedImage.value != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.file(
-                              selectedImage.value!,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : (product.image.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    product.image,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (c, e, s) =>
-                                        const Icon(Icons.image, size: 50),
-                                  ),
-                                )
-                              : const Icon(Icons.add_a_photo, size: 50)),
+  Get.dialog(
+    AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      title: const Text("Edit Produk", style: TextStyle(fontWeight: FontWeight.bold)),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Obx(
+              () => GestureDetector(
+                onTap: pickImage,
+                child: Container(
+                  height: 120,
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 15),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey[400]!),
                   ),
+                  child: selectedImage.value != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(selectedImage.value!, fit: BoxFit.cover),
+                        )
+                      : (product.image.isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                product.image,
+                                fit: BoxFit.cover,
+                                errorBuilder: (c, e, s) => const Icon(Icons.image, size: 50),
+                              ),
+                            )
+                          : const Icon(Icons.add_a_photo, size: 50)),
                 ),
               ),
-
-              buildTextField(nameController, "Nama Produk"),
-              const SizedBox(height: 12),
-              buildTextField(
-                priceController,
-                "Harga",
-                isNumber: true,
-                isPrice: true,
-              ),
-              const SizedBox(height: 12),
-              buildTextField(
-                discountPercentController,
-                "Diskon (%)",
-                isNumber: true,
-              ),
-              const SizedBox(height: 12),
-              buildTextField(stockController, "Stok", isNumber: true),
-              const SizedBox(height: 12),
-              buildTextField(jenisController, "Jenis"),
-              const SizedBox(height: 12),
-              buildTextField(satuanController, "Satuan"),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
-          ElevatedButton(
-            onPressed: () => updateProduct(product),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE89336),
             ),
-            child: const Text("Simpan", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-      barrierDismissible: false,
-    );
-  }
+            buildTextField(nameController, "Nama Produk"),
+            const SizedBox(height: 12),
+            buildTextField(priceController, "Harga", isNumber: true, isPrice: true),
+            const SizedBox(height: 12),
+buildTextField(discountPercentController, "Diskon (%)", isNumber: true, isDiscount: true),
+            const SizedBox(height: 12),
+            buildTextField(stockController, "Stok", isNumber: true),
+            const SizedBox(height: 12),
 
-  Widget buildTextField(
-    TextEditingController controller,
-    String label, {
-    bool isNumber = false,
-    bool isPrice = false,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      onChanged: (value) {
-        if (isPrice && value.isNotEmpty) {
-          String cleanValue = value.replaceAll(RegExp(r'[^0-9]'), '');
-          if (cleanValue.isEmpty) cleanValue = "0";
-          String formatted = currencyFormatter.format(int.parse(cleanValue));
-          if (controller.text != formatted) {
-            controller.value = TextEditingValue(
-              text: formatted,
-              selection: TextSelection.collapsed(offset: formatted.length),
-            );
-          }
-        }
-      },
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            // ✅ Dropdown Jenis
+            Obx(() => DropdownButtonFormField<String>(
+              value: selectedJenis.value,
+              decoration: InputDecoration(
+                labelText: 'Jenis',
+                labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              items: listJenis.map((jenis) => DropdownMenuItem(
+                value: jenis,
+                child: Text(jenis),
+              )).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  selectedJenis.value = val;
+                  jenisController.text = val;
+                }
+              },
+            )),
+            const SizedBox(height: 12),
+
+            // ✅ Dropdown Satuan
+            Obx(() => DropdownButtonFormField<String>(
+              value: selectedSatuan.value,
+              decoration: InputDecoration(
+                labelText: 'Satuan',
+                labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              items: listSatuan.map((satuan) => DropdownMenuItem(
+                value: satuan,
+                child: Text(satuan),
+              )).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  selectedSatuan.value = val;
+                  satuanController.text = val;
+                }
+              },
+            )),
+          ],
+        ),
       ),
-    );
+      actions: [
+        TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
+        ElevatedButton(
+          onPressed: () => updateProduct(product),
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE89336)),
+          child: const Text("Simpan", style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
+    barrierDismissible: false,
+  );
+}
+
+ Widget buildTextField(
+  TextEditingController controller,
+  String label, {
+  bool isNumber = false,
+  bool isPrice = false,
+  bool isDiscount = false,
+}) {
+  return TextField(
+    controller: controller,
+    keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+    // ✅ Hanya angka untuk diskon dan number field
+    inputFormatters: isDiscount || isNumber
+        ? [FilteringTextInputFormatter.digitsOnly]
+        : null,
+    onChanged: (value) {
+      if (isPrice && value.isNotEmpty) {
+        String cleanValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+        if (cleanValue.isEmpty) cleanValue = "0";
+        String formatted = currencyFormatter.format(int.parse(cleanValue));
+        if (controller.text != formatted) {
+          controller.value = TextEditingValue(
+            text: formatted,
+            selection: TextSelection.collapsed(offset: formatted.length),
+          );
+        }
+      }
+      if (isDiscount && value.isNotEmpty) {
+  int val = int.tryParse(value) ?? 0;
+  if (val > 99) {
+    String clamped = value.substring(0, value.length - 1);
+    controller.text = clamped;
+    controller.selection =
+        TextSelection.collapsed(offset: clamped.length);
   }
+}
+    },
+    decoration: InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+    ),
+  );
+}
 
   Future<void> updateProduct(Product oldProduct) async {
     if (nameController.text.isEmpty || priceController.text.isEmpty) {
@@ -224,7 +275,7 @@ class KelolaProdukController extends GetxController {
       String cleanDiscountText = discountPercentController.text.isEmpty
           ? "0"
           : discountPercentController.text;
-      int discountPercent = int.tryParse(cleanDiscountText) ?? 0;
+      int discountPercent = (int.tryParse(cleanDiscountText) ?? 0).clamp(0, 100);
 
       Get.back();
       isLoading(true);

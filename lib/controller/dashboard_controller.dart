@@ -7,6 +7,7 @@ class DashboardController extends GetxController {
   var isLoadingMore = false.obs;
   var productList = <Product>[].obs;
   var filteredList = <Product>[].obs;
+  
 
   var displayedList = <Product>[].obs;
   static const int _pageSize = 6;
@@ -74,9 +75,8 @@ class DashboardController extends GetxController {
       bool matchCategory =
           selectedCategory.value == 'Semua' ||
           product.jenis == selectedCategory.value;
-      bool matchSearch = product.name.toLowerCase().contains(
-        lastQuery.value.toLowerCase(),
-      );
+      bool matchSearch =
+          product.name.toLowerCase().contains(lastQuery.value.toLowerCase());
 
       return matchCategory && matchSearch && isAvailable;
     }).toList();

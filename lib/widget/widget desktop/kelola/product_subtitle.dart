@@ -4,13 +4,13 @@ import 'package:tugas_akhir/controller/kelola_controller.dart';
 class ProductSubtitle extends StatelessWidget {
   final KelolaProdukController ctrl;
   final dynamic produk;
- 
+
   const ProductSubtitle({required this.ctrl, required this.produk});
- 
+
   @override
   Widget build(BuildContext context) {
     final bool hasDiscount = (produk.discount ?? 0) > 0;
- 
+
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Column(
@@ -28,7 +28,7 @@ class ProductSubtitle extends StatelessWidget {
             Text(
               ctrl.currencyFormatter.format(produk.priceAfterDiscount),
               style: const TextStyle(
-                color: Colors.green,
+                color: Color(0xFFE89336),
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),

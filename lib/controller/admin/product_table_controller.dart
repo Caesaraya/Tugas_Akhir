@@ -280,8 +280,9 @@ class ProductTableController extends BaseTableController<Product> {
         stock: int.tryParse(stockC.text) ?? 0, // FIX: tryParse bukan parse
         jenis: jenisC.text,
         satuan: satuanC.text,
-        imageFile: selectedImage.value,
-        resepId: product.resepId,
+        imageFile: selectedImage
+            .value,
+        resepId: product.resepId, // Pertahankan resepId lama
       );
 
       clearForm();

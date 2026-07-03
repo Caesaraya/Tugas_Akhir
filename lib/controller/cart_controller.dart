@@ -14,6 +14,7 @@ import 'package:printing/printing.dart';
 
 class CartController extends GetxController {
   final textController = TextEditingController();
+  
 
   var cartItems = <CartItem>[].obs;
   var selectedPayment = 'cash'.obs;
@@ -413,8 +414,6 @@ void handleSelesaiActionDashboard(bool isFromHistory) async {
               style: const pw.TextStyle(fontSize: 10),
             ),
             pw.Divider(),
-
-            // ✅ Pakai data dari detailController, bukan cartItems
             ...ctrl.items.map((item) {
               final String nama = ctrl.namaProduk(item);
               final int quantity = ctrl.qty(item);

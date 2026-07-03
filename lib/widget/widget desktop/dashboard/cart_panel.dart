@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
-import 'package:tugas_akhir/widget/widget%20mobile/keranjang/cart_item.dart';
+import 'package:tugas_akhir/controller/payment_controller.dart';
+import 'package:tugas_akhir/widget/widget mobile/keranjang/item_card.dart';
 import 'package:intl/intl.dart';
 
 class CartPanel extends StatelessWidget {
@@ -11,11 +12,13 @@ class CartPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final CartController cartController = Get.find<CartController>();
+    final PaymentController paymentController = Get.find<PaymentController>();
     final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
       decimalDigits: 0,
     );
+
     return Container(
       width: 320,
       decoration: BoxDecoration(
@@ -23,6 +26,7 @@ class CartPanel extends StatelessWidget {
       ),
       child: Column(
         children: [
+          // ✅ Header user
           Container(
             padding: const EdgeInsets.all(12),
             child: const Row(
@@ -34,6 +38,8 @@ class CartPanel extends StatelessWidget {
             ),
           ),
           const Divider(),
+
+          // ✅ List item — pakai KeranjangItemCard sama seperti mobile
           Expanded(
             child: Obx(() {
               if (cartController.cartItems.isEmpty) {
@@ -47,28 +53,19 @@ class CartPanel extends StatelessWidget {
                     ],
                   ),
                 );
-              } else {
-                return ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: cartController.cartItems.length,
-                  itemBuilder: (context, index) {
-                    final item = cartController.cartItems[index];
-                    return CartTile(
-                      item: item,
-                      onAdd: () => cartController.increaseQty(item.productId),
-                      onRemove: () {
-                        if (item.qty > 1) {
-                          cartController.decreaseQty(item.productId);
-                        }
-                      },
-                      onDelete: () =>
-                          cartController.removeFromCart(item.productId),
-                    );
-                  },
-                );
               }
+              return ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: cartController.cartItems.length,
+                itemBuilder: (context, index) {
+                  final item = cartController.cartItems[index];
+                  return KeranjangItemCard(ctrl: paymentController, item: item);
+                },
+              );
             }),
           ),
+
+          // ✅ Tombol bayar — tetap sama seperti desktop
           Obx(() {
             final bool hasItems = cartController.cartItems.isNotEmpty;
             return InkWell(

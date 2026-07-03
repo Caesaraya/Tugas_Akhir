@@ -1,7 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as http_parser;
+import 'package:tugas_akhir/models/bahan_baku_requirment.dart';
+import 'package:tugas_akhir/models/expense.dart';
+import 'package:tugas_akhir/models/expense_category.dart';
+import 'package:tugas_akhir/models/financial_report.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/bahan_baku.dart';
@@ -11,10 +16,6 @@ import 'package:tugas_akhir/models/produksi.dart';
 import 'package:tugas_akhir/models/resep.dart';
 import 'package:tugas_akhir/models/supplier.dart';
 import 'package:tugas_akhir/models/user.dart';
-import 'package:tugas_akhir/models/bahan_baku_requirement.dart';
-import 'package:tugas_akhir/models/financial_report.dart';
-import 'package:tugas_akhir/models/expense_category.dart';
-import 'package:tugas_akhir/models/expense.dart';
 
 class ApiService {
   static const String baseUrl = "http://103.67.78.70";
@@ -802,9 +803,7 @@ class ApiService {
         List data = jsonDecode(response.body);
         return data.map((e) => Pembelian.fromJson(e)).toList();
       } else {
-        throw Exception(
-          "Failed to load pembelian (status: ${response.statusCode}, body: ${response.body})",
-        );
+        throw Exception("Failed to load pembelian");
       }
     } catch (e) {
       throw Exception("Gagal memuat pembelian: $e");
@@ -1136,7 +1135,7 @@ class ApiService {
   // BAKERY CALCULATION APIS
   // ========================
   static Future<BakeryCalculationResult> hitungKebutuhanBahan({
-    required int produkId,
+    required int resepId,
     required int quantity,
   }) async {
     try {
@@ -1144,7 +1143,7 @@ class ApiService {
           .get(
             Uri.parse("$baseUrl/api/bakery/hitung-kebutuhan").replace(
               queryParameters: {
-                'produk_id': produkId.toString(),
+                'resep_id': resepId.toString(),
                 'quantity': quantity.toString(),
               },
             ),
@@ -1164,21 +1163,25 @@ class ApiService {
   }
 
   static Future<BakeryAvailabilityResult> cekKetersediaanBahan({
-    required int produkId,
+    required int resepId,
     required int quantity,
   }) async {
     try {
+      final uri = Uri.parse("$baseUrl/api/bakery/cek-ketersediaan").replace(
+        queryParameters: {
+          'produk_id': resepId.toString(),
+          'quantity': quantity.toString(),
+        },
+      );
+
+      debugPrint('=== CEK URL: $uri ===');
+
       final response = await http
-          .get(
-            Uri.parse("$baseUrl/api/bakery/cek-ketersediaan").replace(
-              queryParameters: {
-                'produk_id': produkId.toString(),
-                'quantity': quantity.toString(),
-              },
-            ),
-            headers: {"Connection": "close"},
-          )
+          .get(uri, headers: {"Connection": "close"})
           .timeout(const Duration(seconds: 10));
+
+      debugPrint('=== CEK STATUS: ${response.statusCode} ===');
+      debugPrint('=== CEK BODY: ${response.body} ===');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -1192,21 +1195,25 @@ class ApiService {
   }
 
   static Future<BakeryCostResult> hitungBiayaProduksi({
-    required int produkId,
+    required int resepId,
     required int quantity,
   }) async {
     try {
+      final uri = Uri.parse("$baseUrl/api/bakery/hitung-biaya").replace(
+        queryParameters: {
+          'produk_id': resepId.toString(),
+          'quantity': quantity.toString(),
+        },
+      );
+
+      debugPrint('=== BAKERY URL: $uri ===');
+
       final response = await http
-          .get(
-            Uri.parse("$baseUrl/api/bakery/hitung-biaya").replace(
-              queryParameters: {
-                'produk_id': produkId.toString(),
-                'quantity': quantity.toString(),
-              },
-            ),
-            headers: {"Connection": "close"},
-          )
+          .get(uri, headers: {"Connection": "close"})
           .timeout(const Duration(seconds: 10));
+
+      debugPrint('=== BAKERY STATUS: ${response.statusCode} ===');
+      debugPrint('=== BAKERY BODY: ${response.body} ===');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import '../../api service/api_service.dart';
 import '../../models/transactions.dart';
 import '../../models/keuangan_summary.dart';
@@ -11,7 +10,6 @@ import '../../models/expense_category.dart';
 class KeuanganController extends GetxController {
   final isLoading = false.obs;
   final keuangan = KeuanganSummary.kosong().obs;
-  final _storage = GetStorage();
 
   // --- SUMBER DATA UTAMA (SINGLE SOURCE OF TRUTH) ---
   final allTransactions = <TransactionModel>[].obs;
@@ -47,17 +45,12 @@ class KeuanganController extends GetxController {
     }
   }
 
-  // 1. TAMBAHAN: Fungsi untuk membuat kategori baru dari dialog input manual
   Future<int?> tambahKategoriBaru(String name) async {
     try {
       isLoading(true);
-      // Panggil API pembuatan kategori baru
       bool success = await ApiService.createExpenseCategory(name: name);
       if (success) {
-        // Refresh list kategori agar state lokal diperbarui
         await fetchCategories();
-
-        // Cari kategori yang baru saja dibuat berdasarkan nama untuk mengambil ID-nya
         final newCat = listCategories.firstWhereOrNull(
           (c) => c.name.toLowerCase() == name.toLowerCase(),
         );
@@ -83,15 +76,13 @@ class KeuanganController extends GetxController {
           .map<TransactionModel>((e) => TransactionModel.fromJson(e))
           .toList();
 
-      // 2. Ambil Data Pengeluaran Bahan Baku (Pembelian) SECARA ONLINE dari API
-      //    Dibungkus try/catch sendiri: kalau endpoint ini gagal, data lain
-      //    (pemasukan, pengeluaran manual, dsb) tetap lanjut dimuat.
+      // 2. Ambil Data Pengeluaran Pembelian Level Header
       try {
         final rawPembelian = await ApiService.getAllPembelian();
         allHistoriStok.value = rawPembelian.map<HistoriStokModel>((p) {
           return HistoriStokModel(
             tanggal: p.tanggal,
-            bahanBakuId: 0, // tidak tersedia di level header Pembelian
+            bahanBakuId: 0,
             namaBahan: p.namaSupplier ?? '',
             stokSebelum: 0.0,
             stokSesudah: 0.0,
@@ -105,7 +96,7 @@ class KeuanganController extends GetxController {
         allHistoriStok.value = [];
       }
 
-      // 3. Ambil Data Pengeluaran Manual dari API Backend sesuai Bulan Berjalan
+      // 3. Ambil Data Pengeluaran Manual & Pengeluaran Bahan Baku Otomatis dari API Expenses
       final firstDayBulanIni = DateTime(sekarang.year, sekarang.month, 1);
       final lastDayBulanIni = DateTime(sekarang.year, sekarang.month + 1, 0);
       final expenses = await ApiService.getAllExpenses(
@@ -139,13 +130,11 @@ class KeuanganController extends GetxController {
       double totalBahanBakuBulanIni = 0;
       for (var h in allHistoriStok) {
         if (h.tanggal.month == sekarang.month &&
-            h.tanggal.year == sekarang.year) {
+            h.tanggal.year == ceramicsYear(sekarang.year)) {
           totalBahanBakuBulanIni += h.totalPengeluaran;
         }
       }
 
-      // PERBAIKAN: Inisialisasi secara dinamis dari database listCategories
-      // Agar kategori baru yang ditambahkan user otomatis ter-mapping di chart
       Map<String, double> tempKomposisi = {
         'Bahan Baku': totalBahanBakuBulanIni,
       };
@@ -177,7 +166,6 @@ class KeuanganController extends GetxController {
         profit: totalPemasukanBulanIni - grandTotalPengeluaranBulanIni,
       );
 
-      // Hitung akumulasi tabel rekap tahunan
       await hitungUlangLaporanTahunan(selectedYear.value);
     } catch (e) {
       print("Error pada loadDataKeuangan: $e");
@@ -186,12 +174,13 @@ class KeuanganController extends GetxController {
     }
   }
 
+  int ceramicsYear(int year) => year;
+
   void changeYear(int year) {
     selectedYear.value = year;
     hitungUlangLaporanTahunan(year);
   }
 
-  // PERBAIKAN UTAMA: Optimasi hitungUlangLaporanTahunan dari 12x Request menjadi 1x Request
   Future<void> hitungUlangLaporanTahunan(int year) async {
     Map<int, double> mapPemasukan = {};
     Map<int, double> mapPengeluaran = {};
@@ -213,7 +202,6 @@ class KeuanganController extends GetxController {
       }
     }
 
-    // OPTIMASI: Menembak API pengeluaran manual 1 tahun sekaligus (1x hit API)
     try {
       final firstDayOfYear = DateTime(year, 1, 1);
       final lastDayOfYear = DateTime(year, 12, 31);
@@ -223,7 +211,6 @@ class KeuanganController extends GetxController {
         endDate: _formatDate(lastDayOfYear),
       );
 
-      // Kelompokkan pengeluaran tahunan ke masing-masing bulan di lokal aplikasi
       for (var exp in yearlyExpenses) {
         final date = DateTime.tryParse(exp.tanggal);
         if (date != null && date.year == year) {

@@ -4,8 +4,8 @@ import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import 'package:tugas_akhir/widget/widget mobile/drawer/drawer_item.dart';
 
-class KasirMobileDrawer extends StatelessWidget {
-  const KasirMobileDrawer({super.key});
+class DrawerBakery extends StatelessWidget {
+  const DrawerBakery({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -45,17 +45,7 @@ class KasirMobileDrawer extends StatelessWidget {
             DrawerItem(
               icon: Icons.home,
               title: 'Beranda',
-              route: AppRoutes.dashboardMobile,
-            ),
-            DrawerItem(
-              icon: Icons.history,
-              title: 'Riwayat',
-              route: AppRoutes.riwayat,
-            ),
-            DrawerItem(
-              icon: Icons.inventory,
-              title: 'Kelola Produk',
-              route: AppRoutes.kelolaProduk,
+              route: AppRoutes.bakery,
             ),
             const Spacer(),
             const Divider(),

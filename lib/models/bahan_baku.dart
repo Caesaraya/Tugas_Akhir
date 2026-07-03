@@ -3,7 +3,7 @@ class BahanBaku {
   final String namaBahan;
   final String merk;
   final String satuan;
-  final double stok; // DIUBAH: Dari int menjadi double
+  final double stok;
   final double hargaSatuan;
   final double? totalHarga;
   final DateTime? createdAt;

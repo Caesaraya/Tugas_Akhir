@@ -32,9 +32,8 @@ class ProductController extends GetxController {
   List<Product> get filteredProducts {
     return products.where((p) {
       bool matchStock = isFilteringOutOfStock.value ? p.stock == 0 : true;
-
-      bool matchSearch =
-          searchQuery.value.isEmpty ||
+    
+      bool matchSearch = searchQuery.value.isEmpty || 
           p.name.toLowerCase().contains(searchQuery.value.toLowerCase());
 
       return matchStock && matchSearch;

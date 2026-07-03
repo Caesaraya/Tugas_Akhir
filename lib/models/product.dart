@@ -13,6 +13,7 @@ class Product {
   // NEW
   final String? deletedAt;
 
+
   Product({
     required this.id,
     required this.name,
@@ -64,7 +65,8 @@ class Product {
       name: name ?? this.name,
       price: price ?? this.price,
       discount: discount ?? this.discount,
-      priceAfterDiscount: priceAfterDiscount ?? this.priceAfterDiscount,
+      priceAfterDiscount:
+          priceAfterDiscount ?? this.priceAfterDiscount,
       stock: stock ?? this.stock,
       jenis: jenis ?? this.jenis,
       satuan: satuan ?? this.satuan,

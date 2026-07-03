@@ -78,7 +78,7 @@ class ReceiptActionButton extends StatelessWidget {
     super.key,
     required this.label,
     this.onPressed,
-    this.backgroundColor = Colors.orange,
+    this.backgroundColor = const Color(0xFFE89336),
     this.textColor = Colors.white,
     this.borderRadius = 10.0,
   });
