@@ -145,24 +145,23 @@ exports.getDashboardActivities = async (req, res) => {
     // ========================
     // 1. Pembelian Bahan Baku
     // ========================
-    const [pembelianActivities] = await db.execute(
+    const [pembelianActivities] = await db.query(
       `
       SELECT
         'pembelian' AS jenis_aktivitas,
-        CONCAT('Pembelian ', s.nama_supplier, ' total Rp', FORMAT(pb.total, 0)) AS deskripsi,
+        CONCAT('Pembelian ', s.nama_supplier, ' total Rp', pb.total) AS deskripsi,
         pb.tanggal AS waktu
       FROM pembelian_bahan pb
       JOIN supplier s ON pb.supplier_id = s.id
       ORDER BY pb.tanggal DESC
-      LIMIT ?
-      `,
-      [limit]
+      LIMIT ${limit}
+      `
     );
 
     // ========================
     // 2. Produksi (Penggunaan Bahan Baku)
     // ========================
-    const [produksiActivities] = await db.execute(
+    const [produksiActivities] = await db.query(
       `
       SELECT
         'produksi' AS jenis_aktivitas,
@@ -171,25 +170,23 @@ exports.getDashboardActivities = async (req, res) => {
       FROM produksi pr
       JOIN products p ON pr.product_id = p.id
       ORDER BY pr.tanggal DESC
-      LIMIT ?
-      `,
-      [limit]
+      LIMIT ${limit}
+      `
     );
 
     // ========================
     // 3. Transaksi Penjualan
     // ========================
-    const [transactionActivities] = await db.execute(
+    const [transactionActivities] = await db.query(
       `
       SELECT
         'transaksi' AS jenis_aktivitas,
-        CONCAT('Transaksi Rp', FORMAT(t.total_harga, 0), ' - ', t.metode_pembayaran) AS deskripsi,
+        CONCAT('Transaksi Rp', t.total_harga, ' - ', t.metode_pembayaran) AS deskripsi,
         t.tanggal AS waktu
       FROM transactions t
       ORDER BY t.tanggal DESC
-      LIMIT ?
-      `,
-      [limit]
+      LIMIT ${limit}
+      `
     );
 
     // ========================
