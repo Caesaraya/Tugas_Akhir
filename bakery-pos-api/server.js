@@ -57,6 +57,8 @@ const userRoutes = require("./routes/userRoutes");
 const bakeryRoutes = require("./routes/bakeryRoutes");
 const financialRoutes = require("./routes/financialRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
+const pembelianRoutes = require("./routes/pembelianRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 app.use("/api/products", productRoutes);
 app.use("/api/transactions", transactionRoutes);
@@ -69,6 +71,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/bakery", bakeryRoutes);
 app.use("/api/financial", financialRoutes);
 app.use("/api/expenses", expenseRoutes);
+app.use("/api/pembelian", pembelianRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // ======================
 // AUTO CLEANUP SOFT DELETE
