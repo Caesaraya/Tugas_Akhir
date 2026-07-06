@@ -1,15 +1,22 @@
 import 'package:get/get.dart';
 import '../../api service/api_service.dart';
 import '../../models/transactions.dart';
-import '../../models/keuangan_summary.dart';
+import '../../models/keuangan_summary.dart' as old_summary;
 import '../../models/histori_stok.dart';
 import '../../models/financial_report.dart';
 import '../../models/expense.dart';
 import '../../models/expense_category.dart';
+import '../../models/dashboard_summary.dart';
+import '../../models/dashboard_activity.dart';
 
 class KeuanganController extends GetxController {
   final isLoading = false.obs;
-  final keuangan = KeuanganSummary.kosong().obs;
+
+  // State untuk Dashboard Asli dari API
+  final dashboardSummary = Rxn<DashboardSummary>();
+  final dashboardActivities = <DashboardActivity>[].obs;
+  final isDashboardError = false.obs;
+  final dashboardErrorMessage = ''.obs;
 
   // --- SUMBER DATA UTAMA (SINGLE SOURCE OF TRUTH) ---
   final allTransactions = <TransactionModel>[].obs;
@@ -24,6 +31,7 @@ class KeuanganController extends GetxController {
 
   // --- KOMPOSISI PENGELUARAN BULAN BERJALAN ---
   final komposisiBulanIni = <String, double>{}.obs;
+  final keuangan = old_summary.KeuanganSummary.kosong().obs;
 
   @override
   void onInit() {
@@ -34,6 +42,29 @@ class KeuanganController extends GetxController {
   Future<void> initialFetch() async {
     await fetchCategories();
     await loadDataKeuangan();
+    await loadDashboardData(); // Memanggil data dashboard
+  }
+
+  // Fetch khusus untuk Dashboard (Summary & Activities)
+  Future<void> loadDashboardData() async {
+    try {
+      isLoading(true);
+      isDashboardError(false);
+
+      // Fetch secara paralel agar lebih optimal
+      final results = await Future.wait([
+        ApiService.getDashboardSummary(),
+        ApiService.getDashboardActivities(limit: 10),
+      ]);
+
+      dashboardSummary.value = results[0] as DashboardSummary;
+      dashboardActivities.value = results[1] as List<DashboardActivity>;
+    } catch (e) {
+      isDashboardError(true);
+      dashboardErrorMessage.value = 'Gagal memuat dashboard: $e';
+    } finally {
+      isLoading(false);
+    }
   }
 
   Future<void> fetchCategories() async {
@@ -66,17 +97,16 @@ class KeuanganController extends GetxController {
   }
 
   Future<void> loadDataKeuangan() async {
+    // [LOGIKA LAMA TETAP DIPERTAHANKAN]
     try {
       isLoading(true);
       final sekarang = DateTime.now();
 
-      // 1. Ambil Data Pemasukan dari API Transaksi Backend
       final rawListData = await ApiService.getTransactions();
       allTransactions.value = rawListData
           .map<TransactionModel>((e) => TransactionModel.fromJson(e))
           .toList();
 
-      // 2. Ambil Data Pengeluaran Pembelian Level Header
       try {
         final rawPembelian = await ApiService.getAllPembelian();
         allHistoriStok.value = rawPembelian.map<HistoriStokModel>((p) {
@@ -92,11 +122,9 @@ class KeuanganController extends GetxController {
           );
         }).toList();
       } catch (e) {
-        print("Gagal memuat data pembelian (Bahan Baku): $e");
         allHistoriStok.value = [];
       }
 
-      // 3. Ambil Data Pengeluaran Manual & Pengeluaran Bahan Baku Otomatis dari API Expenses
       final firstDayBulanIni = DateTime(sekarang.year, sekarang.month, 1);
       final lastDayBulanIni = DateTime(sekarang.year, sekarang.month + 1, 0);
       final expenses = await ApiService.getAllExpenses(
@@ -105,7 +133,6 @@ class KeuanganController extends GetxController {
       );
       listExpensesBulanIni.value = expenses;
 
-      // 4. Sinkronisasi Tahun untuk Dropdown Filter
       final years = allTransactions
           .map((t) => DateTime.tryParse(t.tanggal)?.year)
           .where((y) => y != null)
@@ -116,7 +143,6 @@ class KeuanganController extends GetxController {
       years.sort((a, b) => b.compareTo(a));
       availableYears.value = years;
 
-      // 5. Hitung Nilai Berjalan untuk Summary Card & Komposisi Grafik
       double totalPemasukanBulanIni = 0;
       for (var trx in allTransactions) {
         final date = DateTime.tryParse(trx.tanggal);
@@ -139,13 +165,9 @@ class KeuanganController extends GetxController {
         'Bahan Baku': totalBahanBakuBulanIni,
       };
       for (var cat in listCategories) {
-        if (cat.name != 'Bahan Baku') {
-          tempKomposisi[cat.name] = 0.0;
-        }
+        if (cat.name != 'Bahan Baku') tempKomposisi[cat.name] = 0.0;
       }
-      if (!tempKomposisi.containsKey('Lainnya')) {
-        tempKomposisi['Lainnya'] = 0.0;
-      }
+      if (!tempKomposisi.containsKey('Lainnya')) tempKomposisi['Lainnya'] = 0.0;
 
       double totalManualBulanIni = 0;
       for (var exp in listExpensesBulanIni) {
@@ -160,7 +182,7 @@ class KeuanganController extends GetxController {
       double grandTotalPengeluaranBulanIni =
           totalBahanBakuBulanIni + totalManualBulanIni;
 
-      keuangan.value = KeuanganSummary(
+      keuangan.value = old_summary.KeuanganSummary(
         pemasukan: totalPemasukanBulanIni,
         pengeluaran: grandTotalPengeluaranBulanIni,
         profit: totalPemasukanBulanIni - grandTotalPengeluaranBulanIni,
@@ -182,6 +204,7 @@ class KeuanganController extends GetxController {
   }
 
   Future<void> hitungUlangLaporanTahunan(int year) async {
+    // [LOGIKA LAMA TETAP DIPERTAHANKAN]
     Map<int, double> mapPemasukan = {};
     Map<int, double> mapPengeluaran = {};
     Map<int, int> mapTransaksi = {};
@@ -205,12 +228,10 @@ class KeuanganController extends GetxController {
     try {
       final firstDayOfYear = DateTime(year, 1, 1);
       final lastDayOfYear = DateTime(year, 12, 31);
-
       final yearlyExpenses = await ApiService.getAllExpenses(
         startDate: _formatDate(firstDayOfYear),
         endDate: _formatDate(lastDayOfYear),
       );
-
       for (var exp in yearlyExpenses) {
         final date = DateTime.tryParse(exp.tanggal);
         if (date != null && date.year == year) {

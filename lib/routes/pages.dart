@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
+import 'package:tugas_akhir/page/admin/desktop/dashboard_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_bahan_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_produk_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_resep_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/monitoring_keuangan_desktop.dart';
 import 'package:tugas_akhir/page/admin/mobile/bahanbaku/kelola_bahan_baku_mobile.dart';
+import 'package:tugas_akhir/page/admin/mobile/dashboard_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/produk/kelola_produk_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/resep/kelola_resep_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/uang/monitoring_keuangan_mobile.dart';
@@ -78,6 +80,7 @@ class AppPages {
     GetPage(name: AppRoutes.transactionDetail, page: () => DetailScreen()),
 
     // ── Admin Desktop ──────────────────────────────────────────────────────
+    GetPage(name: AppRoutes.dashboarddesk, page: () => DashboardPage()),
     GetPage(
       name: AppRoutes.kelolaprodukdesk,
       page: () => KelolaProdukDeskPage(),
@@ -90,6 +93,10 @@ class AppPages {
     ),
 
     // ── Admin Mobile ───────────────────────────────────────────────────────
+    GetPage(
+      name: AppRoutes.dashboardMob,
+      page: () => DashboardMobileAdminPage(),
+    ),
     GetPage(name: AppRoutes.kelolaProdukMob, page: () => ProductListPage()),
     GetPage(name: AppRoutes.kelolaBahanMob, page: () => BahanBakuListPage()),
     GetPage(

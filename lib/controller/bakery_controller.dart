@@ -17,7 +17,9 @@ class BakeryController extends GetxController {
   final inputController = TextEditingController();
 
   final currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0,
+    locale: 'id_ID',
+    symbol: 'Rp ',
+    decimalDigits: 0,
   );
 
   @override
@@ -39,15 +41,18 @@ class BakeryController extends GetxController {
       final data = await ApiService.getAllResep();
       resepList.assignAll(data);
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat resep: $e',
-        backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        'Gagal memuat resep: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading(false);
     }
   }
 
   Future<void> navigateToDetail(Resep resep) async {
-    
     try {
       Get.dialog(
         const Center(child: CircularProgressIndicator()),
@@ -57,7 +62,7 @@ class BakeryController extends GetxController {
       final detail = await ApiService.getDetailResep(resep.id!);
 
       if (Get.isDialogOpen ?? false) Get.back();
-    debugPrint('products: ${detail.products}');
+      debugPrint('products: ${detail.products}');
       selectedResep.value = detail;
       jumlahProduksi.value = 1;
       inputController.clear();
@@ -67,29 +72,34 @@ class BakeryController extends GetxController {
       Get.to(() => BakeryDetailPage(resep: detail));
     } catch (e) {
       if (Get.isDialogOpen ?? false) Get.back();
-      Get.snackbar('Error', 'Gagal memuat detail: $e',
-        backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        'Error',
+        'Gagal memuat detail: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
   List<Resep> get filteredResep {
     if (searchQuery.value.isEmpty) return resepList;
     return resepList
-        .where((r) => r.namaResep.toLowerCase()
-            .contains(searchQuery.value.toLowerCase()))
+        .where(
+          (r) => r.namaResep.toLowerCase().contains(
+            searchQuery.value.toLowerCase(),
+          ),
+        )
         .toList();
   }
 
   double kebutuhanBahan(double jumlahPerResep) =>
       jumlahPerResep * jumlahProduksi.value;
 
-  String get totalBiayaFormatted =>
-      currencyFormatter.format(totalBiaya.value);
+  String get totalBiayaFormatted => currencyFormatter.format(totalBiaya.value);
 
-  String formatQty(double value) =>
-      value == value.toInt()
-          ? value.toInt().toString()
-          : value.toStringAsFixed(2);
+  String formatQty(double value) => value == value.toInt()
+      ? value.toInt().toString()
+      : value.toStringAsFixed(2);
 
   Future<void> setJumlahProduksi(String value, int resepId) async {
     final val = int.tryParse(value) ?? 1;
@@ -97,36 +107,48 @@ class BakeryController extends GetxController {
     await loadBakeryCalculation(resepId);
   }
 
- Future<void> simpanProduksi(int resepId) async {
-  if (jumlahProduksi.value < 1) {
-    Get.snackbar('Validasi', 'Jumlah produksi minimal 1');
-    return;
-  }
-  try {
-    isLoading(true);
-    final success = await ApiService.createProduksi(
-      productId: resepId,
-      jumlahProduksi: jumlahProduksi.value,
-    );
-    if (success) {
-      jumlahProduksi.value = 1;
-      inputController.clear();
-      totalBiaya.value = 0;
-      Get.back();
-      Get.snackbar('Sukses', 'Produksi berhasil dicatat',
-        backgroundColor: Colors.green, colorText: Colors.white);
-      await fetchResep();
-    } else {
-      Get.snackbar('Gagal', 'Produksi gagal disimpan',
-        backgroundColor: Colors.red, colorText: Colors.white);
+  Future<void> simpanProduksi(int resepId) async {
+    if (jumlahProduksi.value < 1) {
+      Get.snackbar('Validasi', 'Jumlah produksi minimal 1');
+      return;
     }
-  } catch (e) {
-    Get.snackbar('Error', 'Error: $e',
-      backgroundColor: Colors.red, colorText: Colors.white);
-  } finally {
-    isLoading(false);
+    try {
+      isLoading(true);
+      final success = await ApiService.createProduksi(
+        productId: resepId,
+        jumlahProduksi: jumlahProduksi.value,
+      );
+      if (success) {
+        jumlahProduksi.value = 1;
+        inputController.clear();
+        totalBiaya.value = 0;
+        Get.back();
+        Get.snackbar(
+          'Sukses',
+          'Produksi berhasil dicatat',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        await fetchResep();
+      } else {
+        Get.snackbar(
+          'Gagal',
+          'Produksi gagal disimpan',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Error: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading(false);
+    }
   }
-}
 
   Future<void> loadBakeryCalculation(int resepId) async {
     try {

@@ -5,14 +5,17 @@ class AppRoutes {
   static const String logindesk = '/logindesktop';
   //===ADMIN===
   //desktop
+  static const String dashboarddesk = '/dashboarddesk';
   static const String kelolaprodukdesk = '/kelolaprodukdesk';
   static const String kelolabahandesk = '/kelolabahandesk';
   static const String kelolaresepdesk = '/kelolaresepdesk';
   static const String monitoringuang = '/monitoringKeuangan';
   //mobile
+  static const String dashboardMob = '/dashboardAdminMobile';
   static const String kelolaProdukMob = '/kelolaProdukmobile';
   static const String kelolaBahanMob = '/kelolaBahanMobile';
   static const String kelolaResepMob = '/kelolaResepMobile';
+
   //===BAKERY===
   static const String bakery = '/bakery';
   static const String bakerydetail = '/bakerydetail';

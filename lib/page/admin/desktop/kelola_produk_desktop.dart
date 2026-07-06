@@ -11,13 +11,18 @@ import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 import 'package:tugas_akhir/widget/admin/bahan/summary_card.dart';
 
 class KelolaProdukDeskPage extends StatelessWidget {
-  KelolaProdukDeskPage({super.key}) {
-    Get.find<NavigationController>().selectedIndex.value = 0;
-  }
+  KelolaProdukDeskPage({super.key});
+
   final ctrl = Get.find<ProductTableController>();
 
   @override
   Widget build(BuildContext context) {
+    // Pindahkan mutasi Rx ke luar fase build agar tidak bentrok dengan
+    // Obx di AdminSidebar yang sedang dibangun bersamaan.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.find<NavigationController>().selectedIndex.value = 1;
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: Row(
@@ -26,7 +31,6 @@ class KelolaProdukDeskPage extends StatelessWidget {
           AdminSidebar(),
           Expanded(
             child: SingleChildScrollView(
-              // ← Membungkus seluruh konten kanan agar bisa di-scroll
               physics: const BouncingScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
@@ -154,7 +158,6 @@ class KelolaProdukDeskPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    // ← Menghapus Expanded dan SingleChildScrollView bawaan tabel agar menyatu dengan scroll utama
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,

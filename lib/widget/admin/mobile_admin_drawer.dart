@@ -35,6 +35,13 @@ class MobileAdminDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             context,
+            icon: Icons.home_outlined,
+            title: 'Dashboard',
+            routeName: AppRoutes.dashboardMob,
+            selected: currentRoute == AppRoutes.kelolaProdukMob,
+          ),
+          _buildDrawerItem(
+            context,
             icon: Icons.shopping_bag,
             title: 'Kelola Produk',
             routeName: AppRoutes.kelolaProdukMob,

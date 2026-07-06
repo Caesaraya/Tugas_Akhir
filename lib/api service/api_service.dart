@@ -1,12 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as http_parser;
-import 'package:tugas_akhir/models/bahan_baku_requirment.dart';
-import 'package:tugas_akhir/models/expense.dart';
-import 'package:tugas_akhir/models/expense_category.dart';
-import 'package:tugas_akhir/models/financial_report.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/bahan_baku.dart';
@@ -16,6 +12,12 @@ import 'package:tugas_akhir/models/produksi.dart';
 import 'package:tugas_akhir/models/resep.dart';
 import 'package:tugas_akhir/models/supplier.dart';
 import 'package:tugas_akhir/models/user.dart';
+import 'package:tugas_akhir/models/bahan_baku_requirement.dart';
+import 'package:tugas_akhir/models/financial_report.dart';
+import 'package:tugas_akhir/models/expense_category.dart';
+import 'package:tugas_akhir/models/expense.dart';
+import 'package:tugas_akhir/models/dashboard_summary.dart';
+import 'package:tugas_akhir/models/dashboard_activity.dart';
 
 class ApiService {
   static const String baseUrl = "http://103.67.78.70";
@@ -1135,7 +1137,7 @@ class ApiService {
   // BAKERY CALCULATION APIS
   // ========================
   static Future<BakeryCalculationResult> hitungKebutuhanBahan({
-    required int resepId,
+    required int produkId,
     required int quantity,
   }) async {
     try {
@@ -1143,7 +1145,7 @@ class ApiService {
           .get(
             Uri.parse("$baseUrl/api/bakery/hitung-kebutuhan").replace(
               queryParameters: {
-                'resep_id': resepId.toString(),
+                'produk_id': produkId.toString(),
                 'quantity': quantity.toString(),
               },
             ),
@@ -1626,6 +1628,61 @@ class ApiService {
       }
     } catch (e) {
       throw Exception("Gagal memuat summary pengeluaran: $e");
+    }
+  }
+
+  // ========================
+  // DASHBOARD APIS
+  // ========================
+  static Future<DashboardSummary> getDashboardSummary() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/dashboard/summary"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return DashboardSummary.fromJson(data['data']);
+        }
+        throw Exception("Failed to load dashboard summary");
+      } else {
+        throw Exception("Failed to load dashboard summary");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat dashboard summary: $e");
+    }
+  }
+
+  static Future<List<DashboardActivity>> getDashboardActivities({
+    int limit = 10,
+  }) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse(
+              "$baseUrl/api/dashboard/activities",
+            ).replace(queryParameters: {'limit': limit.toString()}),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return (data['data'] as List)
+              .map((e) => DashboardActivity.fromJson(e))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception("Failed to load dashboard activities");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat dashboard activities: $e");
     }
   }
 }

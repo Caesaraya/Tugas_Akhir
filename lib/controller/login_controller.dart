@@ -114,7 +114,7 @@ class LoginController extends GetxController {
         Get.offAllNamed(AppRoutes.dashboardMobile);
         break;
       case 'ADMIN':
-        Get.offAllNamed(AppRoutes.kelolaProdukMob);
+        Get.offAllNamed(AppRoutes.dashboardMob);
         break;
       default:
         showError('Role tidak dikenali untuk perangkat mobile');
@@ -124,7 +124,7 @@ class LoginController extends GetxController {
   void navigateByRoleDesktop(String role) {
     switch (role.toUpperCase()) {
       case 'ADMIN':
-        Get.offAllNamed(AppRoutes.kelolaprodukdesk);
+        Get.offAllNamed(AppRoutes.dashboarddesk);
         break;
       case 'KASIR':
         Get.offAllNamed(AppRoutes.kasirboarddesk);
