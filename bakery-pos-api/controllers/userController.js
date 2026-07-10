@@ -196,3 +196,31 @@ exports.deleteUser = async (req, res) => {
     });
   }
 };
+
+// ========================
+// RESET PASSWORD USER
+// ========================
+exports.resetPassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    await db.execute(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [password, id]
+    );
+
+    res.json({
+      success: true,
+      message: "Password berhasil direset",
+    });
+  } catch (error) {
+    console.error("ERROR RESET PASSWORD:", error.message);
+
+    res.status(500).json({
+      success: false,
+      message: "Gagal reset password",
+      error_detail: error.message,
+    });
+  }
+};
