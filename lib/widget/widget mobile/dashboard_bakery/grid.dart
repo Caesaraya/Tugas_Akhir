@@ -15,8 +15,10 @@ class BakeryResepGrid extends StatelessWidget {
       }
       if (ctrl.filteredResep.isEmpty) {
         return const Center(
-          child: Text('Resep tidak ditemukan',
-              style: TextStyle(color: Colors.grey)),
+          child: Text(
+            'Resep tidak ditemukan',
+            style: TextStyle(color: Colors.grey),
+          ),
         );
       }
       return GridView.builder(
@@ -33,7 +35,7 @@ class BakeryResepGrid extends StatelessWidget {
           final resep = ctrl.filteredResep[i];
           return BakeryResepCard(
             resep: resep,
-        onTap: () => ctrl.navigateToDetail(resep),
+            onTap: () => ctrl.navigateToDetail(resep),
           );
         },
       );

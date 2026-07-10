@@ -144,7 +144,7 @@ class AdminSidebar extends StatelessWidget {
                     icon: Icons.people_alt_outlined, // ← TAMBAHAN BARU
                     title: "Kelola User",
                     selected: navC.selectedIndex.value == 5,
-                    onTap: () => Get.toNamed(AppRoutes.kelolaUserDesk),
+                    onTap: () => navC.changePage(5, AppRoutes.kelolaUserDesk),
                   ),
                 ],
               ),

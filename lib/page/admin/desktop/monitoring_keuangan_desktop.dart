@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/controller/admin/navigation_controller.dart';
 import 'package:tugas_akhir/widget/admin/custom_sidebar.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/uang/dialog_tambah_pengeluaran.dart';
 import 'package:tugas_akhir/widget/admin/uang/card_keuangan.dart';
@@ -10,10 +11,13 @@ import '../../../controller/admin/keuangan_controller.dart';
 class MonitoringKeuanganPage extends StatelessWidget {
   MonitoringKeuanganPage({super.key});
 
-  final controller = Get.put(KeuanganController());
+  final controller = Get.find<KeuanganController>();
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.find<NavigationController>().selectedIndex.value = 4;
+    });
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: Row(
