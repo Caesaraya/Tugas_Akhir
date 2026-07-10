@@ -69,6 +69,13 @@ class MobileAdminDrawer extends StatelessWidget {
             selected: currentRoute == AppRoutes.monitoringUangMob,
             routeName: AppRoutes.monitoringUangMob,
           ),
+          _buildDrawerItem(
+            context,
+            icon: Icons.people_alt_outlined, // ← TAMBAHAN BARU
+            title: 'Kelola User',
+            routeName: AppRoutes.kelolaUserMob,
+            selected: currentRoute == AppRoutes.kelolaUserMob,
+          ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout),

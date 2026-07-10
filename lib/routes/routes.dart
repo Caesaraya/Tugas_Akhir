@@ -10,11 +10,13 @@ class AppRoutes {
   static const String kelolabahandesk = '/kelolabahandesk';
   static const String kelolaresepdesk = '/kelolaresepdesk';
   static const String monitoringuang = '/monitoringKeuangan';
+  static const String kelolaUserDesk = '/kelolaUserDesk';
   //mobile
   static const String dashboardMob = '/dashboardAdminMobile';
   static const String kelolaProdukMob = '/kelolaProdukmobile';
   static const String kelolaBahanMob = '/kelolaBahanMobile';
   static const String kelolaResepMob = '/kelolaResepMobile';
+  static const String kelolaUserMob = '/kelolaUserMobile';
 
   //===BAKERY===
   static const String bakery = '/bakery';

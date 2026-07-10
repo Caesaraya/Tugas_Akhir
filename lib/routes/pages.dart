@@ -3,12 +3,14 @@ import 'package:tugas_akhir/page/admin/desktop/dashboard_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_bahan_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_produk_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_resep_desktop.dart';
+import 'package:tugas_akhir/page/admin/desktop/kelola_user_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/monitoring_keuangan_desktop.dart';
 import 'package:tugas_akhir/page/admin/mobile/bahanbaku/kelola_bahan_baku_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/dashboard_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/produk/kelola_produk_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/resep/kelola_resep_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/uang/monitoring_keuangan_mobile.dart';
+import 'package:tugas_akhir/page/admin/mobile/user/kelola_user_mobile.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_dashboard_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_pembayaran_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_selesai_desktop.dart';
@@ -91,7 +93,10 @@ class AppPages {
       name: AppRoutes.monitoringuang,
       page: () => MonitoringKeuanganPage(),
     ),
-
+    GetPage(
+      name: AppRoutes.kelolaUserDesk,
+      page: () => KelolaUserDeskPage(),
+    ), // ← TAMBAHAN BARU
     // ── Admin Mobile ───────────────────────────────────────────────────────
     GetPage(
       name: AppRoutes.dashboardMob,
@@ -114,5 +119,9 @@ class AppPages {
       name: AppRoutes.monitoringUangMob,
       page: () => MonitoringKeuanganMobilePage(),
     ),
+    GetPage(
+      name: AppRoutes.kelolaUserMob,
+      page: () => KelolaUserMobilePage(),
+    ), // ← TAMBAHAN BARU
   ];
 }

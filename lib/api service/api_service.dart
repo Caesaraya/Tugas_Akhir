@@ -1134,6 +1134,83 @@ class ApiService {
   }
 
   // ========================
+  // CREATE USER
+  // ========================
+  static Future<bool> createUser(User user) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/users"),
+            headers: headers,
+            body: jsonEncode(user.toJson()),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      throw Exception("Gagal membuat user: $e");
+    }
+  }
+
+  // ========================
+  // UPDATE USER
+  // ========================
+  static Future<bool> updateUser(User user) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse("$baseUrl/api/users/${user.id}"),
+            headers: headers,
+            body: jsonEncode(user.toJson()),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal update user: $e");
+    }
+  }
+
+  // ========================
+  // RESET PASSWORD USER
+  // ========================
+  // Frontend hanya mengirim password baru (plain text lewat HTTPS).
+  // Hashing password sepenuhnya dilakukan di backend.
+  static Future<bool> resetPassword({
+    required int id,
+    required String password,
+  }) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse("$baseUrl/api/users/$id/reset-password"),
+            headers: headers,
+            body: jsonEncode({"password": password}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal reset password user: $e");
+    }
+  }
+
+  // ========================
+  // DELETE USER
+  // ========================
+  static Future<bool> deleteUser(int id) async {
+    try {
+      final response = await http
+          .delete(Uri.parse("$baseUrl/api/users/$id"), headers: headers)
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal hapus user: $e");
+    }
+  }
+
+  // ========================
   // BAKERY CALCULATION APIS
   // ========================
   static Future<BakeryCalculationResult> hitungKebutuhanBahan({
