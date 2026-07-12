@@ -488,6 +488,27 @@ class ApiService {
     }
   }
 
+  // ========================
+  // PENGAMBILAN BAHAN MANUAL
+  // ========================
+  static Future<bool> createPengambilanBahanManual({
+    required List<Map<String, dynamic>> items,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/bahan-baku/pengambilan-manual"),
+            headers: headers,
+            body: jsonEncode({"items": items}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      throw Exception("Gagal melakukan pengambilan bahan manual: $e");
+    }
+  }
+
   static Future<bool> updateBahanBaku(BahanBaku bahanBaku) async {
     try {
       final response = await http

@@ -58,9 +58,10 @@ exports.createProduksi = async (req, res) => {
     } = req.body;
 
     if (!jumlah_produksi || jumlah_produksi <= 0) {
-      throw new Error(
-        "Jumlah produksi harus lebih dari 0"
-      );
+      return res.status(422).json({
+        success: false,
+        message: "Jumlah produksi harus lebih dari 0"
+      });
     }
 
     await connection.beginTransaction();
@@ -82,7 +83,10 @@ exports.createProduksi = async (req, res) => {
     );
 
     if (productRows.length === 0) {
-      throw new Error("Produk tidak ditemukan");
+      return res.status(404).json({
+        success: false,
+        message: "Produk tidak ditemukan"
+      });
     }
 
     const product = productRows[0];
@@ -91,9 +95,10 @@ exports.createProduksi = async (req, res) => {
     // VALIDASI RESEP
     // ========================
     if (!product.resep_id) {
-      throw new Error(
-        "Produk belum memiliki resep"
-      );
+      return res.status(422).json({
+        success: false,
+        message: "Produk belum memiliki resep"
+      });
     }
 
     // ========================
@@ -130,9 +135,10 @@ exports.createProduksi = async (req, res) => {
 
       if (item.stok < totalKebutuhan) {
 
-        throw new Error(
-          `Stok bahan ${item.nama_bahan} tidak cukup`
-        );
+        return res.status(422).json({
+          success: false,
+          message: `Stok bahan ${item.nama_bahan} tidak cukup`
+        });
       }
     }
 
@@ -160,9 +166,10 @@ exports.createProduksi = async (req, res) => {
         );
 
       if (updateResult.affectedRows === 0) {
-        throw new Error(
-          `Stok bahan ${item.nama_bahan} tidak cukup`
-        );
+        return res.status(422).json({
+          success: false,
+          message: `Stok bahan ${item.nama_bahan} tidak cukup`
+        });
       }
     }
 
@@ -200,6 +207,57 @@ exports.createProduksi = async (req, res) => {
       [
         product_id,
         jumlah_produksi,
+      ]
+    );
+
+    // ========================
+    // INSERT LOG ACTIVITIES
+    // ========================
+    
+    // Log 1: Produksi
+    await connection.execute(
+      `
+      INSERT INTO dashboard_activities
+      (jenis_aktivitas, deskripsi, icon, waktu)
+      VALUES
+      (?, ?, ?, NOW())
+      `,
+      [
+        'Produksi',
+        `🍞 Bakery memproduksi ${product.name} sebanyak ${jumlah_produksi} ${product.satuan}.`,
+        '🍞'
+      ]
+    );
+
+    // Log 2: Pengambilan Bahan (untuk setiap bahan)
+    for (const item of resepRows) {
+      await connection.execute(
+        `
+        INSERT INTO dashboard_activities
+        (jenis_aktivitas, deskripsi, icon, waktu)
+        VALUES
+        (?, ?, ?, NOW())
+        `,
+        [
+          'Pengambilan Bahan',
+          `📦 Bakery mengambil ${item.nama_bahan} sebanyak ${item.jumlah_bahan * jumlah_produksi} ${item.satuan}.`,
+          '📦'
+        ]
+      );
+    }
+
+    // Log 3: Penambahan Stok Produk
+    await connection.execute(
+      `
+      INSERT INTO dashboard_activities
+      (jenis_aktivitas, deskripsi, icon, waktu)
+      VALUES
+      (?, ?, ?, NOW())
+      `,
+      [
+        'Penambahan Stok',
+        `📈 Stok produk ${product.name} bertambah sebanyak ${jumlah_produksi} ${product.satuan}.`,
+        '📈'
       ]
     );
 

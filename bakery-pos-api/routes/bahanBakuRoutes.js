@@ -77,4 +77,12 @@ router.get(
   bahanBakuController.getStockSummary
 );
 
+// ========================
+// PENGAMBILAN BAHAN MANUAL
+// ========================
+router.post(
+  "/pengambilan-manual",
+  bahanBakuController.pengambilanBahanManual
+);
+
 module.exports = router;

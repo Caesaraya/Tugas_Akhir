@@ -401,3 +401,110 @@ exports.getStockSummary = async (req, res) => {
     });
   }
 };
+
+// ========================
+// PENGAMBILAN BAHAN MANUAL
+// ========================
+exports.pengambilanBahanManual = async (req, res) => {
+  const connection = await db.getConnection();
+
+  try {
+    const { items } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(422).json({
+        success: false,
+        message: "Items tidak valid atau kosong"
+      });
+    }
+
+    await connection.beginTransaction();
+
+    // Validasi dan kurangi stok untuk setiap item
+    for (const item of items) {
+      const { bahan_baku_id, qty } = item;
+
+      if (!bahan_baku_id || !qty || qty <= 0) {
+        return res.status(422).json({
+          success: false,
+          message: "Data item tidak valid"
+        });
+      }
+
+      // Cek stok bahan
+      const [bahanRows] = await connection.execute(
+        `
+        SELECT
+          id,
+          nama_bahan,
+          stok,
+          satuan
+        FROM bahan_baku
+        WHERE id = ?
+        AND deleted_at IS NULL
+        `,
+        [bahan_baku_id]
+      );
+
+      if (bahanRows.length === 0) {
+        throw new Error(`Bahan baku dengan ID ${bahan_baku_id} tidak ditemukan`);
+      }
+
+      const bahan = bahanRows[0];
+
+      if (bahan.stok < qty) {
+        throw new Error(`Stok bahan ${bahan.nama_bahan} tidak cukup. Sisa: ${bahan.stok}, Diminta: ${qty}`);
+      }
+
+      // Kurangi stok
+      const [updateResult] = await connection.execute(
+        `
+        UPDATE bahan_baku
+        SET stok = stok - ?
+        WHERE id = ?
+        AND stok >= ?
+        `,
+        [qty, bahan_baku_id, qty]
+      );
+
+      if (updateResult.affectedRows === 0) {
+        throw new Error(`Gagal mengurangi stok bahan ${bahan.nama_bahan}`);
+      }
+
+      // Insert log activity
+      await connection.execute(
+        `
+        INSERT INTO dashboard_activities
+        (jenis_aktivitas, deskripsi, icon, waktu)
+        VALUES
+        (?, ?, ?, NOW())
+        `,
+        [
+          'Pengambilan Bahan Manual',
+          `📦 Bakery mengambil ${bahan.nama_bahan} sebanyak ${qty} ${bahan.satuan}.`,
+          '📦'
+        ]
+      );
+    }
+
+    await connection.commit();
+
+    res.json({
+      success: true,
+      message: "Pengambilan bahan manual berhasil",
+    });
+
+  } catch (error) {
+    await connection.rollback();
+
+    console.log("ERROR PENGAMBILAN MANUAL:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message || "Gagal melakukan pengambilan bahan manual",
+    });
+
+  } finally {
+    connection.release();
+  }
+};

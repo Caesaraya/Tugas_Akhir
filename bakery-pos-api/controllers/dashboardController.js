@@ -142,80 +142,23 @@ exports.getDashboardActivities = async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 10;
 
-    // ========================
-    // 1. Pembelian Bahan Baku
-    // ========================
-    const [pembelianActivities] = await db.query(
+    // Query langsung dari tabel dashboard_activities
+    const [activities] = await db.query(
       `
       SELECT
-        'pembelian' AS jenis_aktivitas,
-        CONCAT('Pembelian ', s.nama_supplier, ' total Rp', pb.total) AS deskripsi,
-        pb.tanggal AS waktu
-      FROM pembelian_bahan pb
-      JOIN supplier s ON pb.supplier_id = s.id
-      ORDER BY pb.tanggal DESC
+        jenis_aktivitas,
+        deskripsi,
+        icon,
+        waktu
+      FROM dashboard_activities
+      ORDER BY waktu DESC
       LIMIT ${limit}
       `
     );
-
-    // ========================
-    // 2. Produksi (Penggunaan Bahan Baku)
-    // ========================
-    const [produksiActivities] = await db.query(
-      `
-      SELECT
-        'produksi' AS jenis_aktivitas,
-        CONCAT('Produksi ', p.name, ' sebanyak ', pr.jumlah_produksi, ' ', p.satuan) AS deskripsi,
-        pr.tanggal AS waktu
-      FROM produksi pr
-      JOIN products p ON pr.product_id = p.id
-      ORDER BY pr.tanggal DESC
-      LIMIT ${limit}
-      `
-    );
-
-    // ========================
-    // 3. Transaksi Penjualan
-    // ========================
-    const [transactionActivities] = await db.query(
-      `
-      SELECT
-        'transaksi' AS jenis_aktivitas,
-        CONCAT('Transaksi Rp', t.total_harga, ' - ', t.metode_pembayaran) AS deskripsi,
-        t.tanggal AS waktu
-      FROM transactions t
-      ORDER BY t.tanggal DESC
-      LIMIT ${limit}
-      `
-    );
-
-    // ========================
-    // 4. Gabungkan dan Urutkan
-    // ========================
-    const allActivities = [
-      ...pembelianActivities.map(a => ({
-        ...a,
-        icon: '🛒'
-      })),
-      ...produksiActivities.map(a => ({
-        ...a,
-        icon: '🏭'
-      })),
-      ...transactionActivities.map(a => ({
-        ...a,
-        icon: '💰'
-      }))
-    ];
-
-    // Sort by waktu descending
-    allActivities.sort((a, b) => new Date(b.waktu) - new Date(a.waktu));
-
-    // Limit result
-    const limitedActivities = allActivities.slice(0, limit);
 
     res.json({
       success: true,
-      data: limitedActivities,
+      data: activities,
     });
 
   } catch (error) {
