@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:pdf/pdf.dart';
 import 'package:tugas_akhir/controller/dashboard_controller.dart';
@@ -6,11 +7,14 @@ import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/riwayat_controller.dart';
-import 'package:tugas_akhir/api%20service/api_service.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:tugas_akhir/data/repository/cart_repository.dart';
+import 'package:tugas_akhir/data/repository/transaction_repository.dart';
+import 'package:tugas_akhir/data/sync/sync_manager.dart';
+import 'package:tugas_akhir/data/sync/connectivity_service.dart';
 
 class CartController extends GetxController {
   final textController = TextEditingController();
@@ -29,6 +33,28 @@ class CartController extends GetxController {
     decimalDigits: 0,
   );
 
+  final CartRepository _cartRepository = CartRepository.instance;
+  final TransactionRepository _transactionRepository =
+      TransactionRepository.instance;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Muat cart yang sempat tersimpan (mis. app pernah tertutup paksa
+    // di tengah transaksi) supaya kasir tidak kehilangan input.
+    _loadPersistedCart();
+  }
+
+  Future<void> _loadPersistedCart() async {
+    final persisted = await _cartRepository.getCart();
+    if (persisted.isNotEmpty) {
+      cartItems.assignAll(persisted);
+    }
+  }
+
+  // Setiap perubahan cart langsung ditulis ke SQLite (fire-and-forget,
+  // tidak di-await agar UI tetap responsif) -- ini HANYA persistence,
+  // tidak pernah masuk sync_queue (lihat CartRepository).
   void addToCart(Product product) {
     var existingItem = cartItems.firstWhereOrNull(
       (item) => item.productId == product.id,
@@ -36,21 +62,23 @@ class CartController extends GetxController {
     if (existingItem != null) {
       existingItem.qty++;
       cartItems.refresh();
+      _cartRepository.upsertItem(existingItem);
     } else {
-      cartItems.add(
-        CartItem(
-          productId: product.id,
-          name: product.name,
-          price: product.price,
-          discount: product.discount,
-          qty: 1,
-        ),
+      final newItem = CartItem(
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        discount: product.discount,
+        qty: 1,
       );
+      cartItems.add(newItem);
+      _cartRepository.upsertItem(newItem);
     }
   }
 
   void removeFromCart(int productId) {
     cartItems.removeWhere((item) => item.productId == productId);
+    _cartRepository.removeItem(productId);
   }
 
   void increaseQty(int productId) {
@@ -60,6 +88,7 @@ class CartController extends GetxController {
     if (item != null) {
       item.qty++;
       cartItems.refresh();
+      _cartRepository.upsertItem(item);
     }
   }
 
@@ -70,10 +99,11 @@ class CartController extends GetxController {
     if (item != null) {
       if (item.qty > 1) {
         item.qty--;
+        cartItems.refresh();
+        _cartRepository.upsertItem(item);
       } else {
         removeFromCart(productId);
       }
-      cartItems.refresh();
     }
   }
 
@@ -90,6 +120,7 @@ class CartController extends GetxController {
     cartItems.clear();
     selectedPayment.value = 'cash';
     inputUang.value = 0.0;
+    _cartRepository.clear();
   }
 
   Map<String, String> getSuksesData(dynamic args) {
@@ -155,28 +186,39 @@ class CartController extends GetxController {
     }
   }
 
+  // PERUBAHAN UTAMA offline-first: checkout SEKARANG menulis ke SQLite lokal
+  // dulu (lewat TransactionRepository.checkout()) -- ini SELALU berhasil
+  // walau tidak ada internet sama sekali, karena tidak menyentuh network.
+  // Pengiriman ke backend didaftarkan ke sync_queue dan diproses oleh
+  // SyncManager kapan pun koneksi tersedia (lihat bootstrap.dart).
+  //
+  // Karena itu snackbar "Gagal" yang dulu muncul saat request API gagal
+  // TIDAK RELEVAN lagi di titik ini -- kegagalan network bukan lagi
+  // kegagalan transaksi bagi kasir, cukup tertunda sinkronnya.
   Future<void> prosesKeApi() async {
-    if (cartItems.isNotEmpty) {
-      bool success = await ApiService.createTransaction(
-        total: totalPrice,
-        bayar: selectedPayment.value == "cash" ? inputUang.value : totalPrice,
-        kembalian: selectedPayment.value == "cash" ? kembalian : 0.0,
-        metode: selectedPayment.value,
-        cart: cartItems,
-      );
+    if (cartItems.isEmpty) return;
 
-      if (success) {
-        if (Get.isRegistered<RiwayatController>()) {
-          Get.find<RiwayatController>().fetchHistory();
-        }
-      } else {
-        Get.snackbar(
-          "Gagal",
-          "Database gagal menyimpan transaksi",
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
+    await _transactionRepository.checkout(
+      cart: cartItems,
+      total: totalPrice,
+      bayar: selectedPayment.value == "cash" ? inputUang.value : totalPrice,
+      kembalian: selectedPayment.value == "cash" ? kembalian : 0.0,
+      metode: selectedPayment.value,
+    );
+
+    // Riwayat sekarang membaca dari TransactionRepository (SQLite), jadi
+    // langsung tampil walau baris ini belum sempat ke server.
+    if (Get.isRegistered<RiwayatController>()) {
+      Get.find<RiwayatController>().fetchHistory();
+    }
+
+    // Coba sync sekarang juga kalau kebetulan online -- best effort saja,
+    // kegagalan di sini tidak memengaruhi transaksi yang sudah tersimpan
+    // lokal. Jika offline, ConnectivityService yang akan memicu sync
+    // otomatis begitu koneksi kembali.
+    final online = await ConnectivityService.instance.isOnline;
+    if (online) {
+      unawaited(SyncManager.instance.runSync());
     }
   }
 

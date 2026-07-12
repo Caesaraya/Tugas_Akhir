@@ -17,11 +17,12 @@ class AppRoutes {
   static const String kelolaBahanMob = '/kelolaBahanMobile';
   static const String kelolaResepMob = '/kelolaResepMobile';
   static const String kelolaUserMob = '/kelolaUserMobile';
+  static const String monitoringUangMob = '/monitoringKeuanganMobile';
 
   //===BAKERY===
   static const String bakery = '/bakery';
   static const String bakerydetail = '/bakerydetail';
-  static const String monitoringUangMob = '/monitoringKeuanganMobile';
+  static const String bakerybahan = '/bakerybahan';
   //media query
   static const String mediaQuery = '/mediaQuery';
   //===KASIR===

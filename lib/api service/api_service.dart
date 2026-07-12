@@ -384,6 +384,73 @@ class ApiService {
   }
 
   // ========================
+  // CREATE TRANSACTION (versi offline-first)
+  // ========================
+  // Endpoint dan body request SAMA PERSIS dengan createTransaction() di atas
+  // -- tidak ada perubahan kontrak API sama sekali. Bedanya method ini
+  // membaca body response dan mengembalikan id transaksi yang dibuat
+  // backend, supaya bisa dipakai mengisi `server_id` di SQLite lokal.
+  //
+  // PENTING: parsing di bawah defensif terhadap 2 kemungkinan bentuk
+  // response yang umum dipakai backend ini (lihat getDashboardSummary()
+  // yang memakai {"success":true,"data":{...}}). Jika bentuk response
+  // transaksi ternyata berbeda, sesuaikan bagian `_extractId` saja --
+  // tidak ada bagian lain yang perlu diubah.
+  static Future<int?> createTransactionAndGetId({
+    required double total,
+    required double bayar,
+    required double kembalian,
+    required String metode,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/transactions");
+
+    final body = {
+      "total_harga": total,
+      "metode_pembayaran": metode,
+      "jumlah_bayar": bayar,
+      "kembalian": kembalian,
+      "items": items,
+    };
+
+    final response = await http
+        .post(url, headers: headers, body: jsonEncode(body))
+        .timeout(const Duration(seconds: 10));
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      return null;
+    }
+
+    if (response.body.isEmpty) {
+      // Backend sukses tapi tidak mengembalikan body -- tidak ada id
+      // yang bisa disimpan. TransactionRepository akan tetap menandai
+      // baris ini gagal-sync supaya tidak "synced" dengan server_id kosong.
+      return null;
+    }
+
+    try {
+      final decoded = jsonDecode(response.body);
+      return _extractId(decoded);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static int? _extractId(dynamic decoded) {
+    if (decoded is Map<String, dynamic>) {
+      // Bentuk 1: {"success": true, "data": {"id": 123, ...}}
+      if (decoded['data'] is Map && decoded['data']['id'] != null) {
+        return int.tryParse(decoded['data']['id'].toString());
+      }
+      // Bentuk 2: {"id": 123, ...}
+      if (decoded['id'] != null) {
+        return int.tryParse(decoded['id'].toString());
+      }
+    }
+    return null;
+  }
+
+  // ========================
   // GET TRANSACTIONS
   // ========================
   static Future<List<dynamic>> getTransactions() async {
@@ -1241,9 +1308,9 @@ class ApiService {
     }
   }
 
-  //=========================
-  //sementara
-  //=========================
+  // ========================
+  // PENGAMBILAN BAHAN MANUAL
+  // ========================
   static Future<bool> createPengambilanBahanManual({
     required List<Map<String, dynamic>> items,
   }) async {
@@ -1251,8 +1318,7 @@ class ApiService {
       final response = await http
           .post(
             Uri.parse("$baseUrl/api/bahan-baku/pengambilan-manual"),
-            headers:
-                headers, // pastikan properti headers bawaan project terjangkau
+            headers: headers,
             body: jsonEncode({"items": items}),
           )
           .timeout(const Duration(seconds: 10));
@@ -1261,6 +1327,38 @@ class ApiService {
     } catch (e) {
       throw Exception("Gagal melakukan pengambilan bahan manual: $e");
     }
+  }
+
+  static Future<Map<String, dynamic>> confirmPengambilanBahanResep({
+    required int resepId,
+    required int jumlahProduksi,
+  }) async {
+    late http.Response response;
+    try {
+      response = await http
+          .post(
+            Uri.parse("$baseUrl/api/pengambilan-bahan/resep"),
+            headers: headers,
+            body: jsonEncode({
+              "resep_id": resepId,
+              "jumlah_produksi": jumlahProduksi,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+    } catch (e) {
+      throw Exception("Gagal menghubungi server: $e");
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      return data;
+    }
+
+    throw Exception(
+      data['message']?.toString() ??
+          "Gagal memproses pengambilan bahan berdasarkan resep",
+    );
   }
 
   static Future<BakeryAvailabilityResult> cekKetersediaanBahan({

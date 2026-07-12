@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/api service/api_service.dart';
+import 'package:tugas_akhir/models/bahan_baku_requirement.dart';
 import 'package:tugas_akhir/models/resep.dart';
 import 'package:tugas_akhir/models/bahan_baku.dart';
 import 'package:tugas_akhir/models/bahan_cart.dart';
@@ -79,6 +80,45 @@ class BakeryController extends GetxController {
       bahanBakuList.assignAll(data);
     } catch (e) {
       debugPrint("Gagal memuat bahan baku: $e");
+    }
+  }
+
+  // Masukkan fungsi ini ke dalam class BakeryController di file bakery_controller.dart Anda
+  void tambahKeKeranjangManualDenganQty(BahanBaku bahan, double qty) {
+    // Cek apakah bahan baku tersebut sudah dimasukkan ke keranjang sebelumnya
+    final index = manualCart.indexWhere((item) => item.bahan.id == bahan.id);
+
+    if (index == -1) {
+      // Jika belum ada, buat item baru di keranjang
+      manualCart.add(ManualBahanCartItem(bahan: bahan, qtyAmbil: qty));
+      Get.snackbar(
+        'Sukses',
+        '${bahan.namaBahan} berhasil masuk keranjang',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } else {
+      // Jika sudah ada, update/akumulasikan qty-nya
+      double qtyBaru = manualCart[index].qtyAmbil + qty;
+      if (qtyBaru > bahan.stok) {
+        Get.snackbar(
+          'Gagal Akumulasi',
+          'Total di keranjang melebihi batas stok tersedia!',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return;
+      }
+      manualCart[index].qtyAmbil = qtyBaru;
+      manualCart.refresh();
+      Get.snackbar(
+        'Updated',
+        'Jumlah ${bahan.namaBahan} di keranjang diperbarui',
+        backgroundColor: Colors.blue,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -201,43 +241,31 @@ class BakeryController extends GetxController {
       final resep = selectedResep.value;
       if (resep == null) return;
 
-      final success = await ApiService.createProduksi(
-        productId: resep.id!,
+      final rawResult = await ApiService.confirmPengambilanBahanResep(
+        resepId: resep.id!,
         jumlahProduksi: jumlahProduksi.value,
       );
+      final result = PengambilanBahanResepResult.fromJson(rawResult);
 
-      if (success) {
-        Get.until(
-          (route) => Get.currentRoute == '/BakeryPage' || route.isFirst,
-        );
-        Get.snackbar(
-          'Sukses',
-          'Produksi berhasil disimpan',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+      Get.until((route) => Get.currentRoute == '/BakeryPage' || route.isFirst);
+      Get.snackbar(
+        'Sukses',
+        'Pengambilan bahan untuk resep "${result.namaResep}" berhasil diproses',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
 
-        // Refresh Data sesuai Aturan: Single Source of Truth
-        await fetchResep();
-        await fetchBahanBaku();
+      await fetchResep();
+      await fetchBahanBaku();
 
-        if (Get.isRegistered<KeuanganController>()) {
-          final keuanganCtrl = Get.find<KeuanganController>();
-          await keuanganCtrl
-              .loadDashboardData(); // Memperbarui widget Aktivitas & Summary realtime
-        }
-      } else {
-        Get.snackbar(
-          'Gagal',
-          'Gagal memproses produksi di server',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+      if (Get.isRegistered<KeuanganController>()) {
+        final keuanganCtrl = Get.find<KeuanganController>();
+        await keuanganCtrl.loadDashboardData();
       }
     } catch (e) {
       Get.snackbar(
-        'Error',
-        'Terjadi kesalahan: $e',
+        'Gagal',
+        e.toString().replaceFirst('Exception: ', ''),
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -324,19 +352,41 @@ class BakeryController extends GetxController {
 
   Future<void> loadBakeryCalculation(int resepId) async {
     try {
+      isLoading(true);
+
+      // 1. Amankan pencarian resep (hanya untuk validasi keberadaan resep)
+      final resepTarget = resepList.firstWhereOrNull((r) => r.id == resepId);
+      if (resepTarget == null) {
+        Get.snackbar(
+          'Error',
+          'Resep tidak ditemukan di dalam sistem.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      // 2. Ambil data biaya dari API
       final biaya = await ApiService.hitungBiayaProduksi(
         resepId: resepId,
         quantity: jumlahProduksi.value,
       );
-      totalBiaya.value = biaya.totalBiaya;
 
-      final availability = await ApiService.cekKetersediaanBahan(
-        resepId: resepId,
-        quantity: jumlahProduksi.value,
-      );
-      semuaBahanCukup.value = availability.semuaBahanCukup;
+      // 3. Simpan biaya ke state.
+      // CATATAN: selectedResep TIDAK ditimpa di sini. resepTarget berasal dari
+      // resepList (endpoint list) yang tidak membawa detail bahan, sehingga
+      // menimpanya akan menghapus data bahan yang sudah dimuat via getDetailResep().
+      totalBiaya.value = biaya.totalBiaya;
     } catch (e) {
-      debugPrint("Kalkulasi error: $e");
+      print("ERROR DI LOAD CALCULATION: $e");
+      Get.snackbar(
+        'Gagal Memuat',
+        'Gagal menghitung estimasi produksi: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading(false);
     }
   }
 }

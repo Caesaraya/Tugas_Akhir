@@ -43,7 +43,7 @@ class LoginController extends GetxController {
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
       final user = User.fromJson(data);
 
-      if (!user.isValid) {
+      if (!user.isAdmin && !user.isKasir && !user.isBakery) {
         await _clearSession();
         return false;
       }

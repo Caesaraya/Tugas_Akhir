@@ -18,20 +18,18 @@ class Resep {
   factory Resep.fromJson(Map<String, dynamic> json) {
     return Resep(
       id: json['id'],
-      namaResep: json['nama_resep'] ?? '',
-      deskripsi: json['deskripsi'] ?? '',
+      namaResep: json['nama_resep']?.toString() ?? '',
+      deskripsi: json['deskripsi']?.toString() ?? '',
       bahan: json['bahan'] != null
-          ? (json['bahan'] as List)
-              .map((e) => DetailResep.fromJson(e))
-              .toList()
+          ? (json['bahan'] as List).map((e) => DetailResep.fromJson(e)).toList()
           : [],
       products: json['products'] != null
           ? (json['products'] as List)
-              .map((e) => e as Map<String, dynamic>)
-              .toList()
+                .map((e) => e as Map<String, dynamic>)
+                .toList()
           : [],
       deletedAt: json['deleted_at'] != null
-          ? DateTime.parse(json['deleted_at'])
+          ? DateTime.tryParse(json['deleted_at'].toString())
           : null,
     );
   }
@@ -89,19 +87,25 @@ class DetailResep {
     this.totalHargaBahan,
   });
 
- factory DetailResep.fromJson(Map<String, dynamic> json) {
-  return DetailResep(
-    id: json['id'],
-    resepId: json['resep_id'],
-    bahanId: json['bahan_id'] ?? 0,
-    jumlahBahan: double.tryParse(json['jumlah_bahan'].toString()) ?? 0.0,
-    namaBahan: json['nama_bahan'],
-    merk: json['merk'],
-    satuan: json['satuan'],
-    hargaSatuan: double.tryParse(json['harga_satuan'].toString()),
-    totalHargaBahan: double.tryParse(json['total_harga_bahan'].toString()),
-  );
-}
+  factory DetailResep.fromJson(Map<String, dynamic> json) {
+    return DetailResep(
+      id: json['id'],
+      resepId: json['resep_id'],
+      // Amankan bahan_id agar jika Null dari backend otomatis menjadi 0
+      bahanId: int.tryParse(json['bahan_id']?.toString() ?? '0') ?? 0,
+      // Amankan jumlah_bahan terhadap nilai integer/double/null
+      jumlahBahan:
+          double.tryParse(json['jumlah_bahan']?.toString() ?? '0.0') ?? 0.0,
+      namaBahan: json['nama_bahan']?.toString(),
+      merk: json['merk']?.toString(),
+      satuan: json['satuan']?.toString(),
+      // Amankan field harga agar tidak crash jika backend mengirim tipe data campuran
+      hargaSatuan: double.tryParse(json['harga_satuan']?.toString() ?? ''),
+      totalHargaBahan: double.tryParse(
+        json['total_harga_bahan']?.toString() ?? '',
+      ),
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -115,29 +119,5 @@ class DetailResep {
       'harga_satuan': hargaSatuan,
       'total_harga_bahan': totalHargaBahan,
     };
-  }
-
-  DetailResep copyWith({
-    int? id,
-    int? resepId,
-    int? bahanId,
-    double? jumlahBahan,
-    String? namaBahan,
-    String? merk,
-    String? satuan,
-    double? hargaSatuan,
-    double? totalHargaBahan,
-  }) {
-    return DetailResep(
-      id: id ?? this.id,
-      resepId: resepId ?? this.resepId,
-      bahanId: bahanId ?? this.bahanId,
-      jumlahBahan: jumlahBahan ?? this.jumlahBahan,
-      namaBahan: namaBahan ?? this.namaBahan,
-      merk: merk ?? this.merk,
-      satuan: satuan ?? this.satuan,
-      hargaSatuan: hargaSatuan ?? this.hargaSatuan,
-      totalHargaBahan: totalHargaBahan ?? this.totalHargaBahan,
-    );
   }
 }

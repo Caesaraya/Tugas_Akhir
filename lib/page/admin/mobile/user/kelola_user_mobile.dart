@@ -14,22 +14,18 @@ class KelolaUserMobilePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black),
         title: const Text(
           'Kelola User',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => ctrl.fetchUsers(),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.refresh_rounded),
+        //     onPressed: () => ctrl.fetchUsers(),
+        //   ),
+        // ],
       ),
       drawer: const MobileAdminDrawer(),
       body: Padding(

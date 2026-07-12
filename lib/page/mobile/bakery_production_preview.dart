@@ -8,13 +8,12 @@ class BakeryProductionPreviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.find<BakeryController>();
-    final resep = ctrl.selectedResep.value!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFBFA),
       appBar: AppBar(
         title: const Text(
-          'Preview Produksi',
+          'Preview Ambil Bahan',
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.bold,
@@ -26,6 +25,16 @@ class BakeryProductionPreviewPage extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: Obx(() {
+        // PERBAIKAN 1: Validasi jika selectedResep masih null saat halaman terbuka
+        final resep = ctrl.selectedResep.value;
+        if (resep == null) {
+          return const Center(
+            child: Text('Data resep tidak ditemukan atau belum dimuat.'),
+          );
+        }
+
+        final daftarBahan = resep.bahan ?? [];
+
         return Column(
           children: [
             Expanded(
@@ -58,7 +67,7 @@ class BakeryProductionPreviewPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Jumlah Produksi: ${ctrl.jumlahProduksi.value} pcs',
+                            'Jumlah Kelipatan Resep: ${ctrl.jumlahProduksi.value}x',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Color(0xFFE89336),
@@ -70,7 +79,7 @@ class BakeryProductionPreviewPage extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
-                                'Estimasi Biaya Produksi:',
+                                'Estimasi Nilai Bahan Baku:',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: Colors.grey,
@@ -98,62 +107,77 @@ class BakeryProductionPreviewPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: resep.bahan?.length ?? 0,
-                      itemBuilder: (context, index) {
-                        final b = resep.bahan![index];
-                        final realBahan = ctrl.bahanBakuList.firstWhereOrNull(
-                          (element) => element.id == b.bahanId,
-                        );
-                        double totalDibutuhkan = ctrl.kebutuhanBahan(
-                          b.jumlahBahan,
-                        );
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    b.namaBahan ?? 'Bahan',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Stok saat ini: ${ctrl.formatQty(realBahan?.stok ?? 0.0)} ${b.satuan}',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
+                    // PERBAIKAN 2: Antisipasi jika resep tidak memiliki bahan baku baku sama sekali
+                    daftarBahan.isEmpty
+                        ? const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: Center(
+                              child: Text(
+                                'Tidak ada rincian bahan baku untuk resep ini.',
+                                style: TextStyle(color: Colors.grey),
                               ),
-                              Text(
-                                '- ${ctrl.formatQty(totalDibutuhkan)} ${b.satuan}',
-                                style: const TextStyle(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: daftarBahan.length,
+                            itemBuilder: (context, index) {
+                              final b = daftarBahan[index];
+                              final realBahan = ctrl.bahanBakuList
+                                  .firstWhereOrNull(
+                                    (element) => element.id == b.bahanId,
+                                  );
+                              double totalDibutuhkan = ctrl.kebutuhanBahan(
+                                b.jumlahBahan,
+                              );
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                              ),
-                            ],
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          b.namaBahan ?? 'Bahan',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Stok saat ini: ${ctrl.formatQty(realBahan?.stok ?? 0.0)} ${b.satuan ?? ''}',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      '- ${ctrl.formatQty(totalDibutuhkan)} ${b.satuan ?? ''}',
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ],
                 ),
               ),
@@ -205,7 +229,7 @@ class BakeryProductionPreviewPage extends StatelessWidget {
                               ),
                             )
                           : const Text(
-                              'Konfirmasi Produksi',
+                              'Konfirmasi Ambil Bahan',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,

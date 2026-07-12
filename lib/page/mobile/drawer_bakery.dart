@@ -47,6 +47,11 @@ class DrawerBakery extends StatelessWidget {
               title: 'Beranda',
               route: AppRoutes.bakery,
             ),
+            DrawerItem(
+              icon: Icons.inventory_2,
+              title: 'Bahan Baku',
+              route: AppRoutes.bakerybahan,
+            ),
             const Spacer(),
             const Divider(),
             ListTile(
