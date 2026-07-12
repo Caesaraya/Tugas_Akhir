@@ -24,10 +24,7 @@ class User {
 
       name: json['name']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
-
-      // otomatis uppercase biar aman
-      role: json['role']?.toString().toUpperCase() ?? '',
-
+      role: _normalizeRole(json['role']),
       password: json['password']?.toString(),
     );
   }
@@ -40,7 +37,7 @@ class User {
       'id': id,
       'name': name,
       'email': email,
-      'role': role,
+      'role': _normalizeRole(role),
 
       // password hanya dikirim kalau ada
       if (password != null) 'password': password,
@@ -66,14 +63,20 @@ class User {
     );
   }
 
+  static String _normalizeRole(dynamic value) {
+    return value?.toString().trim().toLowerCase() ?? '';
+  }
+
   // ========================
   // ROLE CHECK
   // ========================
-  bool get isAdmin => role == "ADMIN";
+  bool get isAdmin => _normalizeRole(role) == "admin";
 
-  bool get isKasir => role == "KASIR";
+  bool get isKasir => _normalizeRole(role) == "kasir";
 
-  bool get isOwner => role == "OWNER";
+  bool get isOwner => _normalizeRole(role) == "owner";
+
+  bool get isBakery => _normalizeRole(role) == "bakery";
 
   // ========================
   // DEBUG PRINT
