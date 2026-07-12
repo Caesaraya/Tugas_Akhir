@@ -403,6 +403,201 @@ exports.getStockSummary = async (req, res) => {
 };
 
 // ========================
+// KONFIRMASI PENGAMBILAN BAHAN BERDASARKAN RESEP
+// ========================
+exports.konfirmasiPengambilanBahanResep = async (req, res) => {
+  const connection = await db.getConnection();
+
+  try {
+    const { resep_id, jumlah_produksi } = req.body;
+
+    if (!resep_id || !Number.isInteger(Number(resep_id))) {
+      return res.status(422).json({
+        success: false,
+        message: "resep_id wajib ada dan harus integer"
+      });
+    }
+
+    const qty = Number(jumlah_produksi);
+    if (!Number.isInteger(qty) || qty <= 0) {
+      return res.status(422).json({
+        success: false,
+        message: "Jumlah produksi harus lebih besar dari 0"
+      });
+    }
+
+    await connection.beginTransaction();
+
+    const [resepRows] = await connection.execute(
+      `
+      SELECT id, nama_resep
+      FROM resep
+      WHERE id = ?
+      AND deleted_at IS NULL
+      `,
+      [resep_id]
+    );
+
+    if (resepRows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({
+        success: false,
+        message: "Resep tidak ditemukan"
+      });
+    }
+
+    const [detailRows] = await connection.execute(
+      `
+      SELECT
+        dr.bahan_id,
+        dr.jumlah_bahan,
+        bb.nama_bahan,
+        bb.stok,
+        bb.satuan
+      FROM detail_resep dr
+      JOIN bahan_baku bb
+        ON dr.bahan_id = bb.id
+      WHERE dr.resep_id = ?
+      AND bb.deleted_at IS NULL
+      `,
+      [resep_id]
+    );
+
+    if (!detailRows || detailRows.length === 0) {
+      await connection.rollback();
+      return res.status(422).json({
+        success: false,
+        message: "Resep tidak memiliki bahan yang terdaftar"
+      });
+    }
+
+    const bahanKurang = [];
+    const bahanTerpakai = [];
+
+    for (const item of detailRows) {
+      const kebutuhan = Number(item.jumlah_bahan) * qty;
+
+      if (Number(item.stok) < kebutuhan) {
+        bahanKurang.push({
+          bahan_baku_id: item.bahan_id,
+          nama_bahan: item.nama_bahan,
+          stok_tersedia: Number(item.stok),
+          dibutuhkan: kebutuhan,
+          kekurangan: kebutuhan - Number(item.stok)
+        });
+      }
+    }
+
+    if (bahanKurang.length > 0) {
+      await connection.rollback();
+      return res.status(422).json({
+        success: false,
+        message: "Stok bahan baku tidak mencukupi",
+        data: {
+          bahan_kurang: bahanKurang
+        }
+      });
+    }
+
+    for (const item of detailRows) {
+      const kebutuhan = Number(item.jumlah_bahan) * qty;
+
+      const [updateResult] = await connection.execute(
+        `
+        UPDATE bahan_baku
+        SET stok = stok - ?
+        WHERE id = ?
+        AND deleted_at IS NULL
+        AND stok >= ?
+        `,
+        [kebutuhan, item.bahan_id, kebutuhan]
+      );
+
+      if (updateResult.affectedRows === 0) {
+        await connection.rollback();
+        return res.status(422).json({
+          success: false,
+          message: `Gagal mengurangi stok bahan ${item.nama_bahan}`
+        });
+      }
+
+      const [updatedRows] = await connection.execute(
+        `
+        SELECT stok, satuan
+        FROM bahan_baku
+        WHERE id = ?
+        `,
+        [item.bahan_id]
+      );
+
+      bahanTerpakai.push({
+        bahan_baku_id: item.bahan_id,
+        nama_bahan: item.nama_bahan,
+        jumlah_dikurangi: kebutuhan,
+        satuan: updatedRows[0]?.satuan || item.satuan,
+        sisa_stok: Number(updatedRows[0]?.stok || 0)
+      });
+    }
+
+    await connection.execute(
+      `
+      INSERT INTO dashboard_activities
+      (jenis_aktivitas, deskripsi, icon, waktu)
+      VALUES
+      (?, ?, ?, NOW())
+      `,
+      [
+        'Pengambilan Bahan Berdasarkan Resep',
+        `🍞 Bakery mengambil bahan berdasarkan resep "${resepRows[0].nama_resep}" (${qty}x produksi)`,
+        '📦'
+      ]
+    );
+
+    for (const item of bahanTerpakai) {
+      await connection.execute(
+        `
+        INSERT INTO dashboard_activities
+        (jenis_aktivitas, deskripsi, icon, waktu)
+        VALUES
+        (?, ?, ?, NOW())
+        `,
+        [
+          'Pengambilan Bahan Berdasarkan Resep',
+          `📦 ${item.nama_bahan} dikurangi ${item.jumlah_dikurangi} ${item.satuan}`,
+          '📦'
+        ]
+      );
+    }
+
+    await connection.commit();
+
+    res.json({
+      success: true,
+      message: "Pengambilan bahan baku berdasarkan resep berhasil diproses",
+      data: {
+        resep_id: Number(resep_id),
+        nama_resep: resepRows[0].nama_resep,
+        jumlah_produksi: qty,
+        bahan_terpakai: bahanTerpakai
+      }
+    });
+
+  } catch (error) {
+    await connection.rollback();
+
+    console.log("ERROR KONFIRMASI PENGAMBILAN RESEP:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message || "Gagal memproses pengambilan bahan berdasarkan resep"
+    });
+
+  } finally {
+    connection.release();
+  }
+};
+
+// ========================
 // PENGAMBILAN BAHAN MANUAL
 // ========================
 exports.pengambilanBahanManual = async (req, res) => {

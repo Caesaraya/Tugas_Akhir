@@ -271,3 +271,76 @@ class StockSummaryResult {
     };
   }
 }
+
+class PengambilanBahanResepResult {
+  final int resepId;
+  final String namaResep;
+  final int jumlahProduksi;
+  final List<PengambilanBahanItem> bahanTerpakai;
+
+  PengambilanBahanResepResult({
+    required this.resepId,
+    required this.namaResep,
+    required this.jumlahProduksi,
+    required this.bahanTerpakai,
+  });
+
+  factory PengambilanBahanResepResult.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] ?? {};
+
+    return PengambilanBahanResepResult(
+      resepId: int.tryParse(data['resep_id'].toString()) ?? 0,
+      namaResep: data['nama_resep'] ?? '',
+      jumlahProduksi: int.tryParse(data['jumlah_produksi'].toString()) ?? 0,
+      bahanTerpakai: (data['bahan_terpakai'] as List?)
+              ?.map((e) => PengambilanBahanItem.fromJson(e))
+              .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'resep_id': resepId,
+      'nama_resep': namaResep,
+      'jumlah_produksi': jumlahProduksi,
+      'bahan_terpakai': bahanTerpakai.map((e) => e.toJson()).toList(),
+    };
+  }
+}
+
+class PengambilanBahanItem {
+  final int bahanBakuId;
+  final String namaBahan;
+  final int jumlahDikurangi;
+  final String satuan;
+  final int sisaStok;
+
+  PengambilanBahanItem({
+    required this.bahanBakuId,
+    required this.namaBahan,
+    required this.jumlahDikurangi,
+    required this.satuan,
+    required this.sisaStok,
+  });
+
+  factory PengambilanBahanItem.fromJson(Map<String, dynamic> json) {
+    return PengambilanBahanItem(
+      bahanBakuId: int.tryParse(json['bahan_baku_id'].toString()) ?? 0,
+      namaBahan: json['nama_bahan'] ?? '',
+      jumlahDikurangi: int.tryParse(json['jumlah_dikurangi'].toString()) ?? 0,
+      satuan: json['satuan'] ?? '',
+      sisaStok: int.tryParse(json['sisa_stok'].toString()) ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'bahan_baku_id': bahanBakuId,
+      'nama_bahan': namaBahan,
+      'jumlah_dikurangi': jumlahDikurangi,
+      'satuan': satuan,
+      'sisa_stok': sisaStok,
+    };
+  }
+}

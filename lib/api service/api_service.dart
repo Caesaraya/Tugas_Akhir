@@ -509,6 +509,34 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>> confirmPengambilanBahanResep({
+    required int resepId,
+    required int jumlahProduksi,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/pengambilan-bahan/resep"),
+            headers: headers,
+            body: jsonEncode({
+              "resep_id": resepId,
+              "jumlah_produksi": jumlahProduksi,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return data;
+      }
+
+      throw Exception(data['message'] ?? "Gagal memproses pengambilan bahan berdasarkan resep");
+    } catch (e) {
+      throw Exception("Gagal memproses pengambilan bahan berdasarkan resep: $e");
+    }
+  }
+
   static Future<bool> updateBahanBaku(BahanBaku bahanBaku) async {
     try {
       final response = await http
