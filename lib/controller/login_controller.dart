@@ -116,6 +116,9 @@ class LoginController extends GetxController {
       case 'ADMIN':
         Get.offAllNamed(AppRoutes.dashboardMob);
         break;
+      case 'BAKERY':
+        Get.offAllNamed(AppRoutes.bakery);
+        break;
       default:
         showError('Role tidak dikenali untuk perangkat mobile');
     }
@@ -129,6 +132,8 @@ class LoginController extends GetxController {
       case 'KASIR':
         Get.offAllNamed(AppRoutes.kasirboarddesk);
         break;
+      case 'BAKERY':
+        Get.offAllNamed(AppRoutes.bakery);
       default:
         showError('Role tidak dikenali untuk perangkat desktop');
     }

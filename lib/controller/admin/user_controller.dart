@@ -155,14 +155,22 @@ class UserController extends GetxController {
 
       bool success = await ApiService.updateUser(updatedUser);
       if (success) {
-        Get.back();
+        Get.back(); // Menutup dialog setelah sukses
         Get.snackbar(
           'Sukses',
           'Akun berhasil diperbarui',
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
-        fetchUsers();
+        fetchUsers(); // Refresh data table/list
+      } else {
+        // Jika server merespon status 200 tapi operasi bernilai gagal secara logika bisnis
+        Get.snackbar(
+          'Gagal',
+          'Gagal memperbarui data. Periksa kembali hak akses Anda.',
+          backgroundColor: Colors.amber.shade800,
+          colorText: Colors.white,
+        );
       }
     } catch (e) {
       Get.snackbar(

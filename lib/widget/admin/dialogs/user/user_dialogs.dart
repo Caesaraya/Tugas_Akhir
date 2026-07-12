@@ -46,7 +46,6 @@ class _InsertUserDialogState extends State<InsertUserDialog> {
                 icon: Icons.person_add_alt_1_rounded,
               ),
               const SizedBox(height: 24),
-
               CustomTextField(
                 controller: _nameController,
                 label: 'Nama Lengkap',
@@ -54,7 +53,6 @@ class _InsertUserDialogState extends State<InsertUserDialog> {
                 hint: 'Masukkan nama lengkap',
               ),
               const SizedBox(height: 20),
-
               CustomTextField(
                 controller: _emailController,
                 label: 'Email',
@@ -63,7 +61,6 @@ class _InsertUserDialogState extends State<InsertUserDialog> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 20),
-
               CustomTextField(
                 controller: _passwordController,
                 label: 'Password',
@@ -71,15 +68,13 @@ class _InsertUserDialogState extends State<InsertUserDialog> {
                 hint: 'Masukkan password akun',
               ),
               const SizedBox(height: 20),
-
               CustomDropdownMenu(
                 controller: _roleController,
                 label: 'Pilih Role / Hak Akses',
                 icon: Icons.admin_panel_settings_outlined,
-                items: const ['ADMIN', 'KASIR', 'OWNER'],
+                items: const ['ADMIN', 'KASIR', 'BAKERY'], // Diubah ke BAKERY
               ),
               const SizedBox(height: 28),
-
               DialogActionButtons(
                 saveLabel: 'Tambah',
                 onCancel: () => Navigator.pop(context),
@@ -94,7 +89,7 @@ class _InsertUserDialogState extends State<InsertUserDialog> {
                       _roleController.text.toUpperCase(),
                       _passwordController.text.trim(),
                     );
-                    Navigator.pop(context);
+                    // Navigator.pop dihapus dari sini karena ditangani oleh Get.back() di controller
                   }
                 },
               ),
@@ -109,9 +104,6 @@ class _InsertUserDialogState extends State<InsertUserDialog> {
 /// ==========================================
 /// 2. DIALOG UBAH DATA USER (EDIT)
 /// ==========================================
-/// Edit Informasi User (nama, email, role SAJA).
-/// Dialog ini TIDAK PERNAH menampilkan atau meminta password lama,
-/// dan tidak memiliki field password sama sekali.
 class EditUserDialog extends StatefulWidget {
   final Map<String, dynamic> currentUserData;
   final Function(int id, String name, String email, String role) onSave;
@@ -138,7 +130,14 @@ class _EditUserDialogState extends State<EditUserDialog> {
     _userId = widget.currentUserData['id'] ?? 0;
     _nameController.text = widget.currentUserData['name'] ?? '';
     _emailController.text = widget.currentUserData['email'] ?? '';
-    _roleController.text = widget.currentUserData['role'] ?? 'KASIR';
+
+    // Pastikan role dikonversi ke UpperCase agar cocok dengan item di CustomDropdownMenu
+    String initialRole = (widget.currentUserData['role'] ?? 'KASIR')
+        .toString()
+        .toUpperCase();
+    _roleController.text = ['ADMIN', 'KASIR', 'BAKERY'].contains(initialRole)
+        ? initialRole
+        : 'KASIR';
   }
 
   @override
@@ -188,7 +187,11 @@ class _EditUserDialogState extends State<EditUserDialog> {
                 controller: _roleController,
                 label: 'Ubah Role / Hak Akses',
                 icon: Icons.admin_panel_settings_outlined,
-                items: const ['ADMIN', 'KASIR', 'OWNER'],
+                items: const [
+                  'ADMIN',
+                  'KASIR',
+                  'BAKERY',
+                ], // Menggunakan BAKERY menggantikan OWNER
               ),
               const SizedBox(height: 28),
 
@@ -199,13 +202,14 @@ class _EditUserDialogState extends State<EditUserDialog> {
                   if (_nameController.text.trim().isNotEmpty &&
                       _emailController.text.trim().isNotEmpty &&
                       _roleController.text.isNotEmpty) {
+                    // Kirim data ke controller
                     widget.onSave(
                       _userId,
                       _nameController.text.trim(),
                       _emailController.text.trim(),
-                      _roleController.text.toUpperCase(),
+                      _roleController.text
+                          .toUpperCase(), // Memastikan huruf kapital
                     );
-                    Navigator.pop(context);
                   }
                 },
               ),
@@ -220,10 +224,6 @@ class _EditUserDialogState extends State<EditUserDialog> {
 /// ==========================================
 /// 3. DIALOG RESET PASSWORD
 /// ==========================================
-/// Alur khusus Admin (mis. staf lupa password):
-/// - Hanya meminta Password Baru + Konfirmasi Password.
-/// - TIDAK PERNAH meminta atau menampilkan password lama.
-/// - Password lama langsung ditimpa oleh backend (hashing di backend).
 class ResetPasswordDialog extends StatefulWidget {
   final int userId;
   final String userName;
@@ -275,7 +275,7 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
 
     setState(() => _errorText = null);
     widget.onSave(widget.userId, password);
-    Navigator.pop(context);
+    // Navigator.pop dihapus agar ditangani Get.back() di controller
   }
 
   @override
@@ -296,12 +296,10 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Buat password baru untuk akun "${widget.userName}". '
-                'Password lama akan langsung ditimpa.',
+                'Buat password baru untuk akun "${widget.userName}". Password lama akan langsung ditimpa.',
                 style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 24),
-
               CustomTextField(
                 controller: _passwordController,
                 label: 'Password Baru',
@@ -309,14 +307,12 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                 hint: 'Minimal 6 karakter',
               ),
               const SizedBox(height: 20),
-
               CustomTextField(
                 controller: _confirmController,
                 label: 'Konfirmasi Password',
                 icon: Icons.lock_outline_rounded,
                 hint: 'Ulangi password baru',
               ),
-
               if (_errorText != null) ...[
                 const SizedBox(height: 12),
                 Text(
@@ -324,9 +320,7 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                   style: const TextStyle(color: Colors.red, fontSize: 13),
                 ),
               ],
-
               const SizedBox(height: 28),
-
               DialogActionButtons(
                 saveLabel: 'Reset',
                 onCancel: () => Navigator.pop(context),
