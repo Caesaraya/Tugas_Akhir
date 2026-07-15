@@ -195,7 +195,7 @@ class ProductCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               product.jenis.toUpperCase(),
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.grey[500],

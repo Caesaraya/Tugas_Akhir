@@ -18,6 +18,7 @@ import 'package:tugas_akhir/page/desktop/Kasir_riwayat_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_kelola_dashboard.dart';
 import 'package:tugas_akhir/page/desktop/transaction_detail_desktop.dart';
 import 'package:tugas_akhir/page/login/desktop_login_page.dart';
+import 'package:tugas_akhir/page/login/splash_page.dart';
 import 'package:tugas_akhir/page/media_query.dart';
 import 'package:tugas_akhir/page/mobile/Kasir_dashboard_mobile.dart';
 import 'package:tugas_akhir/page/login/login_page.dart';
@@ -31,6 +32,8 @@ import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/riwayat_mobile.dart';
 import 'package:tugas_akhir/page/mobile/Kelolaproduk_mobile.dart';
 import 'package:tugas_akhir/page/mobile/transaction_detail_mobile.dart';
+import 'package:tugas_akhir/bindings/bindings.dart';
+
 
 import 'routes.dart';
 
@@ -38,6 +41,7 @@ import 'routes.dart';
 
 class AppPages {
   static final pages = [
+    GetPage(name: AppRoutes.splash, page: () => const SplashPage()),
     // ── Login ──────────────────────────────────────────────────────────────
     GetPage(
       name: AppRoutes.login,

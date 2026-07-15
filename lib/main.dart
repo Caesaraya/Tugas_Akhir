@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(backgroundColor: Color(0xFF26C6DA)),
       ),
       initialBinding: AppBinding(),
-      initialRoute: AppRoutes.mediaQuery,
+      initialRoute: AppRoutes.splash,
       getPages: AppPages.pages,
     );
   }

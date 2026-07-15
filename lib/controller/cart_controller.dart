@@ -23,8 +23,8 @@ class CartController extends GetxController {
   var selectedPayment = 'cash'.obs;
   var inputUang = 0.0.obs;
 
-  // Variabel baru untuk pengaturan ukuran kertas fleksibel (Default: 80mm / false)
-  // Nanti Anda bisa buat toggle di UI untuk mengubah ini menjadi true (58mm)
+  // Toggle ukuran kertas: false = 80mm (default), true = 58mm.
+  // Buat switch/toggle di UI yang mengubah nilai ini.
   var isPrint58mm = false.obs;
 
   final currencyFormatter = NumberFormat.currency(
@@ -186,15 +186,6 @@ class CartController extends GetxController {
     }
   }
 
-  // PERUBAHAN UTAMA offline-first: checkout SEKARANG menulis ke SQLite lokal
-  // dulu (lewat TransactionRepository.checkout()) -- ini SELALU berhasil
-  // walau tidak ada internet sama sekali, karena tidak menyentuh network.
-  // Pengiriman ke backend didaftarkan ke sync_queue dan diproses oleh
-  // SyncManager kapan pun koneksi tersedia (lihat bootstrap.dart).
-  //
-  // Karena itu snackbar "Gagal" yang dulu muncul saat request API gagal
-  // TIDAK RELEVAN lagi di titik ini -- kegagalan network bukan lagi
-  // kegagalan transaksi bagi kasir, cukup tertunda sinkronnya.
   Future<void> prosesKeApi() async {
     if (cartItems.isEmpty) return;
 
@@ -222,229 +213,219 @@ class CartController extends GetxController {
     }
   }
 
-  Future<void> generateAndPrintPdf() async {
-    final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
+  // ✅ Buat PDF nota (mendukung 58mm & 80mm, dipakai oleh printNotaSaja & generateAndPrintPdf)
+  pw.Document buildNotaPdf() {
     final pdf = pw.Document();
 
     // Variabel dinamis berdasarkan ukuran kertas (58mm atau 80mm)
     final bool is58mm = isPrint58mm.value;
-    final double printerWidth = is58mm ? 58.0 : 80.0;
+    final double printerWidth = is58mm ? 47.0 : 78.0; // area cetak aman
     final double marginPdf = is58mm ? 2.0 : 5.0;
 
     // Penyesuaian ukuran font otomatis
-    final double titleSize = is58mm ? 13.0 : 16.0;
-    final double addressSize = is58mm ? 7.0 : 9.0;
+    final double titleSize = is58mm ? 12.0 : 16.0;
+    final double addressSize = is58mm ? 8.0 : 9.0;
     final double normalSize = is58mm ? 8.0 : 10.0;
     final double itemNameSize = is58mm ? 9.0 : 11.0;
-    final double smallSize = is58mm ? 6.5 : 8.0;
+    final double smallSize = is58mm ? 7.0 : 8.0;
 
     pdf.addPage(
       pw.Page(
-        pageFormat: isDesktop
-            ? PdfPageFormat.a4
-            : PdfPageFormat(
-                printerWidth * PdfPageFormat.mm,
-                double.infinity,
-                marginAll: marginPdf,
+        pageFormat: PdfPageFormat(
+          printerWidth * PdfPageFormat.mm,
+          double.infinity,
+          marginAll: marginPdf,
+        ),
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text(
+                'TOKO LEZAAA',
+                style: pw.TextStyle(
+                  fontSize: titleSize,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
-        build: (context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Center(
-                child: pw.Text(
-                  'TOKO LEZAAA',
-                  style: pw.TextStyle(
-                    fontSize: titleSize,
-                    fontWeight: pw.FontWeight.bold,
+            ),
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text(
+                'Kudus, Jl Dr Lukmono Hadi No.50',
+                textAlign: pw.TextAlign.center,
+                style: pw.TextStyle(fontSize: addressSize),
+              ),
+            ),
+            pw.SizedBox(height: 4),
+            pw.Divider(),
+            pw.Text(
+              'Tanggal : ${DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now())}',
+              style: pw.TextStyle(fontSize: normalSize),
+            ),
+            pw.Text(
+              'Metode  : $paymentMethodLabel',
+              style: pw.TextStyle(fontSize: normalSize),
+            ),
+            pw.Divider(),
+            ...cartItems.map((item) {
+              final double hargaAsli = item.price.toDouble();
+              final double persen = (item.discount ?? 0).toDouble();
+              final double hargaDiskon =
+                  (hargaAsli - (hargaAsli * persen / 100)).roundToDouble();
+              final total = hargaDiskon * item.qty;
+              final totalAsli = hargaAsli * item.qty;
+              final totalDiskon = totalAsli - total;
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(item.name, style: pw.TextStyle(fontSize: itemNameSize)),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(
+                        '${item.qty} x ${currencyFormatter.format(hargaDiskon)}',
+                        style: pw.TextStyle(fontSize: normalSize),
+                      ),
+                      pw.Text(
+                        currencyFormatter.format(total),
+                        style: pw.TextStyle(fontSize: normalSize),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-
-              pw.Center(
-                child: pw.Text(
-                  'Kudus, Jl Dr Lukmono Hadi No.50',
-                  textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: addressSize),
-                ),
-              ),
-
-              pw.SizedBox(height: 10),
-
-              pw.Text(
-                'Tanggal : ${DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now())}',
-                style: pw.TextStyle(fontSize: normalSize),
-              ),
-
-              pw.Text(
-                'Metode : $paymentMethodLabel',
-                style: pw.TextStyle(fontSize: normalSize),
-              ),
-
-              pw.Divider(),
-
-              ...cartItems.map((item) {
-                final double hargaAsli = item.price.toDouble();
-                final double persen = (item.discount ?? 0).toDouble();
-                final double hargaDiskon =
-                    (hargaAsli - (hargaAsli * persen / 100)).roundToDouble();
-                final total = hargaDiskon * item.qty;
-                final totalAsli = hargaAsli * item.qty;
-                final totalDiskon = totalAsli - total;
-
-                return pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(
-                      item.name,
-                      style: pw.TextStyle(fontSize: itemNameSize),
-                    ),
-
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          '${item.qty} x ${currencyFormatter.format(hargaDiskon)}',
-                          style: pw.TextStyle(fontSize: normalSize),
-                        ),
-
-                        pw.Text(
-                          currencyFormatter.format(total),
-                          style: pw.TextStyle(fontSize: normalSize),
-                        ),
-                      ],
-                    ),
-
-                    if (persen > 0)
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.only(top: 2),
-                        child: pw.Text(
-                          'Diskon ${persen.toStringAsFixed(0)}% (-${currencyFormatter.format(totalDiskon)})',
-                          style: pw.TextStyle(
-                            fontSize: smallSize,
-                            fontStyle: pw.FontStyle.italic,
-                          ),
+                  if (persen > 0)
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 2),
+                      child: pw.Text(
+                        'Diskon ${persen.toStringAsFixed(0)}% (-${currencyFormatter.format(totalDiskon)})',
+                        style: pw.TextStyle(
+                          fontSize: smallSize,
+                          fontStyle: pw.FontStyle.italic,
                         ),
                       ),
-
-                    pw.SizedBox(height: 6),
-                  ],
-                );
-              }),
-
-              pw.Divider(),
-
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(
-                    'Subtotal',
-                    style: pw.TextStyle(fontSize: normalSize),
-                  ),
-                  pw.Text(
-                    currencyFormatter.format(subtotal),
-                    style: pw.TextStyle(fontSize: normalSize),
-                  ),
+                    ),
+                  pw.SizedBox(height: 4),
                 ],
-              ),
-
-              pw.SizedBox(height: 4),
-
+              );
+            }),
+            pw.Divider(),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Subtotal', style: pw.TextStyle(fontSize: normalSize)),
+                pw.Text(
+                  currencyFormatter.format(subtotal),
+                  style: pw.TextStyle(fontSize: normalSize),
+                ),
+              ],
+            ),
+            if (totalDiscount > 0)
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text(
-                    'Total Diskon',
-                    style: pw.TextStyle(fontSize: normalSize),
-                  ),
+                  pw.Text('Diskon', style: pw.TextStyle(fontSize: normalSize)),
                   pw.Text(
                     currencyFormatter.format(totalDiscount),
                     style: pw.TextStyle(fontSize: normalSize),
                   ),
                 ],
               ),
-
-              pw.SizedBox(height: 4),
-
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(
-                    'Total',
-                    style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                      fontSize: normalSize,
-                    ),
-                  ),
-
-                  pw.Text(
-                    currencyFormatter.format(totalPrice),
-                    style: pw.TextStyle(
-                      fontWeight: pw.FontWeight.bold,
-                      fontSize: normalSize,
-                    ),
-                  ),
-                ],
-              ),
-
-              pw.SizedBox(height: 4),
-
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Bayar', style: pw.TextStyle(fontSize: normalSize)),
-                  pw.Text(
-                    paymentDisplayValueFormatted,
-                    style: pw.TextStyle(fontSize: normalSize),
-                  ),
-                ],
-              ),
-
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(
-                    'Kembalian',
-                    style: pw.TextStyle(fontSize: normalSize),
-                  ),
-                  pw.Text(
-                    kembalianDisplayFormatted,
-                    style: pw.TextStyle(fontSize: normalSize),
-                  ),
-                ],
-              ),
-
-              pw.SizedBox(height: 20),
-
-              pw.Center(
-                child: pw.Text(
-                  'Terima Kasih',
+            pw.Divider(),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  'TOTAL',
                   style: pw.TextStyle(
+                    fontSize: normalSize + 2,
                     fontWeight: pw.FontWeight.bold,
-                    fontSize: normalSize,
                   ),
                 ),
-              ),
-
-              pw.Center(
-                child: pw.Text(
-                  'Powered by LEZZAAA POS',
-                  style: pw.TextStyle(fontSize: smallSize),
+                pw.Text(
+                  currencyFormatter.format(totalPrice),
+                  style: pw.TextStyle(
+                    fontSize: normalSize + 2,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 4),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Bayar', style: pw.TextStyle(fontSize: normalSize)),
+                pw.Text(
+                  paymentDisplayValueFormatted,
+                  style: pw.TextStyle(fontSize: normalSize),
+                ),
+              ],
+            ),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Kembalian', style: pw.TextStyle(fontSize: normalSize)),
+                pw.Text(
+                  kembalianDisplayFormatted,
+                  style: pw.TextStyle(fontSize: normalSize),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 8),
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text(
+                'Terima Kasih',
+                style: pw.TextStyle(
+                  fontSize: normalSize + 1,
+                  fontWeight: pw.FontWeight.bold,
                 ),
               ),
-            ],
-          );
-        },
+            ),
+            pw.SizedBox(height: 8),
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text('Powered by', style: pw.TextStyle(fontSize: smallSize)),
+            ),
+            pw.SizedBox(height: 2),
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text(
+                'Rumah Lezaa POS',
+                style: pw.TextStyle(
+                  fontSize: smallSize,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            pw.SizedBox(height: 20),
+          ],
+        ),
       ),
     );
+    return pdf;
+  }
 
-    // Proses ke API DULU, supaya data aman kalau print dibatalkan
+  // ✅ Hanya print — tidak proses ke API, tidak navigasi
+  Future<void> printNotaSaja() async {
+    final pdf = buildNotaPdf();
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdf.save(),
+      name: 'Nota_${DateFormat('ddMMyyyyHHmm').format(DateTime.now())}',
+    );
+  }
+
+  // ✅ Print + proses ke API + navigasi (dipakai dari halaman kalkulator/selesai desktop)
+  Future<void> generateAndPrintPdf() async {
+    final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
+    final pdf = buildNotaPdf();
+
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdf.save(),
+      name: 'Nota_${DateFormat('ddMMyyyyHHmm').format(DateTime.now())}',
+    );
+
     await prosesKeApi();
-
-    // Jalankan fitur print
-    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
-
-    // Bersihkan keranjang & kembali ke dashboard
     clearCart();
 
     if (Get.isRegistered<DashboardController>()) {
@@ -463,27 +444,28 @@ class CartController extends GetxController {
 
     // Variabel dinamis berdasarkan ukuran kertas (58mm atau 80mm)
     final bool is58mm = isPrint58mm.value;
-    final double printerWidth = is58mm ? 58.0 : 80.0;
+    final double printerWidth = is58mm ? 47.0 : 78.0;
     final double marginPdf = is58mm ? 2.0 : 5.0;
 
     // Penyesuaian ukuran font otomatis
-    final double titleSize = is58mm ? 13.0 : 16.0;
-    final double addressSize = is58mm ? 7.0 : 9.0;
+    final double titleSize = is58mm ? 12.0 : 16.0;
+    final double addressSize = is58mm ? 8.0 : 9.0;
     final double normalSize = is58mm ? 8.0 : 10.0;
     final double itemNameSize = is58mm ? 9.0 : 11.0;
-    final double smallSize = is58mm ? 6.5 : 8.0;
+    final double smallSize = is58mm ? 7.0 : 8.0;
 
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat(
           printerWidth * PdfPageFormat.mm,
-          double.infinity,
+          300 * PdfPageFormat.mm,
           marginAll: marginPdf,
         ),
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Center(
+            pw.Align(
+              alignment: pw.Alignment.center,
               child: pw.Text(
                 'TOKO LEZAAA',
                 style: pw.TextStyle(
@@ -492,14 +474,16 @@ class CartController extends GetxController {
                 ),
               ),
             ),
-            pw.Center(
+            pw.Align(
+              alignment: pw.Alignment.center,
               child: pw.Text(
                 'Kudus, Jl Dr Lukmono Hadi No.50',
                 textAlign: pw.TextAlign.center,
                 style: pw.TextStyle(fontSize: addressSize),
               ),
             ),
-            pw.SizedBox(height: 10),
+            pw.SizedBox(height: 4),
+            pw.Divider(),
             pw.Text(
               'Nota   : #${ctrl.transactionId}',
               style: pw.TextStyle(fontSize: normalSize),
@@ -518,7 +502,6 @@ class CartController extends GetxController {
               final int quantity = ctrl.qty(item);
               final double harga = ctrl.hargaSetelahDiskon(item);
               final double total = harga * quantity;
-
               return pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
@@ -544,27 +527,26 @@ class CartController extends GetxController {
                         fontStyle: pw.FontStyle.italic,
                       ),
                     ),
-                  pw.SizedBox(height: 6),
+                  pw.SizedBox(height: 4),
                 ],
               );
             }),
-
             pw.Divider(),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Text(
-                  'Total',
+                  'TOTAL',
                   style: pw.TextStyle(
+                    fontSize: normalSize + 2,
                     fontWeight: pw.FontWeight.bold,
-                    fontSize: normalSize,
                   ),
                 ),
                 pw.Text(
                   ctrl.totalFormatted,
                   style: pw.TextStyle(
+                    fontSize: normalSize + 2,
                     fontWeight: pw.FontWeight.bold,
-                    fontSize: normalSize,
                   ),
                 ),
               ],
@@ -574,10 +556,7 @@ class CartController extends GetxController {
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Text('Bayar', style: pw.TextStyle(fontSize: normalSize)),
-                pw.Text(
-                  ctrl.bayarFormatted,
-                  style: pw.TextStyle(fontSize: normalSize),
-                ),
+                pw.Text(ctrl.bayarFormatted, style: pw.TextStyle(fontSize: normalSize)),
               ],
             ),
             pw.Row(
@@ -590,27 +569,38 @@ class CartController extends GetxController {
                 ),
               ],
             ),
-            pw.SizedBox(height: 20),
-            pw.Center(
+            pw.SizedBox(height: 16),
+            pw.Align(
+              alignment: pw.Alignment.center,
               child: pw.Text(
                 'Terima Kasih',
                 style: pw.TextStyle(
+                  fontSize: normalSize + 1,
                   fontWeight: pw.FontWeight.bold,
-                  fontSize: normalSize,
                 ),
               ),
             ),
-            pw.Center(
+            pw.SizedBox(height: 8),
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text('Powered by', style: pw.TextStyle(fontSize: smallSize)),
+            ),
+            pw.SizedBox(height: 2),
+            pw.Align(
+              alignment: pw.Alignment.center,
               child: pw.Text(
-                'Powered by LEZZAAA POS',
-                style: pw.TextStyle(fontSize: smallSize),
+                'Rumah Lezaa POS',
+                style: pw.TextStyle(
+                  fontSize: smallSize,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
             ),
+            pw.SizedBox(height: 35),
           ],
         ),
       ),
     );
-
     await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
@@ -620,7 +610,6 @@ class CartController extends GetxController {
       double persenDiskon = (item.discount ?? 0).toDouble();
       double hargaSetelahDiskon =
           (hargaAsli - (hargaAsli * (persenDiskon / 100))).roundToDouble();
-
       return sum + (hargaSetelahDiskon * item.qty);
     });
   }
@@ -632,6 +621,7 @@ class CartController extends GetxController {
 
   double get kembalian =>
       inputUang.value > totalPrice ? inputUang.value - totalPrice : 0.0;
+
   int get itemCount => cartItems.length;
 
   bool get hasInputUang => inputUang.value > 0;
