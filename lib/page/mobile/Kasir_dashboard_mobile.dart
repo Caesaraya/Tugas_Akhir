@@ -32,7 +32,7 @@ class KasirDashboardMobile extends StatelessWidget {
             iconTheme: const IconThemeData(color: Colors.black87),
           ),
           floatingActionButton: Obx(() {
-            final jumlahItem = cartCtrl.cartItems.length;
+           final jumlahItem = cartCtrl.cartItems.fold<int>(0, (sum, item) => sum + item.qty);
             return FloatingActionButton(
               onPressed: () => Get.to(() => const KeranjangMobilePage()),
               backgroundColor: const Color(0xFFE8A045),

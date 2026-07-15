@@ -3,27 +3,27 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:intl/intl.dart';
- 
+
 class ProductCardDesktop extends StatelessWidget {
   final currencyFormat = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
     decimalDigits: 0,
   );
- 
+
   final Product product;
   final String tag;
   final VoidCallback? onTap;
- 
+
   ProductCardDesktop({
     super.key,
     required this.product,
     this.tag = "Baru",
     this.onTap,
   });
- 
+
   final CartController cartController = Get.find<CartController>();
- 
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -31,7 +31,7 @@ class ProductCardDesktop extends StatelessWidget {
       final qty = cartController.cartItems
           .where((item) => item.productId == product.id)
           .fold<int>(0, (sum, item) => sum + item.qty);
- 
+
       return InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -39,7 +39,8 @@ class ProductCardDesktop extends StatelessWidget {
           elevation: 3,
           color: Colors.white,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12)),
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -49,21 +50,23 @@ class ProductCardDesktop extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(12)),
+                        top: Radius.circular(12),
+                      ),
                       child: Image.network(
                         product.image,
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Container(
+                        errorBuilder: (context, error, stackTrace) => Container(
                           color: Colors.grey[200],
-                          child: const Icon(Icons.broken_image,
-                              color: Colors.grey),
+                          child: const Icon(
+                            Icons.broken_image,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ),
- 
+
                     // Badge qty — muncul jika produk ada di keranjang
                     if (qty > 0)
                       Positioned(
@@ -88,7 +91,7 @@ class ProductCardDesktop extends StatelessWidget {
                           ),
                         ),
                       ),
- 
+
                     // Badge stok habis
                     if (product.stock <= 0)
                       Positioned(
@@ -112,7 +115,7 @@ class ProductCardDesktop extends StatelessWidget {
                   ],
                 ),
               ),
- 
+
               // ── Info produk ───────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -121,7 +124,7 @@ class ProductCardDesktop extends StatelessWidget {
                   children: [
                     Text(
                       product.name,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
@@ -165,7 +168,7 @@ class ProductCardDesktop extends StatelessWidget {
                         Expanded(
                           child: Text(
                             product.jenis.toUpperCase(),
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Colors.grey[500],

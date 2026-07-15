@@ -85,7 +85,7 @@ class SuksesMobilePage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () => cart.generateAndPrintPdf(),
+                      onPressed: () => cart.printNotaSaja(),
                       icon: const Icon(Icons.print_outlined, color: Colors.white),
                       label: const Text('Print Nota',
                           style: TextStyle(color: Colors.white)),

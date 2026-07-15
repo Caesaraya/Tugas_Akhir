@@ -124,6 +124,13 @@ class AdminSidebar extends StatelessWidget {
                     onTap: () => navC.changePage(2, AppRoutes.kelolaresepdesk),
                   ),
                   const SizedBox(height: 8),
+                  _buildSidebarItem(
+                    icon: Icons
+                        .monetization_on_outlined, // Ikon tetesan air untuk Kelola Bahan
+                    title: 'Monitoring Keuangan',
+                    selected: navC.selectedIndex.value == 3,
+                    onTap: () => navC.changePage(3, AppRoutes.monitoringuang),
+                  ),
                 ],
               ),
             ),

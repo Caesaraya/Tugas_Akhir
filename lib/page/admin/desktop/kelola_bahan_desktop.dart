@@ -98,14 +98,14 @@ class BahanBakuScreen extends StatelessWidget {
                           color: const Color(0xFF1E1E1E),
                           onTap: () {
                             ctrl.clearForm();
-                            ctrl.openInsertDialog();
+                            Get.dialog(InsertBahanBakuDialog());
                           },
                         ),
                         const SizedBox(width: 12),
                         ToolbarButton(
                           title: "Stock habis",
                           icon: Icons.warning_amber_rounded,
-                          color: Colors.grey.shade700,
+                          color: Colors.black54,
                           onTap: () {
                             ctrl.toggleFilterStockHabis();
                           },

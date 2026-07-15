@@ -14,7 +14,6 @@ import 'package:printing/printing.dart';
 
 class CartController extends GetxController {
   final textController = TextEditingController();
-  
 
   var cartItems = <CartItem>[].obs;
   var selectedPayment = 'cash'.obs;
@@ -117,41 +116,39 @@ class CartController extends GetxController {
     }
   }
 
-  
-void handleSelesaiActionMobile(bool isFromHistory) async {
-  if (isFromHistory) {
-    Get.back();
-  } else {
-    try {
-      await prosesKeApi();
-    } catch (e) {
-      debugPrint('prosesKeApi mobile error: $e');
+  void handleSelesaiActionMobile(bool isFromHistory) async {
+    if (isFromHistory) {
+      Get.back();
+    } else {
+      try {
+        await prosesKeApi();
+      } catch (e) {
+        debugPrint('prosesKeApi mobile error: $e');
+      }
+      clearCart();
+      if (Get.isRegistered<DashboardController>()) {
+        Get.find<DashboardController>().fetchProducts();
+      }
+      Get.offAllNamed(AppRoutes.dashboardMobile);
     }
-    clearCart();
-    // Refresh dashboard agar stok langsung update
-    if (Get.isRegistered<DashboardController>()) {
-      Get.find<DashboardController>().fetchProducts();
-    }
-    Get.offAllNamed(AppRoutes.dashboardMobile);
   }
-}
- 
-void handleSelesaiActionDashboard(bool isFromHistory) async {
-  if (isFromHistory) {
-    Get.back();
-  } else {
-    try {
-      await prosesKeApi();
-    } catch (e) {
-      debugPrint('prosesKeApi desktop error: $e');
+
+  void handleSelesaiActionDashboard(bool isFromHistory) async {
+    if (isFromHistory) {
+      Get.back();
+    } else {
+      try {
+        await prosesKeApi();
+      } catch (e) {
+        debugPrint('prosesKeApi desktop error: $e');
+      }
+      clearCart();
+      if (Get.isRegistered<DashboardController>()) {
+        Get.find<DashboardController>().fetchProducts();
+      }
+      Get.offAllNamed(AppRoutes.kasirboarddesk);
     }
-    clearCart();
-    if (Get.isRegistered<DashboardController>()) {
-      Get.find<DashboardController>().fetchProducts();
-    }
-    Get.offAllNamed(AppRoutes.kasirboarddesk);
   }
-}
 
   Future<void> prosesKeApi() async {
     if (cartItems.isNotEmpty) {
@@ -162,7 +159,6 @@ void handleSelesaiActionDashboard(bool isFromHistory) async {
         metode: selectedPayment.value,
         cart: cartItems,
       );
-
       if (success) {
         if (Get.isRegistered<RiwayatController>()) {
           Get.find<RiwayatController>().fetchHistory();
@@ -178,191 +174,208 @@ void handleSelesaiActionDashboard(bool isFromHistory) async {
     }
   }
 
-  Future<void> generateAndPrintPdf() async {
-    final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
+  // ✅ Buat PDF nota 58mm (dipakai oleh printNotaSaja & generateAndPrintPdf)
+  pw.Document buildNotaPdf() {
     final pdf = pw.Document();
-
     pdf.addPage(
       pw.Page(
-        pageFormat: isDesktop
-          ? PdfPageFormat.a4
-          : PdfPageFormat(
-              80 * PdfPageFormat.mm,
-              double.infinity,
-              marginAll: 5,
+        pageFormat: PdfPageFormat(
+          47 * PdfPageFormat.mm,
+          double.infinity,
+          marginAll: 2,
+        ),
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text(
+                'TOKO LEZAAA',
+                style: pw.TextStyle(
+                  fontSize: 12,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
             ),
-      build: (context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Center(
-                child: pw.Text(
-                  'TOKO LEZAAA',
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text(
+                'Kudus, Jl Dr Lukmono Hadi No.50',
+                textAlign: pw.TextAlign.center,
+                style: pw.TextStyle(fontSize: 8),
+              ),
+            ),
+            pw.SizedBox(height: 4),
+            pw.Divider(),
+            pw.Text(
+              'Tanggal : ${DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now())}',
+              style: pw.TextStyle(fontSize: 8),
+            ),
+            pw.Text(
+              'Metode  : $paymentMethodLabel',
+              style: pw.TextStyle(fontSize: 8),
+            ),
+            pw.Divider(),
+            ...cartItems.map((item) {
+              final double hargaAsli = item.price.toDouble();
+              final double persen = (item.discount ?? 0).toDouble();
+              final double hargaDiskon =
+                  (hargaAsli - (hargaAsli * persen / 100)).roundToDouble();
+              final total = hargaDiskon * item.qty;
+              final totalAsli = hargaAsli * item.qty;
+              final totalDiskon = totalAsli - total;
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(item.name, style: pw.TextStyle(fontSize: 9)),
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(
+                        '${item.qty} x ${currencyFormatter.format(hargaDiskon)}',
+                        style: pw.TextStyle(fontSize: 8),
+                      ),
+                      pw.Text(
+                        currencyFormatter.format(total),
+                        style: pw.TextStyle(fontSize: 8),
+                      ),
+                    ],
+                  ),
+                  if (persen > 0)
+                    pw.Text(
+                      'Diskon ${persen.toStringAsFixed(0)}% (-${currencyFormatter.format(totalDiskon)})',
+                      style: pw.TextStyle(
+                        fontSize: 7,
+                        fontStyle: pw.FontStyle.italic,
+                      ),
+                    ),
+                  pw.SizedBox(height: 4),
+                ],
+              );
+            }),
+            pw.Divider(),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Subtotal', style: pw.TextStyle(fontSize: 8)),
+                pw.Text(
+                  currencyFormatter.format(subtotal),
+                  style: pw.TextStyle(fontSize: 8),
+                ),
+              ],
+            ),
+            if (totalDiscount > 0)
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Diskon', style: pw.TextStyle(fontSize: 8)),
+                  pw.Text(
+                    currencyFormatter.format(totalDiscount),
+                    style: pw.TextStyle(fontSize: 8),
+                  ),
+                ],
+              ),
+            pw.Divider(),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  'TOTAL',
                   style: pw.TextStyle(
-                    fontSize: 16,
+                    fontSize: 10,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
-              ),
-
-              pw.Center(
-                child: pw.Text(
-                  'Kudus, Jl Dr Lukmono Hadi No.50',
-                  textAlign: pw.TextAlign.center,
-                  style: const pw.TextStyle(fontSize: 9),
-                ),
-              ),
-
-              pw.SizedBox(height: 10),
-
-              pw.Text(
-                'Tanggal : ${DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now())}',
-                style: const pw.TextStyle(fontSize: 10),
-              ),
-
-              pw.Text(
-                'Metode : $paymentMethodLabel',
-                style: const pw.TextStyle(fontSize: 10),
-              ),
-
-              pw.Divider(),
-
-              ...cartItems.map((item) {
-                final double hargaAsli = item.price.toDouble();
-
-                final double persen = (item.discount ?? 0).toDouble();
-
-                final double hargaDiskon =
-                    (hargaAsli - (hargaAsli * persen / 100)).roundToDouble();
-
-                final total = hargaDiskon * item.qty;
-
-                final totalAsli = hargaAsli * item.qty;
-
-                final totalDiskon = totalAsli - total;
-
-                return pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(item.name, style: const pw.TextStyle(fontSize: 11)),
-
-                    pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Text(
-                          '${item.qty} x ${currencyFormatter.format(hargaDiskon)}',
-                          style: const pw.TextStyle(fontSize: 10),
-                        ),
-
-                        pw.Text(
-                          currencyFormatter.format(total),
-                          style: const pw.TextStyle(fontSize: 10),
-                        ),
-                      ],
-                    ),
-
-                    if (persen > 0)
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.only(top: 2),
-                        child: pw.Text(
-                          'Diskon ${persen.toStringAsFixed(0)}% (-${currencyFormatter.format(totalDiskon)})',
-                          style: pw.TextStyle(
-                            fontSize: 8,
-                            fontStyle: pw.FontStyle.italic,
-                          ),
-                        ),
-                      ),
-
-                    pw.SizedBox(height: 6),
-                  ],
-                );
-              }),
-
-              pw.Divider(),
-
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Subtotal'),
-                  pw.Text(currencyFormatter.format(subtotal)),
-                ],
-              ),
-
-              pw.SizedBox(height: 4),
-
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Total Diskon'),
-                  pw.Text(currencyFormatter.format(totalDiscount)),
-                ],
-              ),
-
-              pw.SizedBox(height: 4),
-
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text(
-                    'Total',
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                pw.Text(
+                  currencyFormatter.format(totalPrice),
+                  style: pw.TextStyle(
+                    fontSize: 10,
+                    fontWeight: pw.FontWeight.bold,
                   ),
-
-                  pw.Text(
-                    currencyFormatter.format(totalPrice),
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                  ),
-                ],
-              ),
-
-              pw.SizedBox(height: 4),
-
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Bayar'),
-                  pw.Text(paymentDisplayValueFormatted),
-                ],
-              ),
-
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Kembalian'),
-                  pw.Text(kembalianDisplayFormatted),
-                ],
-              ),
-
-              pw.SizedBox(height: 20),
-
-              pw.Center(
-                child: pw.Text(
-                  'Terima Kasih',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 4),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Bayar', style: pw.TextStyle(fontSize: 8)),
+                pw.Text(
+                  paymentDisplayValueFormatted,
+                  style: pw.TextStyle(fontSize: 8),
+                ),
+              ],
+            ),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Kembalian', style: pw.TextStyle(fontSize: 8)),
+                pw.Text(
+                  kembalianDisplayFormatted,
+                  style: pw.TextStyle(fontSize: 8),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 8),
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text(
+                'Terima Kasih',
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
                 ),
               ),
-
-              pw.Center(
-                child: pw.Text(
-                  'Powered by LEZZAAA POS',
-                  style: const pw.TextStyle(fontSize: 8),
+            ),
+            pw.SizedBox(height: 8),
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text('Powered by', style: pw.TextStyle(fontSize: 8)),
+            ),
+            pw.SizedBox(height: 2),
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text(
+                'Rumah Lezaa POS',
+                style: pw.TextStyle(
+                  fontSize: 8,
+                  fontWeight: pw.FontWeight.bold,
                 ),
               ),
-            ],
-          );
-        },
+            ),
+            pw.SizedBox(height: 20),
+          ],
+        ),
       ),
     );
-    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
-    await prosesKeApi();
+    return pdf;
+  }
 
+  // ✅ Hanya print — tidak proses ke API, tidak navigasi
+  Future<void> printNotaSaja() async {
+    final pdf = buildNotaPdf();
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdf.save(),
+      name: 'Nota_${DateFormat('ddMMyyyyHHmm').format(DateTime.now())}',
+    );
+  }
+
+  // ✅ Print + proses ke API + navigasi (dipakai dari halaman kalkulator/selesai desktop)
+  Future<void> generateAndPrintPdf() async {
+    final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
+    final pdf = buildNotaPdf();
+
+    await Printing.layoutPdf(
+      onLayout: (format) async => pdf.save(),
+      name: 'Nota_${DateFormat('ddMMyyyyHHmm').format(DateTime.now())}',
+    );
+
+    await prosesKeApi();
     clearCart();
 
     if (Get.isRegistered<DashboardController>()) {
       Get.find<DashboardController>().fetchProducts();
     }
-
-
 
     if (isDesktop) {
       Get.offAllNamed(AppRoutes.kasirboarddesk);
@@ -373,45 +386,47 @@ void handleSelesaiActionDashboard(bool isFromHistory) async {
 
   Future<void> printFromDetail(TransactionDetailController ctrl) async {
     final pdf = pw.Document();
-
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat(
-          80 * PdfPageFormat.mm,
-          double.infinity,
-          marginAll: 5,
+          47 * PdfPageFormat.mm,
+          300 * PdfPageFormat.mm,
+          marginAll: 2,
         ),
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Center(
+            pw.Align(
+              alignment: pw.Alignment.center,
               child: pw.Text(
                 'TOKO LEZAAA',
                 style: pw.TextStyle(
-                  fontSize: 16,
+                  fontSize: 12,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
             ),
-            pw.Center(
+            pw.Align(
+              alignment: pw.Alignment.center,
               child: pw.Text(
                 'Kudus, Jl Dr Lukmono Hadi No.50',
                 textAlign: pw.TextAlign.center,
-                style: const pw.TextStyle(fontSize: 9),
+                style: pw.TextStyle(fontSize: 8),
               ),
             ),
-            pw.SizedBox(height: 10),
+            pw.SizedBox(height: 4),
+            pw.Divider(),
             pw.Text(
               'Nota   : #${ctrl.transactionId}',
-              style: const pw.TextStyle(fontSize: 10),
+              style: pw.TextStyle(fontSize: 8),
             ),
             pw.Text(
               'Tanggal: ${ctrl.tanggal}',
-              style: const pw.TextStyle(fontSize: 10),
+              style: pw.TextStyle(fontSize: 8),
             ),
             pw.Text(
               'Metode : ${ctrl.methodLabel}',
-              style: const pw.TextStyle(fontSize: 10),
+              style: pw.TextStyle(fontSize: 8),
             ),
             pw.Divider(),
             ...ctrl.items.map((item) {
@@ -419,21 +434,20 @@ void handleSelesaiActionDashboard(bool isFromHistory) async {
               final int quantity = ctrl.qty(item);
               final double harga = ctrl.hargaSetelahDiskon(item);
               final double total = harga * quantity;
-
               return pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text(nama, style: const pw.TextStyle(fontSize: 11)),
+                  pw.Text(nama, style: pw.TextStyle(fontSize: 9)),
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text(
                         '$quantity x ${currencyFormatter.format(harga)}',
-                        style: const pw.TextStyle(fontSize: 10),
+                        style: pw.TextStyle(fontSize: 8),
                       ),
                       pw.Text(
                         currencyFormatter.format(total),
-                        style: const pw.TextStyle(fontSize: 10),
+                        style: pw.TextStyle(fontSize: 8),
                       ),
                     ],
                   ),
@@ -441,59 +455,84 @@ void handleSelesaiActionDashboard(bool isFromHistory) async {
                     pw.Text(
                       'Diskon: ${currencyFormatter.format(ctrl.hargaAsli(item))} → ${currencyFormatter.format(harga)}',
                       style: pw.TextStyle(
-                        fontSize: 8,
+                        fontSize: 7,
                         fontStyle: pw.FontStyle.italic,
                       ),
                     ),
-                  pw.SizedBox(height: 6),
+                  pw.SizedBox(height: 4),
                 ],
               );
             }),
-
             pw.Divider(),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Text(
-                  'Total',
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  'TOTAL',
+                  style: pw.TextStyle(
+                    fontSize: 10,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
                 ),
                 pw.Text(
                   ctrl.totalFormatted,
-                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  style: pw.TextStyle(
+                    fontSize: 10,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             pw.SizedBox(height: 4),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [pw.Text('Bayar'), pw.Text(ctrl.bayarFormatted)],
+              children: [
+                pw.Text('Bayar', style: pw.TextStyle(fontSize: 8)),
+                pw.Text(ctrl.bayarFormatted, style: pw.TextStyle(fontSize: 8)),
+              ],
             ),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('Kembalian'),
-                pw.Text(ctrl.kembalianFormatted),
+                pw.Text('Kembalian', style: pw.TextStyle(fontSize: 8)),
+                pw.Text(
+                  ctrl.kembalianFormatted,
+                  style: pw.TextStyle(fontSize: 8),
+                ),
               ],
             ),
-            pw.SizedBox(height: 20),
-            pw.Center(
+            pw.SizedBox(height: 16),
+            pw.Align(
+              alignment: pw.Alignment.center,
               child: pw.Text(
                 'Terima Kasih',
-                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 9,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
             ),
-            pw.Center(
+            pw.SizedBox(height: 8),
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: pw.Text('Powered by', style: pw.TextStyle(fontSize: 8)),
+            ),
+            pw.SizedBox(height: 2),
+            pw.Align(
+              alignment: pw.Alignment.center,
               child: pw.Text(
-                'Powered by LEZZAAA POS',
-                style: const pw.TextStyle(fontSize: 8),
+                'Rumah Lezaa POS',
+                style: pw.TextStyle(
+                  fontSize: 8,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
             ),
+            pw.SizedBox(height: 35),
           ],
         ),
       ),
     );
-
     await Printing.layoutPdf(onLayout: (format) async => pdf.save());
   }
 
@@ -503,7 +542,6 @@ void handleSelesaiActionDashboard(bool isFromHistory) async {
       double persenDiskon = (item.discount ?? 0).toDouble();
       double hargaSetelahDiskon =
           (hargaAsli - (hargaAsli * (persenDiskon / 100))).roundToDouble();
-
       return sum + (hargaSetelahDiskon * item.qty);
     });
   }
@@ -515,6 +553,7 @@ void handleSelesaiActionDashboard(bool isFromHistory) async {
 
   double get kembalian =>
       inputUang.value > totalPrice ? inputUang.value - totalPrice : 0.0;
+
   int get itemCount => cartItems.length;
 
   bool get hasInputUang => inputUang.value > 0;

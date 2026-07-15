@@ -8,6 +8,7 @@ class AppRoutes {
   static const String kelolaprodukdesk = '/kelolaprodukdesk';
   static const String kelolabahandesk = '/kelolabahandesk';
   static const String kelolaresepdesk = '/kelolaresepdesk';
+  static const String monitoringuang = '/monitoringKeuangan';
   //mobile
   static const String kelolaProdukMob = '/kelolaProdukmobile';
   static const String kelolaBahanMob = '/kelolaBahanMobile';
