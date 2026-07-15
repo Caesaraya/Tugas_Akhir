@@ -28,7 +28,7 @@ class KeranjangMobilePage extends StatelessWidget {
       body: Obx(() {
         if (cartController.cartItems.isEmpty) {
           return const Center(
-            child: Text('Belum ada produk di keranjang'),
+            child: Text('Belum ada produk di keranjang.'),
           );
         }
         return Column(
