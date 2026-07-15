@@ -166,9 +166,9 @@ class BahanBakuTable extends StatelessWidget {
                                   TableActionButton(
                                     icon: Icons.edit_outlined,
                                     color: Colors.blue.shade700,
-                                    onTap: () => Get.dialog(
-                                      EditBahanBakuDialog(item: item),
-                                    ),
+                                    onTap: () => ctrl.showEditDialog(
+                                      item,
+                                    ), // <-- Panggil fungsi dari controller
                                   ),
                                   const SizedBox(width: 8),
                                   TableActionButton(

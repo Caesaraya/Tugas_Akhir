@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/login_controller.dart';
-// 1. IMPORT FILE WARNA KAMU (Sesuaikan dengan path projectmu)
 import 'package:tugas_akhir/utils/app_color.dart';
 import 'package:tugas_akhir/widget/login/login_button.dart';
 import 'package:tugas_akhir/widget/login/login_divider.dart';

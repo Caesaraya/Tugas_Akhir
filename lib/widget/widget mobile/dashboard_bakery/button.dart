@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/bakery_controller.dart';
 import 'package:tugas_akhir/models/resep.dart';
+import 'package:tugas_akhir/page/mobile/bakery_production_preview.dart'; // Pastikan path ini sesuai dengan project Anda
 
 class BakeryEstimasiButton extends StatelessWidget {
   final BakeryController ctrl;
@@ -20,7 +21,9 @@ class BakeryEstimasiButton extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withAlpha(
+              20,
+            ), // Menggunakan .withAlpha agar aman di versi Flutter lama/baru
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -32,115 +35,22 @@ class BakeryEstimasiButton extends StatelessWidget {
               ? null
               : () async {
                   if (resep.id == null) return;
+
+                  // 1. Tunggu proses hitung biaya dari API selesai
                   await ctrl.loadBakeryCalculation(resep.id!);
 
-                  // ── Tampilkan hasil estimasi ──────────────────────
-                  Get.dialog(
-                    AlertDialog(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      title: const Text(
-                        'Hasil Estimasi',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Total biaya
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFF3E0),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Total Biaya Produksi',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.grey),
-                                ),
-                                const SizedBox(height: 4),
-                                Obx(() => Text(
-                                      ctrl.totalBiayaFormatted,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFFE89336),
-                                      ),
-                                    )),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          // Status bahan
-                          Obx(() => Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: ctrl.semuaBahanCukup.value
-                                      ? Colors.green.shade50
-                                      : Colors.red.shade50,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: ctrl.semuaBahanCukup.value
-                                        ? Colors.green.shade200
-                                        : Colors.red.shade200,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      ctrl.semuaBahanCukup.value
-                                          ? Icons.check_circle_outline
-                                          : Icons.warning_amber_outlined,
-                                      color: ctrl.semuaBahanCukup.value
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      ctrl.semuaBahanCukup.value
-                                          ? 'Semua bahan cukup'
-                                          : 'Bahan tidak cukup',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: ctrl.semuaBahanCukup.value
-                                            ? Colors.green
-                                            : Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )),
-                        ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Get.back(); // tutup dialog
-                            Get.back(); // kembali ke dashboard bakery
-                          },
-                          child: const Text(
-                            'Kembali',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
+                  // 2. Langsung pindah ke halaman Preview, TANPA lewat Get.dialog() lagi
+                  if (ctrl.selectedResep.value != null) {
+                    Get.to(() => const BakeryProductionPreviewPage());
+                  }
                 },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFE89336),
             minimumSize: const Size(double.infinity, 52),
-            padding:
-                const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14)),
+              borderRadius: BorderRadius.circular(14),
+            ),
             elevation: 0,
           ),
           child: Row(
@@ -153,10 +63,14 @@ class BakeryEstimasiButton extends StatelessWidget {
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
-                      : const Icon(Icons.calculate_outlined,
-                          color: Colors.white),
+                      : const Icon(
+                          Icons.calculate_outlined,
+                          color: Colors.white,
+                        ),
                   const SizedBox(width: 10),
                   Text(
                     ctrl.isLoading.value ? 'Memproses...' : 'Hitung Estimasi',

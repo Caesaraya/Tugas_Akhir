@@ -43,7 +43,7 @@ class LoginController extends GetxController {
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
       final user = User.fromJson(data);
 
-      if (!user.isValid) {
+      if (!user.isAdmin && !user.isKasir && !user.isBakery) {
         await _clearSession();
         return false;
       }
@@ -114,7 +114,10 @@ class LoginController extends GetxController {
         Get.offAllNamed(AppRoutes.dashboardMobile);
         break;
       case 'ADMIN':
-        Get.offAllNamed(AppRoutes.kelolaProdukMob);
+        Get.offAllNamed(AppRoutes.dashboardMob);
+        break;
+      case 'BAKERY':
+        Get.offAllNamed(AppRoutes.bakery);
         break;
       default:
         showError('Role tidak dikenali untuk perangkat mobile');
@@ -124,11 +127,13 @@ class LoginController extends GetxController {
   void navigateByRoleDesktop(String role) {
     switch (role.toUpperCase()) {
       case 'ADMIN':
-        Get.offAllNamed(AppRoutes.kelolaprodukdesk);
+        Get.offAllNamed(AppRoutes.dashboarddesk);
         break;
       case 'KASIR':
         Get.offAllNamed(AppRoutes.kasirboarddesk);
         break;
+      case 'BAKERY':
+        Get.offAllNamed(AppRoutes.bakery);
       default:
         showError('Role tidak dikenali untuk perangkat desktop');
     }

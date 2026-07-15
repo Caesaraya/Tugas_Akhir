@@ -4,6 +4,7 @@ import 'package:tugas_akhir/controller/admin/keuangan_controller.dart';
 import 'package:tugas_akhir/controller/admin/navigation_controller.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
 import 'package:tugas_akhir/controller/admin/resep_table_controller.dart';
+import 'package:tugas_akhir/controller/admin/user_controller.dart';
 import 'package:tugas_akhir/controller/detail_transaction_controller.dart';
 import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:tugas_akhir/controller/riwayat_controller.dart';
@@ -31,6 +32,7 @@ class AppBinding extends Bindings {
       fenix: true,
     );
     Get.lazyPut<KeuanganController>(() => KeuanganController(), fenix: true);
+    Get.lazyPut<UserController>(() => UserController(), fenix: true);
     Get.lazyPut<NavigationController>(
       () => NavigationController(),
       fenix: true,

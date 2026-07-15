@@ -11,13 +11,16 @@ import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 
 class BahanBakuScreen extends StatelessWidget {
-  BahanBakuScreen({super.key}) {
-    Get.find<NavigationController>().selectedIndex.value = 1;
-  }
+  BahanBakuScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.find<BahanBakuTableController>();
+
+    // Pindahkan mutasi Rx ke luar fase build.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.find<NavigationController>().selectedIndex.value = 2;
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
@@ -27,7 +30,6 @@ class BahanBakuScreen extends StatelessWidget {
           AdminSidebar(),
           Expanded(
             child: SingleChildScrollView(
-              // ← Membungkus seluruh konten kanan agar bisa di-scroll
               physics: const BouncingScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
@@ -122,7 +124,6 @@ class BahanBakuScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    // ← Menghapus Expanded dan SingleChildScrollView bawaan tabel agar menyatu dengan scroll utama
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,

@@ -35,6 +35,13 @@ class MobileAdminDrawer extends StatelessWidget {
           ),
           _buildDrawerItem(
             context,
+            icon: Icons.home_outlined,
+            title: 'Dashboard',
+            routeName: AppRoutes.dashboardMob,
+            selected: currentRoute == AppRoutes.kelolaProdukMob,
+          ),
+          _buildDrawerItem(
+            context,
             icon: Icons.shopping_bag,
             title: 'Kelola Produk',
             routeName: AppRoutes.kelolaProdukMob,
@@ -53,6 +60,21 @@ class MobileAdminDrawer extends StatelessWidget {
             title: 'Kelola Resep',
             routeName: AppRoutes.kelolaResepMob,
             selected: currentRoute == AppRoutes.kelolaResepMob,
+          ),
+          _buildDrawerItem(
+            context,
+            icon: Icons
+                .monetization_on_outlined, // Ikon tetesan air untuk Kelola Bahan
+            title: 'Monitoring Keuangan',
+            selected: currentRoute == AppRoutes.monitoringUangMob,
+            routeName: AppRoutes.monitoringUangMob,
+          ),
+          _buildDrawerItem(
+            context,
+            icon: Icons.people_alt_outlined, // ← TAMBAHAN BARU
+            title: 'Kelola User',
+            routeName: AppRoutes.kelolaUserMob,
+            selected: currentRoute == AppRoutes.kelolaUserMob,
           ),
           const Divider(),
           ListTile(

@@ -33,8 +33,7 @@ class BakeryPage extends StatelessWidget {
               children: [
                 const Text(
                   'Halo, Bakery! 🍞',
-                  style: TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 const Text(
                   'Pilih resep untuk mulai produksi',
@@ -47,8 +46,7 @@ class BakeryPage extends StatelessWidget {
                 const SizedBox(height: 15),
                 const Text(
                   'Daftar Resep',
-                  style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 15),
                 BakeryResepGrid(ctrl: ctrl),

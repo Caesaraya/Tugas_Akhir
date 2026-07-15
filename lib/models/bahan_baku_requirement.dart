@@ -33,7 +33,8 @@ class BahanBakuRequirement {
       satuan: json['satuan'] ?? '',
       stokTersedia: int.tryParse(json['stok_tersedia'].toString()) ?? 0,
       hargaSatuan: int.tryParse(json['harga_satuan'].toString()) ?? 0,
-      kebutuhanPerProduk: int.tryParse(json['kebutuhan_per_produk'].toString()) ?? 0,
+      kebutuhanPerProduk:
+          int.tryParse(json['kebutuhan_per_produk'].toString()) ?? 0,
       totalDibutuhkan: int.tryParse(json['total_dibutuhkan'].toString()) ?? 0,
       sisaStok: int.tryParse(json['sisa_stok'].toString()) ?? 0,
       cukup: json['cukup'] == 1 || json['cukup'] == true,
@@ -75,16 +76,18 @@ class BakeryCalculationResult {
 
   factory BakeryCalculationResult.fromJson(Map<String, dynamic> json) {
     final data = json['data'] ?? {};
-    
+
     return BakeryCalculationResult(
       produkId: int.tryParse(data['produk_id'].toString()) ?? 0,
       quantity: int.tryParse(data['quantity'].toString()) ?? 0,
-      bahan: (data['bahan'] as List?)
+      bahan:
+          (data['bahan'] as List?)
               ?.map((e) => BahanBakuRequirement.fromJson(e))
               .toList() ??
           [],
       totalBiaya: int.tryParse(data['total_biaya'].toString()) ?? 0,
-      semuaBahanCukup: data['semua_bahan_cukup'] == true || data['semua_bahan_cukup'] == 1,
+      semuaBahanCukup:
+          data['semua_bahan_cukup'] == true || data['semua_bahan_cukup'] == 1,
     );
   }
 
@@ -118,11 +121,12 @@ class BakeryAvailabilityResult {
 
   factory BakeryAvailabilityResult.fromJson(Map<String, dynamic> json) {
     final data = json['data'] ?? {};
-    
+
     return BakeryAvailabilityResult(
       produkId: int.tryParse(data['produk_id'].toString()) ?? 0,
       quantity: int.tryParse(data['quantity'].toString()) ?? 0,
-      semuaBahanCukup: data['semua_bahan_cukup'] == true || data['semua_bahan_cukup'] == 1,
+      semuaBahanCukup:
+          data['semua_bahan_cukup'] == true || data['semua_bahan_cukup'] == 1,
       totalBahan: int.tryParse(data['total_bahan'].toString()) ?? 0,
       bahanCukup: int.tryParse(data['bahan_cukup'].toString()) ?? 0,
       bahanKurang: int.tryParse(data['bahan_kurang'].toString()) ?? 0,
@@ -154,7 +158,7 @@ class BakeryCostResult {
 
   factory BakeryCostResult.fromJson(Map<String, dynamic> json) {
     final data = json['data'] ?? {};
-    
+
     return BakeryCostResult(
       produkId: int.tryParse(data['produk_id'].toString()) ?? 0,
       quantity: int.tryParse(data['quantity'].toString()) ?? 0,
@@ -199,8 +203,10 @@ class ProduksiPossibleItem {
       jenis: json['jenis'] ?? '',
       satuan: json['satuan'] ?? '',
       stokProduk: int.tryParse(json['stok_produk'].toString()) ?? 0,
-      totalBahanDibutuhkan: int.tryParse(json['total_bahan_dibutuhkan'].toString()) ?? 0,
-      bisaDiproduksi: json['bisa_diproduksi'] == true || json['bisa_diproduksi'] == 1,
+      totalBahanDibutuhkan:
+          int.tryParse(json['total_bahan_dibutuhkan'].toString()) ?? 0,
+      bisaDiproduksi:
+          json['bisa_diproduksi'] == true || json['bisa_diproduksi'] == 1,
       quantity: int.tryParse(json['quantity'].toString()) ?? 0,
     );
   }
@@ -223,23 +229,21 @@ class BahanUsageResult {
   final int totalDigunakan;
   final List<Map<String, dynamic>> resep;
 
-  BahanUsageResult({
-    required this.totalDigunakan,
-    required this.resep,
-  });
+  BahanUsageResult({required this.totalDigunakan, required this.resep});
 
   factory BahanUsageResult.fromJson(Map<String, dynamic> json) {
     return BahanUsageResult(
       totalDigunakan: int.tryParse(json['total_digunakan'].toString()) ?? 0,
-      resep: (json['resep'] as List?)?.map((e) => e as Map<String, dynamic>).toList() ?? [],
+      resep:
+          (json['resep'] as List?)
+              ?.map((e) => e as Map<String, dynamic>)
+              .toList() ??
+          [],
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'total_digunakan': totalDigunakan,
-      'resep': resep,
-    };
+    return {'total_digunakan': totalDigunakan, 'resep': resep};
   }
 }
 
@@ -268,6 +272,80 @@ class StockSummaryResult {
       'total_bahan': totalBahan,
       'total_stok': totalStok,
       'total_nilai': totalNilai,
+    };
+  }
+}
+
+class PengambilanBahanResepResult {
+  final int resepId;
+  final String namaResep;
+  final int jumlahProduksi;
+  final List<PengambilanBahanItem> bahanTerpakai;
+
+  PengambilanBahanResepResult({
+    required this.resepId,
+    required this.namaResep,
+    required this.jumlahProduksi,
+    required this.bahanTerpakai,
+  });
+
+  factory PengambilanBahanResepResult.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] ?? {};
+
+    return PengambilanBahanResepResult(
+      resepId: int.tryParse(data['resep_id'].toString()) ?? 0,
+      namaResep: data['nama_resep'] ?? '',
+      jumlahProduksi: int.tryParse(data['jumlah_produksi'].toString()) ?? 0,
+      bahanTerpakai:
+          (data['bahan_terpakai'] as List?)
+              ?.map((e) => PengambilanBahanItem.fromJson(e))
+              .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'resep_id': resepId,
+      'nama_resep': namaResep,
+      'jumlah_produksi': jumlahProduksi,
+      'bahan_terpakai': bahanTerpakai.map((e) => e.toJson()).toList(),
+    };
+  }
+}
+
+class PengambilanBahanItem {
+  final int bahanBakuId;
+  final String namaBahan;
+  final int jumlahDikurangi;
+  final String satuan;
+  final int sisaStok;
+
+  PengambilanBahanItem({
+    required this.bahanBakuId,
+    required this.namaBahan,
+    required this.jumlahDikurangi,
+    required this.satuan,
+    required this.sisaStok,
+  });
+
+  factory PengambilanBahanItem.fromJson(Map<String, dynamic> json) {
+    return PengambilanBahanItem(
+      bahanBakuId: int.tryParse(json['bahan_baku_id'].toString()) ?? 0,
+      namaBahan: json['nama_bahan'] ?? '',
+      jumlahDikurangi: int.tryParse(json['jumlah_dikurangi'].toString()) ?? 0,
+      satuan: json['satuan'] ?? '',
+      sisaStok: int.tryParse(json['sisa_stok'].toString()) ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'bahan_baku_id': bahanBakuId,
+      'nama_bahan': namaBahan,
+      'jumlah_dikurangi': jumlahDikurangi,
+      'satuan': satuan,
+      'sisa_stok': sisaStok,
     };
   }
 }

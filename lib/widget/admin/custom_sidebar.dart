@@ -100,10 +100,18 @@ class AdminSidebar extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   _buildSidebarItem(
+                    icon: Icons.home_outlined,
+                    title: 'Dashboard',
+                    selected: navC.selectedIndex.value == 0,
+                    onTap: () => navC.changePage(0, AppRoutes.dashboarddesk),
+                  ),
+                  const SizedBox(height: 8),
+
+                  _buildSidebarItem(
                     icon: Icons.shopping_bag_outlined,
                     title: 'Kelola Produk',
-                    selected: navC.selectedIndex.value == 0,
-                    onTap: () => navC.changePage(0, AppRoutes.kelolaprodukdesk),
+                    selected: navC.selectedIndex.value == 1,
+                    onTap: () => navC.changePage(1, AppRoutes.kelolaprodukdesk),
                   ),
                   const SizedBox(height: 8),
 
@@ -111,8 +119,8 @@ class AdminSidebar extends StatelessWidget {
                     icon: Icons
                         .opacity_outlined, // Ikon tetesan air untuk Kelola Bahan
                     title: 'Kelola Bahan',
-                    selected: navC.selectedIndex.value == 1,
-                    onTap: () => navC.changePage(1, AppRoutes.kelolabahandesk),
+                    selected: navC.selectedIndex.value == 2,
+                    onTap: () => navC.changePage(2, AppRoutes.kelolabahandesk),
                   ),
                   const SizedBox(height: 8),
 
@@ -120,16 +128,23 @@ class AdminSidebar extends StatelessWidget {
                     icon: Icons
                         .menu_book_outlined, // Ikon buku untuk Kelola Resep
                     title: 'Kelola Resep',
-                    selected: navC.selectedIndex.value == 2,
-                    onTap: () => navC.changePage(2, AppRoutes.kelolaresepdesk),
+                    selected: navC.selectedIndex.value == 3,
+                    onTap: () => navC.changePage(3, AppRoutes.kelolaresepdesk),
                   ),
                   const SizedBox(height: 8),
                   _buildSidebarItem(
                     icon: Icons
                         .monetization_on_outlined, // Ikon tetesan air untuk Kelola Bahan
                     title: 'Monitoring Keuangan',
-                    selected: navC.selectedIndex.value == 3,
-                    onTap: () => navC.changePage(3, AppRoutes.monitoringuang),
+                    selected: navC.selectedIndex.value == 4,
+                    onTap: () => navC.changePage(4, AppRoutes.monitoringuang),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildSidebarItem(
+                    icon: Icons.people_alt_outlined, // ← TAMBAHAN BARU
+                    title: "Kelola User",
+                    selected: navC.selectedIndex.value == 5,
+                    onTap: () => navC.changePage(5, AppRoutes.kelolaUserDesk),
                   ),
                 ],
               ),

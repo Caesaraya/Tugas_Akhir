@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart'; // Package untuk tracking lokal
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/bahan/edit_bahan_baku_dialog.dart';
 
 import '../../api service/api_service.dart';
 import '../../models/bahan_baku.dart';
 import '../../controller/admin/table/base_table_controller.dart';
+import '../../controller/admin/keuangan_controller.dart'; // Import KeuanganController
 
 class BahanBakuTableController extends BaseTableController<BahanBaku> {
   final RxBool filterStockHabis = false.obs;
-  final _storage = GetStorage(); // Inisialisasi storage tracker
 
   BahanBakuTableController() {
     itemsPerPage = 10;
-    // Format harga saat input (Bawaan asli Anda)
+    // Format harga saat input
     hargaC.addListener(() {
       final raw = hargaC.text;
       final clean = raw.replaceAll(RegExp(r'[^0-9]'), '');
@@ -94,7 +93,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     fetchData();
   }
 
-  // Tetap menggunakan nama fungsi asli bawaan Anda agar dialog terbuka dengan benar
   void showEditDialog(BahanBaku bahan) {
     namaC.text = bahan.namaBahan;
     merkC.text = bahan.merk;
@@ -107,14 +105,66 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     Get.dialog(EditBahanBakuDialog(item: bahan));
   }
 
+  // =======================================================================
+  // REUSABLE HELPER FUNCTION UNTUK MENCATAT PENGELUARAN KE DATABASE
+  // =======================================================================
+  Future<void> _recordStockPurchaseExpense({
+    required double totalBiaya,
+    required String keterangan,
+  }) async {
+    if (totalBiaya <= 0) return;
+
+    try {
+      // Daftarkan atau temukan KeuanganController secara aman
+      final keuanganCtrl = Get.isRegistered<KeuanganController>()
+          ? Get.find<KeuanganController>()
+          : Get.put(KeuanganController());
+
+      // Ambil daftar kategori yang ada di backend
+      if (keuanganCtrl.listCategories.isEmpty) {
+        await keuanganCtrl.fetchCategories();
+      }
+
+      // Cari ID dari kategori "Bahan Baku"
+      var targetCategory = keuanganCtrl.listCategories.firstWhereOrNull(
+        (cat) => cat.name.toLowerCase() == 'bahan baku',
+      );
+
+      int? categoryId = targetCategory?.id;
+
+      // Jika kategori "Bahan Baku" belum ada sama sekali di database backend, buat otomatis
+      if (categoryId == null) {
+        categoryId = await keuanganCtrl.tambahKategoriBaru('Bahan Baku');
+      }
+
+      if (categoryId != null) {
+        final tanggalHariIni = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+        // Simpan transaksi pengeluaran langsung ke database online melalui ApiService
+        await ApiService.createExpense(
+          tanggal: tanggalHariIni,
+          categoryId: categoryId,
+          nominal: totalBiaya,
+          keterangan: keterangan,
+        );
+
+        // Trigerred refresh state keuangan (Summary, Komposisi Chart, & Laporan Tahunan)
+        await keuanganCtrl.loadDataKeuangan();
+      }
+    } catch (e) {
+      print("Gagal otomatis mencatat pengeluaran keuangan: $e");
+    }
+  }
+
   Future<void> insertBahanBaku() async {
     try {
       final hg = hargaC.text.replaceAll(RegExp(r'[^0-9]'), '');
       final harga = double.tryParse(hg) ?? 0;
       final stok = double.tryParse(stokC.text) ?? 0.0;
+      final namaBahan = namaC.text.trim();
 
       final baru = BahanBaku(
-        namaBahan: namaC.text.trim(),
+        namaBahan: namaBahan,
         merk: merkC.text.trim(),
         stok: stok,
         satuan: satuanC.text.trim(),
@@ -123,29 +173,14 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
 
       final success = await ApiService.createBahanBaku(baru);
       if (success) {
-        // =======================================================================
-        // TRACKING PENGELUARAN UNTUK BAHAN BAKU BARU (Hanya jika stok awal > 0)
-        // =======================================================================
+        // Alur A: Jika stok awal saat pembuatan baru > 0, langsung catat pengeluaran ke database
         if (stok > 0) {
           final double totalBiaya = stok * harga;
-
-          final mapHistori = {
-            'tanggal': DateTime.now().toIso8601String(),
-            'bahan_baku_id': DateTime.now()
-                .millisecondsSinceEpoch, // ID sementara sebelum reload data
-            'nama_bahan': namaC.text.trim(),
-            'stok_sebelum': 0.0,
-            'stok_sesudah': stok,
-            'jumlah_penambahan': stok,
-            'harga_satuan': harga,
-            'total_pengeluaran': totalBiaya,
-          };
-
-          List<dynamic> localData = _storage.read('histori_pengeluaran') ?? [];
-          localData.add(mapHistori);
-          await _storage.write('histori_pengeluaran', localData);
+          await _recordStockPurchaseExpense(
+            totalBiaya: totalBiaya,
+            keterangan: "Pembelian awal bahan baku $namaBahan",
+          );
         }
-        // =======================================================================
 
         Get.back();
         clearForm();
@@ -172,38 +207,15 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
       final hg = hargaC.text.replaceAll(RegExp(r'[^0-9]'), '');
       final harga = double.tryParse(hg) ?? 0;
       final stok = double.tryParse(stokC.text) ?? 0.0;
+      final namaBahan = namaC.text.trim();
 
-      // =======================================================================
-      // TRACKING PENGELUARAN UNTUK UPDATE/TAMBAH STOK (Bahan Baku Lama)
-      // =======================================================================
       final oldItem = originalList.firstWhereOrNull(
         (element) => element.id == id,
       );
 
-      if (oldItem != null && stok > oldItem.stok) {
-        final double selisih = stok - oldItem.stok;
-        final double totalBiaya = selisih * harga;
-
-        final mapHistori = {
-          'tanggal': DateTime.now().toIso8601String(),
-          'bahan_baku_id': id,
-          'nama_bahan': namaC.text.trim(),
-          'stok_sebelum': oldItem.stok,
-          'stok_sesudah': stok,
-          'jumlah_penambahan': selisih,
-          'harga_satuan': harga,
-          'total_pengeluaran': totalBiaya,
-        };
-
-        List<dynamic> localData = _storage.read('histori_pengeluaran') ?? [];
-        localData.add(mapHistori);
-        await _storage.write('histori_pengeluaran', localData);
-      }
-      // =======================================================================
-
       final updateData = BahanBaku(
         id: id,
-        namaBahan: namaC.text.trim(),
+        namaBahan: namaBahan,
         merk: merkC.text.trim(),
         stok: stok,
         satuan: satuanC.text.trim(),
@@ -212,6 +224,23 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
 
       final success = await ApiService.updateBahanBaku(updateData);
       if (success) {
+        // Alur B: Bandingkan stok lama dengan stok baru untuk mencatat pengeluaran tambahan
+        if (oldItem != null && stok > oldItem.stok) {
+          final double selisih = stok - oldItem.stok;
+          final double totalBiaya = selisih * harga;
+
+          // Format angka selisih agar tampilan di keterangan rapi (menghilangkan .0 jika integer)
+          final String formatSelisih = selisih == selisih.roundToDouble()
+              ? selisih.toInt().toString()
+              : selisih.toString();
+
+          await _recordStockPurchaseExpense(
+            totalBiaya: totalBiaya,
+            keterangan:
+                "Penambahan stok $namaBahan sebanyak $formatSelisih ${satuanC.text.trim()}",
+          );
+        }
+
         Get.back();
         clearForm();
         fetchData();

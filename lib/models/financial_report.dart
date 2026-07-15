@@ -66,7 +66,7 @@ class FinancialReport {
       'September',
       'Oktober',
       'November',
-      'Desember'
+      'Desember',
     ];
     return namaBulan[bulan - 1];
   }

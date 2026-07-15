@@ -10,14 +10,17 @@ import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 
 class KelolaResepDeskPage extends StatelessWidget {
-  KelolaResepDeskPage({super.key}) {
-    Get.find<NavigationController>().selectedIndex.value = 2;
-  }
+  KelolaResepDeskPage({super.key});
 
   final ctrl = Get.find<ResepTableController>();
 
   @override
   Widget build(BuildContext context) {
+    // Pindahkan mutasi Rx ke luar fase build.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.find<NavigationController>().selectedIndex.value = 3;
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: Row(
@@ -26,7 +29,6 @@ class KelolaResepDeskPage extends StatelessWidget {
           AdminSidebar(),
           Expanded(
             child: SingleChildScrollView(
-              // ← Membungkus seluruh konten kanan agar bisa di-scroll
               physics: const BouncingScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
@@ -85,7 +87,6 @@ class KelolaResepDeskPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    // ← Menghapus Expanded dan SingleChildScrollView bawaan tabel agar menyatu dengan scroll utama
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,

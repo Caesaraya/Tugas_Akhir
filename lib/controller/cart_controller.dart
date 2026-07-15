@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:pdf/pdf.dart';
 import 'package:tugas_akhir/controller/dashboard_controller.dart';
@@ -6,11 +7,14 @@ import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/riwayat_controller.dart';
-import 'package:tugas_akhir/api%20service/api_service.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:tugas_akhir/data/repository/cart_repository.dart';
+import 'package:tugas_akhir/data/repository/transaction_repository.dart';
+import 'package:tugas_akhir/data/sync/sync_manager.dart';
+import 'package:tugas_akhir/data/sync/connectivity_service.dart';
 
 class CartController extends GetxController {
   final textController = TextEditingController();
@@ -19,12 +23,38 @@ class CartController extends GetxController {
   var selectedPayment = 'cash'.obs;
   var inputUang = 0.0.obs;
 
+  // Toggle ukuran kertas: false = 80mm (default), true = 58mm.
+  // Buat switch/toggle di UI yang mengubah nilai ini.
+  var isPrint58mm = false.obs;
+
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
     decimalDigits: 0,
   );
 
+  final CartRepository _cartRepository = CartRepository.instance;
+  final TransactionRepository _transactionRepository =
+      TransactionRepository.instance;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Muat cart yang sempat tersimpan (mis. app pernah tertutup paksa
+    // di tengah transaksi) supaya kasir tidak kehilangan input.
+    _loadPersistedCart();
+  }
+
+  Future<void> _loadPersistedCart() async {
+    final persisted = await _cartRepository.getCart();
+    if (persisted.isNotEmpty) {
+      cartItems.assignAll(persisted);
+    }
+  }
+
+  // Setiap perubahan cart langsung ditulis ke SQLite (fire-and-forget,
+  // tidak di-await agar UI tetap responsif) -- ini HANYA persistence,
+  // tidak pernah masuk sync_queue (lihat CartRepository).
   void addToCart(Product product) {
     var existingItem = cartItems.firstWhereOrNull(
       (item) => item.productId == product.id,
@@ -32,21 +62,23 @@ class CartController extends GetxController {
     if (existingItem != null) {
       existingItem.qty++;
       cartItems.refresh();
+      _cartRepository.upsertItem(existingItem);
     } else {
-      cartItems.add(
-        CartItem(
-          productId: product.id,
-          name: product.name,
-          price: product.price,
-          discount: product.discount,
-          qty: 1,
-        ),
+      final newItem = CartItem(
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        discount: product.discount,
+        qty: 1,
       );
+      cartItems.add(newItem);
+      _cartRepository.upsertItem(newItem);
     }
   }
 
   void removeFromCart(int productId) {
     cartItems.removeWhere((item) => item.productId == productId);
+    _cartRepository.removeItem(productId);
   }
 
   void increaseQty(int productId) {
@@ -56,6 +88,7 @@ class CartController extends GetxController {
     if (item != null) {
       item.qty++;
       cartItems.refresh();
+      _cartRepository.upsertItem(item);
     }
   }
 
@@ -66,10 +99,11 @@ class CartController extends GetxController {
     if (item != null) {
       if (item.qty > 1) {
         item.qty--;
+        cartItems.refresh();
+        _cartRepository.upsertItem(item);
       } else {
         removeFromCart(productId);
       }
-      cartItems.refresh();
     }
   }
 
@@ -86,6 +120,7 @@ class CartController extends GetxController {
     cartItems.clear();
     selectedPayment.value = 'cash';
     inputUang.value = 0.0;
+    _cartRepository.clear();
   }
 
   Map<String, String> getSuksesData(dynamic args) {
@@ -126,6 +161,7 @@ class CartController extends GetxController {
         debugPrint('prosesKeApi mobile error: $e');
       }
       clearCart();
+      // Refresh dashboard agar stok langsung update
       if (Get.isRegistered<DashboardController>()) {
         Get.find<DashboardController>().fetchProducts();
       }
@@ -151,38 +187,54 @@ class CartController extends GetxController {
   }
 
   Future<void> prosesKeApi() async {
-    if (cartItems.isNotEmpty) {
-      bool success = await ApiService.createTransaction(
-        total: totalPrice,
-        bayar: selectedPayment.value == "cash" ? inputUang.value : totalPrice,
-        kembalian: selectedPayment.value == "cash" ? kembalian : 0.0,
-        metode: selectedPayment.value,
-        cart: cartItems,
-      );
-      if (success) {
-        if (Get.isRegistered<RiwayatController>()) {
-          Get.find<RiwayatController>().fetchHistory();
-        }
-      } else {
-        Get.snackbar(
-          "Gagal",
-          "Database gagal menyimpan transaksi",
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
+    if (cartItems.isEmpty) return;
+
+    await _transactionRepository.checkout(
+      cart: cartItems,
+      total: totalPrice,
+      bayar: selectedPayment.value == "cash" ? inputUang.value : totalPrice,
+      kembalian: selectedPayment.value == "cash" ? kembalian : 0.0,
+      metode: selectedPayment.value,
+    );
+
+    // Riwayat sekarang membaca dari TransactionRepository (SQLite), jadi
+    // langsung tampil walau baris ini belum sempat ke server.
+    if (Get.isRegistered<RiwayatController>()) {
+      Get.find<RiwayatController>().fetchHistory();
+    }
+
+    // Coba sync sekarang juga kalau kebetulan online -- best effort saja,
+    // kegagalan di sini tidak memengaruhi transaksi yang sudah tersimpan
+    // lokal. Jika offline, ConnectivityService yang akan memicu sync
+    // otomatis begitu koneksi kembali.
+    final online = await ConnectivityService.instance.isOnline;
+    if (online) {
+      unawaited(SyncManager.instance.runSync());
     }
   }
 
-  // ✅ Buat PDF nota 58mm (dipakai oleh printNotaSaja & generateAndPrintPdf)
+  // ✅ Buat PDF nota (mendukung 58mm & 80mm, dipakai oleh printNotaSaja & generateAndPrintPdf)
   pw.Document buildNotaPdf() {
     final pdf = pw.Document();
+
+    // Variabel dinamis berdasarkan ukuran kertas (58mm atau 80mm)
+    final bool is58mm = isPrint58mm.value;
+    final double printerWidth = is58mm ? 47.0 : 78.0; // area cetak aman
+    final double marginPdf = is58mm ? 2.0 : 5.0;
+
+    // Penyesuaian ukuran font otomatis
+    final double titleSize = is58mm ? 12.0 : 16.0;
+    final double addressSize = is58mm ? 8.0 : 9.0;
+    final double normalSize = is58mm ? 8.0 : 10.0;
+    final double itemNameSize = is58mm ? 9.0 : 11.0;
+    final double smallSize = is58mm ? 7.0 : 8.0;
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat(
-          47 * PdfPageFormat.mm,
+          printerWidth * PdfPageFormat.mm,
           double.infinity,
-          marginAll: 2,
+          marginAll: marginPdf,
         ),
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -192,7 +244,7 @@ class CartController extends GetxController {
               child: pw.Text(
                 'TOKO LEZAAA',
                 style: pw.TextStyle(
-                  fontSize: 12,
+                  fontSize: titleSize,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
@@ -202,18 +254,18 @@ class CartController extends GetxController {
               child: pw.Text(
                 'Kudus, Jl Dr Lukmono Hadi No.50',
                 textAlign: pw.TextAlign.center,
-                style: pw.TextStyle(fontSize: 8),
+                style: pw.TextStyle(fontSize: addressSize),
               ),
             ),
             pw.SizedBox(height: 4),
             pw.Divider(),
             pw.Text(
               'Tanggal : ${DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now())}',
-              style: pw.TextStyle(fontSize: 8),
+              style: pw.TextStyle(fontSize: normalSize),
             ),
             pw.Text(
               'Metode  : $paymentMethodLabel',
-              style: pw.TextStyle(fontSize: 8),
+              style: pw.TextStyle(fontSize: normalSize),
             ),
             pw.Divider(),
             ...cartItems.map((item) {
@@ -227,26 +279,29 @@ class CartController extends GetxController {
               return pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text(item.name, style: pw.TextStyle(fontSize: 9)),
+                  pw.Text(item.name, style: pw.TextStyle(fontSize: itemNameSize)),
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text(
                         '${item.qty} x ${currencyFormatter.format(hargaDiskon)}',
-                        style: pw.TextStyle(fontSize: 8),
+                        style: pw.TextStyle(fontSize: normalSize),
                       ),
                       pw.Text(
                         currencyFormatter.format(total),
-                        style: pw.TextStyle(fontSize: 8),
+                        style: pw.TextStyle(fontSize: normalSize),
                       ),
                     ],
                   ),
                   if (persen > 0)
-                    pw.Text(
-                      'Diskon ${persen.toStringAsFixed(0)}% (-${currencyFormatter.format(totalDiskon)})',
-                      style: pw.TextStyle(
-                        fontSize: 7,
-                        fontStyle: pw.FontStyle.italic,
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 2),
+                      child: pw.Text(
+                        'Diskon ${persen.toStringAsFixed(0)}% (-${currencyFormatter.format(totalDiskon)})',
+                        style: pw.TextStyle(
+                          fontSize: smallSize,
+                          fontStyle: pw.FontStyle.italic,
+                        ),
                       ),
                     ),
                   pw.SizedBox(height: 4),
@@ -257,10 +312,10 @@ class CartController extends GetxController {
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('Subtotal', style: pw.TextStyle(fontSize: 8)),
+                pw.Text('Subtotal', style: pw.TextStyle(fontSize: normalSize)),
                 pw.Text(
                   currencyFormatter.format(subtotal),
-                  style: pw.TextStyle(fontSize: 8),
+                  style: pw.TextStyle(fontSize: normalSize),
                 ),
               ],
             ),
@@ -268,10 +323,10 @@ class CartController extends GetxController {
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('Diskon', style: pw.TextStyle(fontSize: 8)),
+                  pw.Text('Diskon', style: pw.TextStyle(fontSize: normalSize)),
                   pw.Text(
                     currencyFormatter.format(totalDiscount),
-                    style: pw.TextStyle(fontSize: 8),
+                    style: pw.TextStyle(fontSize: normalSize),
                   ),
                 ],
               ),
@@ -282,14 +337,14 @@ class CartController extends GetxController {
                 pw.Text(
                   'TOTAL',
                   style: pw.TextStyle(
-                    fontSize: 10,
+                    fontSize: normalSize + 2,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
                 pw.Text(
                   currencyFormatter.format(totalPrice),
                   style: pw.TextStyle(
-                    fontSize: 10,
+                    fontSize: normalSize + 2,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
@@ -299,20 +354,20 @@ class CartController extends GetxController {
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('Bayar', style: pw.TextStyle(fontSize: 8)),
+                pw.Text('Bayar', style: pw.TextStyle(fontSize: normalSize)),
                 pw.Text(
                   paymentDisplayValueFormatted,
-                  style: pw.TextStyle(fontSize: 8),
+                  style: pw.TextStyle(fontSize: normalSize),
                 ),
               ],
             ),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('Kembalian', style: pw.TextStyle(fontSize: 8)),
+                pw.Text('Kembalian', style: pw.TextStyle(fontSize: normalSize)),
                 pw.Text(
                   kembalianDisplayFormatted,
-                  style: pw.TextStyle(fontSize: 8),
+                  style: pw.TextStyle(fontSize: normalSize),
                 ),
               ],
             ),
@@ -322,7 +377,7 @@ class CartController extends GetxController {
               child: pw.Text(
                 'Terima Kasih',
                 style: pw.TextStyle(
-                  fontSize: 9,
+                  fontSize: normalSize + 1,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
@@ -330,7 +385,7 @@ class CartController extends GetxController {
             pw.SizedBox(height: 8),
             pw.Align(
               alignment: pw.Alignment.center,
-              child: pw.Text('Powered by', style: pw.TextStyle(fontSize: 8)),
+              child: pw.Text('Powered by', style: pw.TextStyle(fontSize: smallSize)),
             ),
             pw.SizedBox(height: 2),
             pw.Align(
@@ -338,7 +393,7 @@ class CartController extends GetxController {
               child: pw.Text(
                 'Rumah Lezaa POS',
                 style: pw.TextStyle(
-                  fontSize: 8,
+                  fontSize: smallSize,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
@@ -386,12 +441,25 @@ class CartController extends GetxController {
 
   Future<void> printFromDetail(TransactionDetailController ctrl) async {
     final pdf = pw.Document();
+
+    // Variabel dinamis berdasarkan ukuran kertas (58mm atau 80mm)
+    final bool is58mm = isPrint58mm.value;
+    final double printerWidth = is58mm ? 47.0 : 78.0;
+    final double marginPdf = is58mm ? 2.0 : 5.0;
+
+    // Penyesuaian ukuran font otomatis
+    final double titleSize = is58mm ? 12.0 : 16.0;
+    final double addressSize = is58mm ? 8.0 : 9.0;
+    final double normalSize = is58mm ? 8.0 : 10.0;
+    final double itemNameSize = is58mm ? 9.0 : 11.0;
+    final double smallSize = is58mm ? 7.0 : 8.0;
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat(
-          47 * PdfPageFormat.mm,
+          printerWidth * PdfPageFormat.mm,
           300 * PdfPageFormat.mm,
-          marginAll: 2,
+          marginAll: marginPdf,
         ),
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -401,7 +469,7 @@ class CartController extends GetxController {
               child: pw.Text(
                 'TOKO LEZAAA',
                 style: pw.TextStyle(
-                  fontSize: 12,
+                  fontSize: titleSize,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
@@ -411,22 +479,22 @@ class CartController extends GetxController {
               child: pw.Text(
                 'Kudus, Jl Dr Lukmono Hadi No.50',
                 textAlign: pw.TextAlign.center,
-                style: pw.TextStyle(fontSize: 8),
+                style: pw.TextStyle(fontSize: addressSize),
               ),
             ),
             pw.SizedBox(height: 4),
             pw.Divider(),
             pw.Text(
               'Nota   : #${ctrl.transactionId}',
-              style: pw.TextStyle(fontSize: 8),
+              style: pw.TextStyle(fontSize: normalSize),
             ),
             pw.Text(
               'Tanggal: ${ctrl.tanggal}',
-              style: pw.TextStyle(fontSize: 8),
+              style: pw.TextStyle(fontSize: normalSize),
             ),
             pw.Text(
               'Metode : ${ctrl.methodLabel}',
-              style: pw.TextStyle(fontSize: 8),
+              style: pw.TextStyle(fontSize: normalSize),
             ),
             pw.Divider(),
             ...ctrl.items.map((item) {
@@ -437,17 +505,17 @@ class CartController extends GetxController {
               return pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text(nama, style: pw.TextStyle(fontSize: 9)),
+                  pw.Text(nama, style: pw.TextStyle(fontSize: itemNameSize)),
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text(
                         '$quantity x ${currencyFormatter.format(harga)}',
-                        style: pw.TextStyle(fontSize: 8),
+                        style: pw.TextStyle(fontSize: normalSize),
                       ),
                       pw.Text(
                         currencyFormatter.format(total),
-                        style: pw.TextStyle(fontSize: 8),
+                        style: pw.TextStyle(fontSize: normalSize),
                       ),
                     ],
                   ),
@@ -455,7 +523,7 @@ class CartController extends GetxController {
                     pw.Text(
                       'Diskon: ${currencyFormatter.format(ctrl.hargaAsli(item))} → ${currencyFormatter.format(harga)}',
                       style: pw.TextStyle(
-                        fontSize: 7,
+                        fontSize: smallSize,
                         fontStyle: pw.FontStyle.italic,
                       ),
                     ),
@@ -470,14 +538,14 @@ class CartController extends GetxController {
                 pw.Text(
                   'TOTAL',
                   style: pw.TextStyle(
-                    fontSize: 10,
+                    fontSize: normalSize + 2,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
                 pw.Text(
                   ctrl.totalFormatted,
                   style: pw.TextStyle(
-                    fontSize: 10,
+                    fontSize: normalSize + 2,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
@@ -487,17 +555,17 @@ class CartController extends GetxController {
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('Bayar', style: pw.TextStyle(fontSize: 8)),
-                pw.Text(ctrl.bayarFormatted, style: pw.TextStyle(fontSize: 8)),
+                pw.Text('Bayar', style: pw.TextStyle(fontSize: normalSize)),
+                pw.Text(ctrl.bayarFormatted, style: pw.TextStyle(fontSize: normalSize)),
               ],
             ),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('Kembalian', style: pw.TextStyle(fontSize: 8)),
+                pw.Text('Kembalian', style: pw.TextStyle(fontSize: normalSize)),
                 pw.Text(
                   ctrl.kembalianFormatted,
-                  style: pw.TextStyle(fontSize: 8),
+                  style: pw.TextStyle(fontSize: normalSize),
                 ),
               ],
             ),
@@ -507,7 +575,7 @@ class CartController extends GetxController {
               child: pw.Text(
                 'Terima Kasih',
                 style: pw.TextStyle(
-                  fontSize: 9,
+                  fontSize: normalSize + 1,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
@@ -515,7 +583,7 @@ class CartController extends GetxController {
             pw.SizedBox(height: 8),
             pw.Align(
               alignment: pw.Alignment.center,
-              child: pw.Text('Powered by', style: pw.TextStyle(fontSize: 8)),
+              child: pw.Text('Powered by', style: pw.TextStyle(fontSize: smallSize)),
             ),
             pw.SizedBox(height: 2),
             pw.Align(
@@ -523,7 +591,7 @@ class CartController extends GetxController {
               child: pw.Text(
                 'Rumah Lezaa POS',
                 style: pw.TextStyle(
-                  fontSize: 8,
+                  fontSize: smallSize,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),

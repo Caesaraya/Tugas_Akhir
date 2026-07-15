@@ -16,10 +16,14 @@ class Pembelian {
   factory Pembelian.fromJson(Map<String, dynamic> json) {
     return Pembelian(
       id: json['id'],
-      tanggal: json['tanggal'] != null 
-          ? DateTime.parse(json['tanggal']) 
+      tanggal: json['tanggal'] != null
+          ? DateTime.parse(json['tanggal'])
           : DateTime.now(),
-      total: (json['total'] ?? 0).toDouble(),
+      total: json['total'] != null
+          ? (json['total'] is String
+                ? double.parse(json['total'])
+                : (json['total'] as num).toDouble())
+          : 0.0,
       supplierId: json['supplier_id'] ?? 0,
       namaSupplier: json['nama_supplier'],
     );
@@ -81,8 +85,16 @@ class PembelianDetail {
       pembelianId: json['pembelian_id'] ?? 0,
       bahanBakuId: json['bahan_baku_id'] ?? 0,
       jumlah: json['jumlah'] ?? 0,
-      harga: (json['harga'] ?? 0).toDouble(),
-      subtotal: (json['subtotal'] ?? 0).toDouble(),
+      harga: json['harga'] != null
+          ? (json['harga'] is String
+                ? double.parse(json['harga'])
+                : (json['harga'] as num).toDouble())
+          : 0.0,
+      subtotal: json['subtotal'] != null
+          ? (json['subtotal'] is String
+                ? double.parse(json['subtotal'])
+                : (json['subtotal'] as num).toDouble())
+          : 0.0,
       namaBahan: json['nama_bahan'],
       merk: json['merk'],
       satuan: json['satuan'],
