@@ -79,6 +79,9 @@ flutter:
   assets:
     - assets/Logo_Rumah_Lezaa.jpg
     - assets/Logo_Rumah_Lezaa-removebg-preview.png
+    - assets/rumah1.jpg
+    - assets/rumah2.jpg
+    - assets/rumah3.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

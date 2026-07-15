@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/utils/app_color.dart';
 
 class LoginButton extends StatelessWidget {
   final LoginController loginCtrl;
@@ -20,7 +21,7 @@ class LoginButton extends StatelessWidget {
                   isDesktop: false, // Set true untuk Desktop,
                 ), // Set // Set false untuk Mobile
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFE89336),
+            backgroundColor: AppColors.primaryOrange,
             disabledBackgroundColor: const Color(0xFFE89336),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

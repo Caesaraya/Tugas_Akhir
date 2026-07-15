@@ -57,6 +57,11 @@ class AppDatabase {
 
     final path = join(await getDatabasesPath(), _dbName);
 
+    print("================================");
+    print("DATABASE PATH:");
+    print(path);
+    print("================================");
+
     return await openDatabase(
       path,
       version: _dbVersion,

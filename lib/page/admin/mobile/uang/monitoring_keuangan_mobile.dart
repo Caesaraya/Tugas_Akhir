@@ -5,7 +5,6 @@ import 'package:tugas_akhir/controller/admin/keuangan_controller.dart';
 import 'package:tugas_akhir/utils/app_color.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/uang/dialog_tambah_pengeluaran.dart';
 import 'package:tugas_akhir/widget/admin/mobile_admin_drawer.dart';
-import 'package:tugas_akhir/widget/admin/uang/card_keuangan.dart';
 import 'package:tugas_akhir/widget/admin/uang/komposisi_pengeluaran.dart';
 
 // ==================== SPARKLINE PAINTER ====================
@@ -392,27 +391,6 @@ class MonitoringKeuanganMobilePage extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildExpenseCompositionSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        constraints: const BoxConstraints(maxHeight: 300),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: const KomposisiPengeluaran(),
       ),
     );
   }
