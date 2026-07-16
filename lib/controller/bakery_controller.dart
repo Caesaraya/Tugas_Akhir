@@ -7,14 +7,14 @@ import 'package:tugas_akhir/models/resep.dart';
 import 'package:tugas_akhir/models/bahan_baku.dart';
 import 'package:tugas_akhir/models/bahan_cart.dart';
 import 'package:tugas_akhir/page/mobile/bakery_mobile_detail.dart';
-import 'package:tugas_akhir/page/mobile/bakery_production_preview.dart'; // Halaman preview baru
-import 'package:tugas_akhir/controller/admin/keuangan_controller.dart'; // Untuk refresh aktivitas/summary dashboard
+import 'package:tugas_akhir/page/mobile/bakery_production_preview.dart';
+import 'package:tugas_akhir/controller/admin/keuangan_controller.dart';
 
 class BakeryController extends GetxController {
   var isLoading = false.obs;
   var resepList = <Resep>[].obs;
   var bahanBakuList =
-      <BahanBaku>[].obs; // State list bahan baku riil untuk validasi stok
+      <BahanBaku>[].obs; 
   var searchQuery = ''.obs;
   var totalBiaya = 0.obs;
   var semuaBahanCukup = true.obs;
@@ -22,8 +22,6 @@ class BakeryController extends GetxController {
   var selectedResep = Rxn<Resep>();
   var jumlahProduksi = 1.obs;
   final inputController = TextEditingController();
-
-  // State Fitur 2: Pengambilan Bahan Manual
   var manualCart = <ManualBahanCartItem>[].obs;
 
   final currencyFormatter = NumberFormat.currency(
@@ -44,8 +42,6 @@ class BakeryController extends GetxController {
     inputController.dispose();
     super.onClose();
   }
-
-  // Menggunakan getter resep filter yang sudah ada di widget grid Anda
   List<Resep> get filteredResep {
     if (searchQuery.isEmpty) return resepList;
     return resepList
@@ -82,14 +78,10 @@ class BakeryController extends GetxController {
       debugPrint("Gagal memuat bahan baku: $e");
     }
   }
-
-  // Masukkan fungsi ini ke dalam class BakeryController di file bakery_controller.dart Anda
   void tambahKeKeranjangManualDenganQty(BahanBaku bahan, double qty) {
-    // Cek apakah bahan baku tersebut sudah dimasukkan ke keranjang sebelumnya
     final index = manualCart.indexWhere((item) => item.bahan.id == bahan.id);
 
     if (index == -1) {
-      // Jika belum ada, buat item baru di keranjang
       manualCart.add(ManualBahanCartItem(bahan: bahan, qtyAmbil: qty));
       Get.snackbar(
         'Sukses',
@@ -99,7 +91,6 @@ class BakeryController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     } else {
-      // Jika sudah ada, update/akumulasikan qty-nya
       double qtyBaru = manualCart[index].qtyAmbil + qty;
       if (qtyBaru > bahan.stok) {
         Get.snackbar(
@@ -156,8 +147,6 @@ class BakeryController extends GetxController {
   String formatQty(double value) => value == value.toInt()
       ? value.toInt().toString()
       : value.toStringAsFixed(2);
-
-  // LOGIKA UTAMA: Validasi Pintar & Hitung Produksi Maksimal Realtime
   void validasiDanBukaPreview() {
     final resep = selectedResep.value;
     if (resep == null || resep.bahan == null) return;
@@ -166,7 +155,6 @@ class BakeryController extends GetxController {
     bool adaKekuranganStok = false;
 
     for (var bReq in resep.bahan!) {
-      // Cari data stok ter-update dari tabel bahan baku di frontend
       final realBahan = bahanBakuList.firstWhereOrNull(
         (element) => element.id == bReq.bahanId,
       );
@@ -233,8 +221,6 @@ class BakeryController extends GetxController {
       Get.to(() => const BakeryProductionPreviewPage());
     }
   }
-
-  // Kirim data Produksi Berhasil ke Backend & Trigger Refresh Semua Data Dashboard
   Future<void> simpanTransaksiProduksi() async {
     try {
       isLoading(true);
@@ -274,9 +260,6 @@ class BakeryController extends GetxController {
     }
   }
 
-  // =========================================================================
-  // LOGIKA FITUR 2: PENGAMBILAN BAHAN BAKU MANUAL (Pola Keranjang)
-  // =========================================================================
   void tambahKeKeranjangManual(BahanBaku bahan) {
     final ada = manualCart.firstWhereOrNull(
       (item) => item.bahan.id == bahan.id,
@@ -371,11 +354,6 @@ class BakeryController extends GetxController {
         resepId: resepId,
         quantity: jumlahProduksi.value,
       );
-
-      // 3. Simpan biaya ke state.
-      // CATATAN: selectedResep TIDAK ditimpa di sini. resepTarget berasal dari
-      // resepList (endpoint list) yang tidak membawa detail bahan, sehingga
-      // menimpanya akan menghapus data bahan yang sudah dimuat via getDetailResep().
       totalBiaya.value = biaya.totalBiaya;
     } catch (e) {
       print("ERROR DI LOAD CALCULATION: $e");

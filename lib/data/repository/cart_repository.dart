@@ -24,6 +24,7 @@ class CartRepository extends BaseRepository {
             price: r['price'] as int,
             discount: r['discount'] as int,
             qty: r['qty'] as int,
+            stock: r['stock'] as int,
           ),
         )
         .toList();

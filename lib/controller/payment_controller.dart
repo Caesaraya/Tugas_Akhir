@@ -43,7 +43,16 @@ class PaymentController extends GetxController {
     return change > 0 ? change : 0;
   }
  
-  void increaseQty(int productId) => cartController.increaseQty(productId);
+  void increaseQty(int productId) {
+  final item = cartController.cartItems.firstWhereOrNull(
+    (item) => item.productId == productId,
+  );
+  if (item != null && item.qty >= item.stock) {
+    showWarning('Stok Terbatas', 'Stok maksimal ${item.stock}');
+    return;
+  }
+  cartController.increaseQty(productId);
+}
   void decreaseQty(int productId) => cartController.decreaseQty(productId);
  
   void removeItem(dynamic item) {

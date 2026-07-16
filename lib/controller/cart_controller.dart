@@ -22,9 +22,6 @@ class CartController extends GetxController {
   var cartItems = <CartItem>[].obs;
   var selectedPayment = 'cash'.obs;
   var inputUang = 0.0.obs;
-
-  // Toggle ukuran kertas: false = 80mm (default), true = 58mm.
-  // Buat switch/toggle di UI yang mengubah nilai ini.
   var isPrint58mm = false.obs;
 
   final currencyFormatter = NumberFormat.currency(
@@ -33,64 +30,116 @@ class CartController extends GetxController {
     decimalDigits: 0,
   );
 
-  final CartRepository _cartRepository = CartRepository.instance;
-  final TransactionRepository _transactionRepository =
+  final CartRepository cartRepository = CartRepository.instance;
+  final TransactionRepository transactionRepository =
       TransactionRepository.instance;
 
   @override
   void onInit() {
     super.onInit();
-    // Muat cart yang sempat tersimpan (mis. app pernah tertutup paksa
-    // di tengah transaksi) supaya kasir tidak kehilangan input.
-    _loadPersistedCart();
+    loadPersistedCart();
   }
 
-  Future<void> _loadPersistedCart() async {
-    final persisted = await _cartRepository.getCart();
+  Future<void> loadPersistedCart() async {
+    final persisted = await cartRepository.getCart();
     if (persisted.isNotEmpty) {
       cartItems.assignAll(persisted);
     }
   }
 
-  // Setiap perubahan cart langsung ditulis ke SQLite (fire-and-forget,
-  // tidak di-await agar UI tetap responsif) -- ini HANYA persistence,
-  // tidak pernah masuk sync_queue (lihat CartRepository).
-  void addToCart(Product product) {
-    var existingItem = cartItems.firstWhereOrNull(
-      (item) => item.productId == product.id,
-    );
-    if (existingItem != null) {
-      existingItem.qty++;
-      cartItems.refresh();
-      _cartRepository.upsertItem(existingItem);
-    } else {
-      final newItem = CartItem(
+// ── addToCart ──────────────────────────────────────────────────────────────
+bool addToCart(Product product) {
+  var existingItem = cartItems.firstWhereOrNull(
+    (item) => item.productId == product.id,
+  );
+  if (existingItem != null) {
+    if (existingItem.qty >= product.stock) {
+      Get.snackbar(
+        "Stok Habis",
+        "Stok ${product.name} hanya ${product.stock} ${product.satuan}",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(milliseconds: 1500),
+        margin: const EdgeInsets.all(10),
+      );
+      return false;
+    }
+    existingItem.qty++;
+    cartItems.refresh();
+  } else {
+    cartItems.add(
+      CartItem(
         productId: product.id,
         name: product.name,
         price: product.price,
-        discount: product.discount,
+        discount: product.discount ?? 0,
+        stock: product.stock,
         qty: 1,
-      );
-      cartItems.add(newItem);
-      _cartRepository.upsertItem(newItem);
-    }
-  }
-
-  void removeFromCart(int productId) {
-    cartItems.removeWhere((item) => item.productId == productId);
-    _cartRepository.removeItem(productId);
-  }
-
-  void increaseQty(int productId) {
-    var item = cartItems.firstWhereOrNull(
-      (item) => item.productId == productId,
+      ),
     );
-    if (item != null) {
-      item.qty++;
-      cartItems.refresh();
-      _cartRepository.upsertItem(item);
-    }
   }
+  return true;
+}
+void removeFromCart(int productId) {
+  cartItems.removeWhere((item) => item.productId == productId);
+  cartRepository.removeItem(productId);
+}
+
+// ── increaseQty ────────────────────────────────────────────────────────────
+void increaseQty(int productId) {
+  var item = cartItems.firstWhereOrNull(
+    (item) => item.productId == productId,
+  );
+  if (item != null) {
+    if (item.qty >= item.stock) {
+      // Validasi stok — tidak bisa melebihi stok
+      return;
+    }
+    item.qty++;
+    cartItems.refresh();
+    cartRepository.upsertItem(item);
+  }
+}
+
+// ── setQty ─────────────────────────────────────────────────────────────────
+void setQty(Product product, int qty) {
+  final maxQty = product.stock;
+  final finalQty = qty > maxQty ? maxQty : qty;
+
+  if (finalQty <= 0) {
+    removeFromCart(product.id);
+    return;
+  }
+  var existing = cartItems.firstWhereOrNull(
+    (item) => item.productId == product.id,
+  );
+  if (existing != null) {
+    existing.qty = finalQty;
+    cartItems.refresh();
+  } else {
+    cartItems.add(CartItem(
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      discount: product.discount ?? 0,
+      stock: product.stock, 
+      qty: finalQty,
+    ));
+  }
+
+  if (qty > maxQty) {
+    Get.snackbar(
+      "Stok Terbatas",
+      "Maksimal ${product.name} hanya $maxQty ${product.satuan}",
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.orange,
+      colorText: Colors.white,
+      duration: const Duration(milliseconds: 1500),
+      margin: const EdgeInsets.all(10),
+    );
+  }
+}
 
   void decreaseQty(int productId) {
     var item = cartItems.firstWhereOrNull(
@@ -100,7 +149,7 @@ class CartController extends GetxController {
       if (item.qty > 1) {
         item.qty--;
         cartItems.refresh();
-        _cartRepository.upsertItem(item);
+        cartRepository.upsertItem(item);
       } else {
         removeFromCart(productId);
       }
@@ -120,7 +169,7 @@ class CartController extends GetxController {
     cartItems.clear();
     selectedPayment.value = 'cash';
     inputUang.value = 0.0;
-    _cartRepository.clear();
+    cartRepository.clear();
   }
 
   Map<String, String> getSuksesData(dynamic args) {
@@ -161,7 +210,6 @@ class CartController extends GetxController {
         debugPrint('prosesKeApi mobile error: $e');
       }
       clearCart();
-      // Refresh dashboard agar stok langsung update
       if (Get.isRegistered<DashboardController>()) {
         Get.find<DashboardController>().fetchProducts();
       }
@@ -189,40 +237,26 @@ class CartController extends GetxController {
   Future<void> prosesKeApi() async {
     if (cartItems.isEmpty) return;
 
-    await _transactionRepository.checkout(
+    await transactionRepository.checkout(
       cart: cartItems,
       total: totalPrice,
       bayar: selectedPayment.value == "cash" ? inputUang.value : totalPrice,
       kembalian: selectedPayment.value == "cash" ? kembalian : 0.0,
       metode: selectedPayment.value,
     );
-
-    // Riwayat sekarang membaca dari TransactionRepository (SQLite), jadi
-    // langsung tampil walau baris ini belum sempat ke server.
     if (Get.isRegistered<RiwayatController>()) {
       Get.find<RiwayatController>().fetchHistory();
     }
-
-    // Coba sync sekarang juga kalau kebetulan online -- best effort saja,
-    // kegagalan di sini tidak memengaruhi transaksi yang sudah tersimpan
-    // lokal. Jika offline, ConnectivityService yang akan memicu sync
-    // otomatis begitu koneksi kembali.
     final online = await ConnectivityService.instance.isOnline;
     if (online) {
       unawaited(SyncManager.instance.runSync());
     }
   }
-
-  // ✅ Buat PDF nota (mendukung 58mm & 80mm, dipakai oleh printNotaSaja & generateAndPrintPdf)
   pw.Document buildNotaPdf() {
     final pdf = pw.Document();
-
-    // Variabel dinamis berdasarkan ukuran kertas (58mm atau 80mm)
     final bool is58mm = isPrint58mm.value;
-    final double printerWidth = is58mm ? 47.0 : 78.0; // area cetak aman
+    final double printerWidth = is58mm ? 47.0 : 78.0; 
     final double marginPdf = is58mm ? 2.0 : 5.0;
-
-    // Penyesuaian ukuran font otomatis
     final double titleSize = is58mm ? 12.0 : 16.0;
     final double addressSize = is58mm ? 8.0 : 9.0;
     final double normalSize = is58mm ? 8.0 : 10.0;
@@ -405,8 +439,6 @@ class CartController extends GetxController {
     );
     return pdf;
   }
-
-  // ✅ Hanya print — tidak proses ke API, tidak navigasi
   Future<void> printNotaSaja() async {
     final pdf = buildNotaPdf();
     await Printing.layoutPdf(
@@ -414,8 +446,6 @@ class CartController extends GetxController {
       name: 'Nota_${DateFormat('ddMMyyyyHHmm').format(DateTime.now())}',
     );
   }
-
-  // ✅ Print + proses ke API + navigasi (dipakai dari halaman kalkulator/selesai desktop)
   Future<void> generateAndPrintPdf() async {
     final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
     final pdf = buildNotaPdf();
@@ -442,12 +472,9 @@ class CartController extends GetxController {
   Future<void> printFromDetail(TransactionDetailController ctrl) async {
     final pdf = pw.Document();
 
-    // Variabel dinamis berdasarkan ukuran kertas (58mm atau 80mm)
     final bool is58mm = isPrint58mm.value;
     final double printerWidth = is58mm ? 47.0 : 78.0;
     final double marginPdf = is58mm ? 2.0 : 5.0;
-
-    // Penyesuaian ukuran font otomatis
     final double titleSize = is58mm ? 12.0 : 16.0;
     final double addressSize = is58mm ? 8.0 : 9.0;
     final double normalSize = is58mm ? 8.0 : 10.0;
