@@ -26,6 +26,7 @@ class DashboardController extends GetxController {
     fetchProducts();
     super.onInit();
   }
+
   Future<void> fetchProducts() async {
     try {
       isLoading(true);
@@ -75,28 +76,29 @@ class DashboardController extends GetxController {
   }
 
   void applyFilter({String? query, String? category}) {
-  if (query != null) lastQuery.value = query;
-  if (category != null) selectedCategory.value = category;
+    if (query != null) lastQuery.value = query;
+    if (category != null) selectedCategory.value = category;
 
-  var temp = productList.where((product) {
-    bool matchCategory =
-        selectedCategory.value == 'Semua' ||
-        product.jenis == selectedCategory.value;
-    bool matchSearch = product.name.toLowerCase().contains(
-      lastQuery.value.toLowerCase(),
-    );
-    return matchCategory && matchSearch;
-  }).toList();
-  temp.sort((a, b) {
-    if (a.stock > 0 && b.stock <= 0) return -1;
-    if (a.stock <= 0 && b.stock > 0) return 1;
-    return 0;
-  });
+    var temp = productList.where((product) {
+      bool matchCategory =
+          selectedCategory.value == 'Semua' ||
+          product.jenis == selectedCategory.value;
+      bool matchSearch = product.name.toLowerCase().contains(
+        lastQuery.value.toLowerCase(),
+      );
+      return matchCategory && matchSearch;
+    }).toList();
+    temp.sort((a, b) {
+      if (a.stock > 0 && b.stock <= 0) return -1;
+      if (a.stock <= 0 && b.stock > 0) return 1;
+      return 0;
+    });
 
-  filteredList.assignAll(temp);
-  currentPage = 1;
-  displayedList.assignAll(filteredList.take(_pageSize).toList());
-}
+    filteredList.assignAll(temp);
+    currentPage = 1;
+    displayedList.assignAll(filteredList.take(_pageSize).toList());
+  }
+
   Future<void> loadMore() async {
     if (!hasMore || isLoadingMore.value) return;
 

@@ -12,8 +12,6 @@ class LoginFormFields extends StatefulWidget {
 }
 
 class _LoginFormFieldsState extends State<LoginFormFields> {
-  // bool _rememberMe = false;
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -47,17 +45,9 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
         const SizedBox(height: 20),
 
         // Input Password
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              "Password",
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
-            ),
-          ],
+        const Text(
+          "Password",
+          style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87),
         ),
         const SizedBox(height: 8),
         Obx(
@@ -94,16 +84,15 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
         ),
         const SizedBox(height: 32),
 
-        // Tombol Masuk ke Dasbor (Menggunakan FilledButton agar warna akurat)
+        // Tombol Masuk ke Dasbor
         SizedBox(
           width: double.infinity,
           height: 52,
           child: Obx(
             () => FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.buttonlogin,
-                overlayColor: Colors
-                    .transparent, // Menghilangkan bayangan hitam tipis saat hover
+                backgroundColor: AppColors.primaryOrange,
+                overlayColor: Colors.transparent,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -132,15 +121,16 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
             ),
           ),
         ),
-        const SizedBox(height: 40),
-
-        // Footer & Syarat Ketentuan
+        const SizedBox(
+          height: 48,
+        ), // Sedikit dinaikkan agar ruang menuju footer proporsional
+        // FOOTER (Ditingkatkan kontras warnanya menggunakan black54)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              "© 2024 Rumah Lezaa. All rights reserved.",
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              "© 2026 Rumah Lezaa. All rights reserved.",
+              style: TextStyle(color: Colors.black54, fontSize: 12),
             ),
             Row(
               children: [
@@ -148,18 +138,18 @@ class _LoginFormFieldsState extends State<LoginFormFields> {
                   onTap: () {},
                   child: const Text(
                     "Bantuan",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: TextStyle(color: Colors.black54, fontSize: 12),
                   ),
                 ),
                 const Text(
                   "  •  ",
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                  style: TextStyle(color: Colors.black54, fontSize: 12),
                 ),
                 InkWell(
                   onTap: () {},
                   child: const Text(
                     "Syarat & Ketentuan",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: TextStyle(color: Colors.black54, fontSize: 12),
                   ),
                 ),
               ],

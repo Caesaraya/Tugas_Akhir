@@ -84,7 +84,7 @@ class KasirDashboardMobile extends StatelessWidget {
                     const SizedBox(height: 15),
                     SectionHeader(title: 'Daftar Menu'),
                     const SizedBox(height: 15),
-                    DashboardProductGrid(ctrl: dashboardController),
+                    DashboardProductGrid(dashboardController: dashboardController),
                     const SizedBox(height: 30),
                   ],
                 ),

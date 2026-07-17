@@ -42,17 +42,7 @@ class ProductCard extends StatelessWidget {
     ? null
     : () {
         final berhasil = cartController.addToCart(product);
-        if (berhasil) {
-          Get.snackbar(
-            "Berhasil",
-            "${product.name} ditambah ke keranjang",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.black87,
-            colorText: Colors.white,
-            duration: const Duration(milliseconds: 800),
-            margin: const EdgeInsets.all(10),
-          );
-        }
+       
       },
         child: Opacity(
           opacity: outOfStock ? 0.5 : 1,

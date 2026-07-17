@@ -18,11 +18,12 @@ class RiwayatMobile extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Riwayat Transaksi',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFFE89336),
         elevation: 0,
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Obx(() {
         if (riwayatController.isLoading.value) {

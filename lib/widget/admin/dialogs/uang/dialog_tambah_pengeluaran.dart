@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/admin/keuangan_controller.dart';
 import 'package:tugas_akhir/models/expense_category.dart';
+import 'package:tugas_akhir/utils/app_color.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/custom_form_fields.dart';
 
 class DialogTambahPengeluaran extends StatefulWidget {
@@ -60,6 +61,7 @@ class _DialogTambahPengeluaranState extends State<DialogTambahPengeluaran> {
       title: const DialogCommonTitle(
         title: 'Tambah Pengeluaran',
         icon: Icons.add_card_rounded,
+        
       ),
       content: SizedBox(
         width: 440,
@@ -82,7 +84,7 @@ class _DialogTambahPengeluaranState extends State<DialogTambahPengeluaran> {
                   ),
                   trailing: const Icon(
                     Icons.calendar_month,
-                    color: Color(0xFFE65100),
+                    color: AppColors  .black,
                   ),
                   onTap: () async {
                     DateTime? picked = await showDatePicker(

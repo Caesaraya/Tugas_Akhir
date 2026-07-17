@@ -412,11 +412,14 @@ class ApiService {
       "kembalian": kembalian,
       "items": items,
     };
-
+    print("========== REQUEST ==========");
+    print(jsonEncode(body));
     final response = await http
         .post(url, headers: headers, body: jsonEncode(body))
         .timeout(const Duration(seconds: 10));
-
+    print("========== RESPONSE ==========");
+    print(response.statusCode);
+    print(response.body);
     if (response.statusCode != 200 && response.statusCode != 201) {
       return null;
     }
@@ -437,16 +440,23 @@ class ApiService {
   }
 
   static int? _extractId(dynamic decoded) {
-    if (decoded is Map<String, dynamic>) {
-      // Bentuk 1: {"success": true, "data": {"id": 123, ...}}
-      if (decoded['data'] is Map && decoded['data']['id'] != null) {
-        return int.tryParse(decoded['data']['id'].toString());
-      }
-      // Bentuk 2: {"id": 123, ...}
-      if (decoded['id'] != null) {
-        return int.tryParse(decoded['id'].toString());
+    if (decoded is! Map<String, dynamic>) return null;
+
+    final candidates = [
+      decoded["transaction_id"],
+      decoded["id"],
+      decoded["server_id"],
+      decoded["insertId"],
+      decoded["transaction"]?["id"],
+      decoded["data"]?["id"],
+    ];
+
+    for (final value in candidates) {
+      if (value != null) {
+        return int.tryParse(value.toString());
       }
     }
+
     return null;
   }
 
