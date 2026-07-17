@@ -4,7 +4,7 @@ class MySearchBar extends StatelessWidget {
   final String hintText;
   final Function(String)? onChanged;
 
-  const MySearchBar({super.key, this.hintText = "Search...", this.onChanged});
+  const MySearchBar({super.key, this.hintText = "Search", this.onChanged});
 
   @override
   Widget build(BuildContext context) {

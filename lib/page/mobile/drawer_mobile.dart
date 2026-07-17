@@ -47,15 +47,16 @@ class KasirMobileDrawer extends StatelessWidget {
               title: 'Beranda',
               route: AppRoutes.dashboardMobile,
             ),
-            DrawerItem(
-              icon: Icons.history,
-              title: 'Riwayat',
-              route: AppRoutes.riwayat,
-            ),
+        
             DrawerItem(
               icon: Icons.inventory,
               title: 'Kelola Produk',
               route: AppRoutes.kelolaProduk,
+            ),
+                DrawerItem(
+              icon: Icons.history,
+              title: 'Riwayat',
+              route: AppRoutes.riwayat,
             ),
             const Spacer(),
             const Divider(),
