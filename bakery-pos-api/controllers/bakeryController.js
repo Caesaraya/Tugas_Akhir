@@ -74,6 +74,8 @@ exports.hitungKebutuhanBahan = async (req, res) => {
       );
     }, 0);
 
+    const roundedTotalBiaya = Math.round(totalBiaya * 100) / 100;
+
     const semuaCukup = rows.every(
       (item) => item.cukup === 1
     );
@@ -84,7 +86,7 @@ exports.hitungKebutuhanBahan = async (req, res) => {
         produk_id: Number(produk_id),
         quantity: qty,
         bahan: rows,
-        total_biaya: totalBiaya,
+        total_biaya: roundedTotalBiaya,
         semua_bahan_cukup: semuaCukup,
       },
     });

@@ -14,7 +14,7 @@ exports.getAllBahanBaku = async (req, res) => {
   satuan,
   stok,
   harga_satuan,
-  (stok * harga_satuan) AS total_harga,
+  ROUND(stok * harga_satuan, 2) AS total_harga,
   created_at,
   deleted_at
 FROM bahan_baku
@@ -55,7 +55,7 @@ SELECT
   satuan,
   stok,
   harga_satuan,
-  (stok * harga_satuan) AS total_harga,
+  ROUND(stok * harga_satuan, 2) AS total_harga,
   created_at,
   deleted_at
 FROM bahan_baku

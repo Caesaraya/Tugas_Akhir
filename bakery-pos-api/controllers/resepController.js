@@ -75,7 +75,7 @@ exports.getDetailResep = async (req, res) => {
         bb.satuan,
         bb.harga_satuan,
 
-        (dr.jumlah_bahan * bb.harga_satuan)
+        ROUND(dr.jumlah_bahan * bb.harga_satuan, 2)
         AS total_harga_bahan
 
       FROM detail_resep dr
