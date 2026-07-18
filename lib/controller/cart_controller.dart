@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:get/get.dart';
-import 'package:pdf/pdf.dart';
 import 'package:tugas_akhir/controller/dashboard_controller.dart';
 import 'package:tugas_akhir/controller/detail_transaction_controller.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
@@ -9,12 +8,17 @@ import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/riwayat_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/routes/routes.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:tugas_akhir/data/repository/cart_repository.dart';
 import 'package:tugas_akhir/data/repository/transaction_repository.dart';
 import 'package:tugas_akhir/data/sync/sync_manager.dart';
 import 'package:tugas_akhir/data/sync/connectivity_service.dart';
+
+// Import komponen arsitektur printer baru
+import 'package:tugas_akhir/services/printer/receipt_builder.dart';
+import 'package:tugas_akhir/services/printer/escpos_encoder.dart';
+import 'package:tugas_akhir/services/printer/printer_service.dart';
+import 'package:tugas_akhir/services/printer/windows_printer_service.dart';
+import 'package:tugas_akhir/services/printer/bluetooth_printer_service.dart';
 
 class CartController extends GetxController {
   final textController = TextEditingController();
@@ -23,8 +27,6 @@ class CartController extends GetxController {
   var selectedPayment = 'cash'.obs;
   var inputUang = 0.0.obs;
 
-  // Toggle ukuran kertas: false = 80mm (default), true = 58mm.
-  // Buat switch/toggle di UI yang mengubah nilai ini.
   var isPrint58mm = false.obs;
 
   final currencyFormatter = NumberFormat.currency(
@@ -37,12 +39,28 @@ class CartController extends GetxController {
   final TransactionRepository _transactionRepository =
       TransactionRepository.instance;
 
+  // Injeksi komponen Printer Multi-Layer baru
+  final ReceiptBuilder _receiptBuilder = ReceiptBuilder();
+  final EscPosEncoder _escPosEncoder = EscPosEncoder();
+  late final PrinterService _printerService;
+
   @override
   void onInit() {
     super.onInit();
-    // Muat cart yang sempat tersimpan (mis. app pernah tertutup paksa
-    // di tengah transaksi) supaya kasir tidak kehilangan input.
+    _initPrinterService();
     _loadPersistedCart();
+  }
+
+  /// Memilih service printer secara dinamis berdasarkan platform device OS
+  void _initPrinterService() {
+    if (GetPlatform.isWindows) {
+      _printerService = WindowsPrinterService(
+        targetPrinterName: "Generic / Text Only",
+      );
+    } else {
+      // Sesuai kebutuhan Android target arsitektur Bluetooth ESC/POS
+      _printerService = BluetoothPrinterService(targetPrinterName: "RPP02N");
+    }
   }
 
   Future<void> _loadPersistedCart() async {
@@ -52,9 +70,6 @@ class CartController extends GetxController {
     }
   }
 
-  // Setiap perubahan cart langsung ditulis ke SQLite (fire-and-forget,
-  // tidak di-await agar UI tetap responsif) -- ini HANYA persistence,
-  // tidak pernah masuk sync_queue (lihat CartRepository).
   void addToCart(Product product) {
     var existingItem = cartItems.firstWhereOrNull(
       (item) => item.productId == product.id,
@@ -161,7 +176,6 @@ class CartController extends GetxController {
         debugPrint('prosesKeApi mobile error: $e');
       }
       clearCart();
-      // Refresh dashboard agar stok langsung update
       if (Get.isRegistered<DashboardController>()) {
         Get.find<DashboardController>().fetchProducts();
       }
@@ -197,234 +211,71 @@ class CartController extends GetxController {
       metode: selectedPayment.value,
     );
 
-    // Riwayat sekarang membaca dari TransactionRepository (SQLite), jadi
-    // langsung tampil walau baris ini belum sempat ke server.
     if (Get.isRegistered<RiwayatController>()) {
       Get.find<RiwayatController>().fetchHistory();
     }
 
-    // Coba sync sekarang juga kalau kebetulan online -- best effort saja,
-    // kegagalan di sini tidak memengaruhi transaksi yang sudah tersimpan
-    // lokal. Jika offline, ConnectivityService yang akan memicu sync
-    // otomatis begitu koneksi kembali.
     final online = await ConnectivityService.instance.isOnline;
     if (online) {
       unawaited(SyncManager.instance.runSync());
     }
   }
 
-  // ✅ Buat PDF nota (mendukung 58mm & 80mm, dipakai oleh printNotaSaja & generateAndPrintPdf)
-  pw.Document buildNotaPdf() {
-    final pdf = pw.Document();
+  // ✅ 1. Mengganti buildNotaPdf() menjadi buildReceiptText() sesuai arsitektur target
+  String buildReceiptText() {
+    final List<Map<String, dynamic>> structuredItems = cartItems.map((item) {
+      final double hargaAsli = item.price.toDouble();
+      final double persen = (item.discount ?? 0).toDouble();
+      final double hargaDiskon = (hargaAsli - (hargaAsli * persen / 100))
+          .roundToDouble();
+      final total = hargaDiskon * item.qty;
+      final totalAsli = hargaAsli * item.qty;
+      final totalDiskon = totalAsli - total;
 
-    // Variabel dinamis berdasarkan ukuran kertas (58mm atau 80mm)
-    final bool is58mm = isPrint58mm.value;
-    final double printerWidth = is58mm ? 47.0 : 78.0; // area cetak aman
-    final double marginPdf = is58mm ? 2.0 : 5.0;
+      String? discountInfo;
+      if (persen > 0) {
+        discountInfo =
+            'Diskon ${persen.toStringAsFixed(0)}% (-${currencyFormatter.format(totalDiskon)})';
+      }
 
-    // Penyesuaian ukuran font otomatis
-    final double titleSize = is58mm ? 12.0 : 16.0;
-    final double addressSize = is58mm ? 8.0 : 9.0;
-    final double normalSize = is58mm ? 8.0 : 10.0;
-    final double itemNameSize = is58mm ? 9.0 : 11.0;
-    final double smallSize = is58mm ? 7.0 : 8.0;
+      return {
+        'name': item.name,
+        'qty': item.qty,
+        'price': hargaDiskon,
+        'total': total,
+        'discount_info': discountInfo,
+      };
+    }).toList();
 
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat(
-          printerWidth * PdfPageFormat.mm,
-          double.infinity,
-          marginAll: marginPdf,
-        ),
-        build: (context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Align(
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'TOKO LEZAAA',
-                style: pw.TextStyle(
-                  fontSize: titleSize,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ),
-            pw.Align(
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'Kudus, Jl Dr Lukmono Hadi No.50',
-                textAlign: pw.TextAlign.center,
-                style: pw.TextStyle(fontSize: addressSize),
-              ),
-            ),
-            pw.SizedBox(height: 4),
-            pw.Divider(),
-            pw.Text(
-              'Tanggal : ${DateFormat('dd-MM-yyyy HH:mm').format(DateTime.now())}',
-              style: pw.TextStyle(fontSize: normalSize),
-            ),
-            pw.Text(
-              'Metode  : $paymentMethodLabel',
-              style: pw.TextStyle(fontSize: normalSize),
-            ),
-            pw.Divider(),
-            ...cartItems.map((item) {
-              final double hargaAsli = item.price.toDouble();
-              final double persen = (item.discount ?? 0).toDouble();
-              final double hargaDiskon =
-                  (hargaAsli - (hargaAsli * persen / 100)).roundToDouble();
-              final total = hargaDiskon * item.qty;
-              final totalAsli = hargaAsli * item.qty;
-              final totalDiskon = totalAsli - total;
-              return pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(item.name, style: pw.TextStyle(fontSize: itemNameSize)),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        '${item.qty} x ${currencyFormatter.format(hargaDiskon)}',
-                        style: pw.TextStyle(fontSize: normalSize),
-                      ),
-                      pw.Text(
-                        currencyFormatter.format(total),
-                        style: pw.TextStyle(fontSize: normalSize),
-                      ),
-                    ],
-                  ),
-                  if (persen > 0)
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.only(top: 2),
-                      child: pw.Text(
-                        'Diskon ${persen.toStringAsFixed(0)}% (-${currencyFormatter.format(totalDiskon)})',
-                        style: pw.TextStyle(
-                          fontSize: smallSize,
-                          fontStyle: pw.FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                  pw.SizedBox(height: 4),
-                ],
-              );
-            }),
-            pw.Divider(),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text('Subtotal', style: pw.TextStyle(fontSize: normalSize)),
-                pw.Text(
-                  currencyFormatter.format(subtotal),
-                  style: pw.TextStyle(fontSize: normalSize),
-                ),
-              ],
-            ),
-            if (totalDiscount > 0)
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Diskon', style: pw.TextStyle(fontSize: normalSize)),
-                  pw.Text(
-                    currencyFormatter.format(totalDiscount),
-                    style: pw.TextStyle(fontSize: normalSize),
-                  ),
-                ],
-              ),
-            pw.Divider(),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text(
-                  'TOTAL',
-                  style: pw.TextStyle(
-                    fontSize: normalSize + 2,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.Text(
-                  currencyFormatter.format(totalPrice),
-                  style: pw.TextStyle(
-                    fontSize: normalSize + 2,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 4),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text('Bayar', style: pw.TextStyle(fontSize: normalSize)),
-                pw.Text(
-                  paymentDisplayValueFormatted,
-                  style: pw.TextStyle(fontSize: normalSize),
-                ),
-              ],
-            ),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text('Kembalian', style: pw.TextStyle(fontSize: normalSize)),
-                pw.Text(
-                  kembalianDisplayFormatted,
-                  style: pw.TextStyle(fontSize: normalSize),
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 8),
-            pw.Align(
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'Terima Kasih',
-                style: pw.TextStyle(
-                  fontSize: normalSize + 1,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ),
-            pw.SizedBox(height: 8),
-            pw.Align(
-              alignment: pw.Alignment.center,
-              child: pw.Text('Powered by', style: pw.TextStyle(fontSize: smallSize)),
-            ),
-            pw.SizedBox(height: 2),
-            pw.Align(
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'Rumah Lezaa POS',
-                style: pw.TextStyle(
-                  fontSize: smallSize,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ),
-            pw.SizedBox(height: 20),
-          ],
-        ),
-      ),
+    return _receiptBuilder.buildText(
+      methodLabel: paymentMethodLabel,
+      items: structuredItems,
+      subtotal: subtotal,
+      totalDiscount: totalDiscount,
+      totalPrice: totalPrice,
+      bayar: selectedPayment.value == "cash" ? inputUang.value : totalPrice,
+      kembalian: selectedPayment.value == "cash" ? kembalian : 0.0,
+      is58mm: isPrint58mm.value,
     );
-    return pdf;
   }
 
-  // ✅ Hanya print — tidak proses ke API, tidak navigasi
+  // ✅ 2. Mengubah printNotaSaja() agar memanggil layer Encoder dan PrinterService lintas platform
   Future<void> printNotaSaja() async {
-    final pdf = buildNotaPdf();
-    await Printing.layoutPdf(
-      onLayout: (format) async => pdf.save(),
-      name: 'Nota_${DateFormat('ddMMyyyyHHmm').format(DateTime.now())}',
-    );
+    final String text = buildReceiptText();
+    final List<int> bytes = _escPosEncoder.compileReceipt(text);
+    await _printerService.sendBytes(bytes);
   }
 
-  // ✅ Print + proses ke API + navigasi (dipakai dari halaman kalkulator/selesai desktop)
-  Future<void> generateAndPrintPdf() async {
+  // ✅ 3. Mengganti generateAndPrintPdf() menjadi generateAndPrintReceipt() dengan mempertahankan business logic
+  Future<void> generateAndPrintReceipt() async {
     final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
-    final pdf = buildNotaPdf();
 
-    await Printing.layoutPdf(
-      onLayout: (format) async => pdf.save(),
-      name: 'Nota_${DateFormat('ddMMyyyyHHmm').format(DateTime.now())}',
-    );
+    // Alur Cetak Terpisah
+    final String text = buildReceiptText();
+    final List<int> bytes = _escPosEncoder.compileReceipt(text);
+    await _printerService.sendBytes(bytes);
 
+    // Alur penyimpanan transaksi data offline & sync api tetap aman terlindungi
     await prosesKeApi();
     clearCart();
 
@@ -439,169 +290,48 @@ class CartController extends GetxController {
     }
   }
 
+  // ✅ 4. Mengubah printFromDetail() menggunakan ReceiptBuilder baru yang aman dari bad layout wrapping
   Future<void> printFromDetail(TransactionDetailController ctrl) async {
-    final pdf = pw.Document();
+    final List<Map<String, dynamic>> structuredItems = ctrl.items.map((item) {
+      final String nama = ctrl.namaProduk(item);
+      final int quantity = ctrl.qty(item);
+      final double harga = ctrl.hargaSetelahDiskon(item);
+      final double total = harga * quantity;
 
-    // Variabel dinamis berdasarkan ukuran kertas (58mm atau 80mm)
-    final bool is58mm = isPrint58mm.value;
-    final double printerWidth = is58mm ? 47.0 : 78.0;
-    final double marginPdf = is58mm ? 2.0 : 5.0;
+      String? discountInfo;
+      if (ctrl.hasDiscount(item)) {
+        discountInfo =
+            'Diskon: ${currencyFormatter.format(ctrl.hargaAsli(item))} -> ${currencyFormatter.format(harga)}';
+      }
 
-    // Penyesuaian ukuran font otomatis
-    final double titleSize = is58mm ? 12.0 : 16.0;
-    final double addressSize = is58mm ? 8.0 : 9.0;
-    final double normalSize = is58mm ? 8.0 : 10.0;
-    final double itemNameSize = is58mm ? 9.0 : 11.0;
-    final double smallSize = is58mm ? 7.0 : 8.0;
+      return {
+        'name': nama,
+        'qty': quantity,
+        'price': harga,
+        'total': total,
+        'discount_info': discountInfo,
+      };
+    }).toList();
 
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat(
-          printerWidth * PdfPageFormat.mm,
-          300 * PdfPageFormat.mm,
-          marginAll: marginPdf,
-        ),
-        build: (context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Align(
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'TOKO LEZAAA',
-                style: pw.TextStyle(
-                  fontSize: titleSize,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ),
-            pw.Align(
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'Kudus, Jl Dr Lukmono Hadi No.50',
-                textAlign: pw.TextAlign.center,
-                style: pw.TextStyle(fontSize: addressSize),
-              ),
-            ),
-            pw.SizedBox(height: 4),
-            pw.Divider(),
-            pw.Text(
-              'Nota   : #${ctrl.transactionId}',
-              style: pw.TextStyle(fontSize: normalSize),
-            ),
-            pw.Text(
-              'Tanggal: ${ctrl.tanggal}',
-              style: pw.TextStyle(fontSize: normalSize),
-            ),
-            pw.Text(
-              'Metode : ${ctrl.methodLabel}',
-              style: pw.TextStyle(fontSize: normalSize),
-            ),
-            pw.Divider(),
-            ...ctrl.items.map((item) {
-              final String nama = ctrl.namaProduk(item);
-              final int quantity = ctrl.qty(item);
-              final double harga = ctrl.hargaSetelahDiskon(item);
-              final double total = harga * quantity;
-              return pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(nama, style: pw.TextStyle(fontSize: itemNameSize)),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(
-                        '$quantity x ${currencyFormatter.format(harga)}',
-                        style: pw.TextStyle(fontSize: normalSize),
-                      ),
-                      pw.Text(
-                        currencyFormatter.format(total),
-                        style: pw.TextStyle(fontSize: normalSize),
-                      ),
-                    ],
-                  ),
-                  if (ctrl.hasDiscount(item))
-                    pw.Text(
-                      'Diskon: ${currencyFormatter.format(ctrl.hargaAsli(item))} → ${currencyFormatter.format(harga)}',
-                      style: pw.TextStyle(
-                        fontSize: smallSize,
-                        fontStyle: pw.FontStyle.italic,
-                      ),
-                    ),
-                  pw.SizedBox(height: 4),
-                ],
-              );
-            }),
-            pw.Divider(),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text(
-                  'TOTAL',
-                  style: pw.TextStyle(
-                    fontSize: normalSize + 2,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.Text(
-                  ctrl.totalFormatted,
-                  style: pw.TextStyle(
-                    fontSize: normalSize + 2,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 4),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text('Bayar', style: pw.TextStyle(fontSize: normalSize)),
-                pw.Text(ctrl.bayarFormatted, style: pw.TextStyle(fontSize: normalSize)),
-              ],
-            ),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text('Kembalian', style: pw.TextStyle(fontSize: normalSize)),
-                pw.Text(
-                  ctrl.kembalianFormatted,
-                  style: pw.TextStyle(fontSize: normalSize),
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 16),
-            pw.Align(
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'Terima Kasih',
-                style: pw.TextStyle(
-                  fontSize: normalSize + 1,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ),
-            pw.SizedBox(height: 8),
-            pw.Align(
-              alignment: pw.Alignment.center,
-              child: pw.Text('Powered by', style: pw.TextStyle(fontSize: smallSize)),
-            ),
-            pw.SizedBox(height: 2),
-            pw.Align(
-              alignment: pw.Alignment.center,
-              child: pw.Text(
-                'Rumah Lezaa POS',
-                style: pw.TextStyle(
-                  fontSize: smallSize,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ),
-            pw.SizedBox(height: 35),
-          ],
-        ),
-      ),
+    double parseRaw(dynamic val) =>
+        double.tryParse(val?.toString() ?? '0') ?? 0;
+
+    final String text = _receiptBuilder.buildText(
+      notaId: ctrl.transactionId,
+      methodLabel: ctrl.methodLabel,
+      items: structuredItems,
+      subtotal: parseRaw(ctrl.data['total_harga']),
+      totalDiscount:
+          0.0, // Dihitung di internal builder dari subtotal dan totalPrice jika ada perbedaan
+      totalPrice: parseRaw(ctrl.data['total_harga']),
+      bayar: parseRaw(ctrl.data['jumlah_bayar']),
+      kembalian: parseRaw(ctrl.data['kembalian']),
+      is58mm: isPrint58mm.value,
+      customDate: DateTime.tryParse(ctrl.tanggal),
     );
-    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+
+    final List<int> bytes = _escPosEncoder.compileReceipt(text);
+    await _printerService.sendBytes(bytes);
   }
 
   double get totalPrice {

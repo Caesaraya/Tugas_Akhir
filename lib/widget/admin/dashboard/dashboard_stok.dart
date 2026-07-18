@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
+import 'package:tugas_akhir/routes/routes.dart';
 import 'package:tugas_akhir/utils/app_color.dart';
 
 class DashboardStokKritis extends StatelessWidget {
@@ -34,23 +35,23 @@ class DashboardStokKritis extends StatelessWidget {
                 color: AppColors.black,
               ),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.black,
-                foregroundColor: AppColors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-              ),
-              onPressed: () {
-                // Aksi mengarah ke manajemen atau halaman utama bahan baku jika diperlukan
-              },
-              child: const Text('Kelola Stok', style: TextStyle(fontSize: 12)),
-            ),
+            // ElevatedButton(
+            //   style: ElevatedButton.styleFrom(
+            //     backgroundColor: AppColors.black,
+            //     foregroundColor: AppColors.white,
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(6),
+            //     ),
+            //     padding: const EdgeInsets.symmetric(
+            //       horizontal: 12,
+            //       vertical: 8,
+            //     ),
+            //   ),
+            //   onPressed: () {
+            //     AppRoutes.kelolabahandesk;
+            //   },
+            //   child: const Text('Kelola Stok', style: TextStyle(fontSize: 12)),
+            // ),
           ],
         ),
         const SizedBox(height: 16),

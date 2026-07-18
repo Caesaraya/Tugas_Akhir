@@ -45,6 +45,7 @@ dependencies:
   esc_pos_utils_plus: ^2.0.3
   usb_serial: ^0.5.0
   print_bluetooth_thermal: ^1.0.8
+  blue_thermal_printer: ^1.2.3
 
   shared_preferences: ^2.2.3
   get_storage: ^2.1.1
@@ -56,6 +57,13 @@ dependencies:
   connectivity_plus: ^6.0.5
   uuid: ^4.4.0
   sqflite_common_ffi: ^2.3.6
+
+  # Akses COM port native Windows (menggantikan flutter_libserialport &
+  # windows_printer yang gagal/tidak stabil). win32 adalah binding resmi
+  # Win32 API untuk Dart (dart:ffi di baliknya) — dipakai lewat
+  # WindowsSerialTransport di windows_serial_transport.dart.
+  win32: ^5.5.4
+  ffi: ^2.1.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

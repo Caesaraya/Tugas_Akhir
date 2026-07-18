@@ -22,6 +22,7 @@ class KasirKelolaDashboard extends StatelessWidget {
         ),
         backgroundColor: const Color(0xFFE89336),
         elevation: 0,
+        foregroundColor: Colors.white,
       ),
       body: Column(
         children: [

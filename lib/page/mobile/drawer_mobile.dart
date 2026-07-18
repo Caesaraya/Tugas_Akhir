@@ -30,7 +30,7 @@ class KasirMobileDrawer extends StatelessWidget {
                     'Rumah Lezzaaa',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 20,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
