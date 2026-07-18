@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/dashboard_controller.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/widget/widget%20mobile/dashboard/product_card.dart';
+import 'package:tugas_akhir/widget/widget mobile/dashboard/product_card.dart';
 
 class DashboardProductGrid extends StatefulWidget {
   final DashboardController dashboardController;

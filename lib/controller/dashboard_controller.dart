@@ -8,6 +8,7 @@ class DashboardController extends GetxController {
   var isLoadingMore = false.obs;
   var productList = <Product>[].obs;
   var filteredList = <Product>[].obs;
+  var sortOption = 'none'.obs;
 
   var displayedList = <Product>[].obs;
   static const int _pageSize = 6;
@@ -33,7 +34,7 @@ class DashboardController extends GetxController {
 
       final localProducts = await productRepository.getLocalProducts();
       applyToState(localProducts);
-      unawaited(_refreshInBackground());
+      unawaited(refreshInBackground());
     } catch (e) {
       print('Error Fetch Dashboard: $e');
     } finally {
@@ -41,7 +42,7 @@ class DashboardController extends GetxController {
     }
   }
 
-  Future<void> _refreshInBackground() async {
+  Future<void> refreshInBackground() async {
     await productRepository.refreshFromServer();
     final refreshed = await productRepository.getLocalProducts();
     applyToState(refreshed);
@@ -75,9 +76,10 @@ class DashboardController extends GetxController {
     applyFilter();
   }
 
-  void applyFilter({String? query, String? category}) {
+  void applyFilter({String? query, String? category, String? sort}) {
     if (query != null) lastQuery.value = query;
     if (category != null) selectedCategory.value = category;
+    if (sort != null) sortOption.value = sort;
 
     var temp = productList.where((product) {
       bool matchCategory =
@@ -88,13 +90,29 @@ class DashboardController extends GetxController {
       );
       return matchCategory && matchSearch;
     }).toList();
-    temp.sort((a, b) {
-      if (a.stock > 0 && b.stock <= 0) return -1;
-      if (a.stock <= 0 && b.stock > 0) return 1;
-      return 0;
+    final indexed = temp.asMap().entries.toList();
+
+    indexed.sort((a, b) {
+      final productA = a.value;
+      final productB = b.value;
+      if (productA.stock > 0 && productB.stock <= 0) return -1;
+      if (productA.stock <= 0 && productB.stock > 0) return 1;
+
+      switch (sortOption.value) {
+        case 'low_to_high':
+          return productA.priceAfterDiscount.compareTo(
+            productB.priceAfterDiscount,
+          );
+        case 'high_to_low':
+          return productB.priceAfterDiscount.compareTo(
+            productA.priceAfterDiscount,
+          );
+        default:
+          return a.key.compareTo(b.key);
+      }
     });
 
-    filteredList.assignAll(temp);
+    filteredList.assignAll(indexed.map((e) => e.value).toList());
     currentPage = 1;
     displayedList.assignAll(filteredList.take(_pageSize).toList());
   }

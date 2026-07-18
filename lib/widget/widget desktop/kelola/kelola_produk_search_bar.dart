@@ -13,7 +13,7 @@ class KelolaProdukSearchBar extends StatelessWidget {
       child: TextField(
         onChanged: (value) => ctrl.searchQuery.value = value,
         decoration: InputDecoration(
-          hintText: 'Cari Produk...',
+          hintText: 'Search',
           prefixIcon: const Icon(Icons.search, color: Color(0xFFE89336)),
           filled: true,
           fillColor: Colors.white,
