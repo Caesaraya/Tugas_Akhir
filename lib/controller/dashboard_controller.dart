@@ -11,7 +11,7 @@ class DashboardController extends GetxController {
   var sortOption = 'none'.obs;
 
   var displayedList = <Product>[].obs;
-  static const int _pageSize = 6;
+  static const int pageSize = 6;
   var currentPage = 1;
 
   var categories = <String>[].obs;
@@ -114,7 +114,7 @@ class DashboardController extends GetxController {
 
     filteredList.assignAll(indexed.map((e) => e.value).toList());
     currentPage = 1;
-    displayedList.assignAll(filteredList.take(_pageSize).toList());
+    displayedList.assignAll(filteredList.take(pageSize).toList());
   }
 
   Future<void> loadMore() async {
@@ -127,7 +127,7 @@ class DashboardController extends GetxController {
     currentPage++;
     final nextItems = filteredList
         .skip(displayedList.length)
-        .take(_pageSize)
+        .take(pageSize)
         .toList();
 
     displayedList.addAll(nextItems);
