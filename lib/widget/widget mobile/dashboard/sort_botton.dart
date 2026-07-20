@@ -73,7 +73,7 @@ class SortBottomSheet {
                 ),
                 const SizedBox(height: 6),
                 SortOption(
-                  label: 'Tampilkan Hanya Stok Habis',
+                  label: 'Stok Habis',
                   value: 'stok_habis',
                   selected: ctrl.showOutOfStockOnly.value ? 'stok_habis' : '',
                   onTap: () => ctrl.applyFilter(
