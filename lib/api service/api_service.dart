@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as http_parser;
 import 'package:tugas_akhir/models/product.dart';
@@ -11,10 +12,15 @@ import 'package:tugas_akhir/models/produksi.dart';
 import 'package:tugas_akhir/models/resep.dart';
 import 'package:tugas_akhir/models/supplier.dart';
 import 'package:tugas_akhir/models/user.dart';
+import 'package:tugas_akhir/models/bahan_baku_requirement.dart';
+import 'package:tugas_akhir/models/financial_report.dart';
+import 'package:tugas_akhir/models/expense_category.dart';
+import 'package:tugas_akhir/models/expense.dart';
+import 'package:tugas_akhir/models/dashboard_summary.dart';
+import 'package:tugas_akhir/models/dashboard_activity.dart';
 
 class ApiService {
-  static const String baseUrl =
-      "https://porthole-popcorn-winter.ngrok-free.dev";
+  static const String baseUrl = "http://103.67.78.70";
 
   // ========================
   // COMMON HEADERS
@@ -80,7 +86,6 @@ class ApiService {
     required int stock,
     required String jenis,
     required String satuan,
-    required String barcode,
     required File imageFile,
     int? resepId,
   }) async {
@@ -100,7 +105,7 @@ class ApiService {
       request.fields['stock'] = stock.toString();
       request.fields['jenis'] = jenis;
       request.fields['satuan'] = satuan;
-      request.fields['barcode'] = barcode;
+
       if (resepId != null) {
         request.fields['resep_id'] = resepId.toString();
       }
@@ -141,7 +146,6 @@ class ApiService {
     required int stock,
     required String jenis,
     required String satuan,
-    required String barcode,
     File? imageFile,
     int? resepId,
   }) async {
@@ -161,7 +165,7 @@ class ApiService {
       request.fields['stock'] = stock.toString();
       request.fields['jenis'] = jenis;
       request.fields['satuan'] = satuan;
-      request.fields['barcode'] = barcode;
+
       if (resepId != null) {
         request.fields['resep_id'] = resepId.toString();
       }
@@ -222,7 +226,7 @@ class ApiService {
         "stock": product.stock,
         "jenis": product.jenis,
         "satuan": product.satuan,
-        "barcode": product.barcode,
+
         "image": product.image,
         "resep_id": product.resepId,
       };
@@ -255,7 +259,7 @@ class ApiService {
         "stock": product.stock,
         "jenis": product.jenis,
         "satuan": product.satuan,
-        "barcode": product.barcode,
+
         "image": product.image,
         "resep_id": product.resepId,
       };
@@ -377,6 +381,83 @@ class ApiService {
     } catch (e) {
       throw Exception("Gagal transaksi: $e");
     }
+  }
+
+  // ========================
+  // CREATE TRANSACTION (versi offline-first)
+  // ========================
+  // Endpoint dan body request SAMA PERSIS dengan createTransaction() di atas
+  // -- tidak ada perubahan kontrak API sama sekali. Bedanya method ini
+  // membaca body response dan mengembalikan id transaksi yang dibuat
+  // backend, supaya bisa dipakai mengisi `server_id` di SQLite lokal.
+  //
+  // PENTING: parsing di bawah defensif terhadap 2 kemungkinan bentuk
+  // response yang umum dipakai backend ini (lihat getDashboardSummary()
+  // yang memakai {"success":true,"data":{...}}). Jika bentuk response
+  // transaksi ternyata berbeda, sesuaikan bagian `_extractId` saja --
+  // tidak ada bagian lain yang perlu diubah.
+  static Future<int?> createTransactionAndGetId({
+    required double total,
+    required double bayar,
+    required double kembalian,
+    required String metode,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final url = Uri.parse("$baseUrl/api/transactions");
+
+    final body = {
+      "total_harga": total,
+      "metode_pembayaran": metode,
+      "jumlah_bayar": bayar,
+      "kembalian": kembalian,
+      "items": items,
+    };
+    print("========== REQUEST ==========");
+    print(jsonEncode(body));
+    final response = await http
+        .post(url, headers: headers, body: jsonEncode(body))
+        .timeout(const Duration(seconds: 10));
+    print("========== RESPONSE ==========");
+    print(response.statusCode);
+    print(response.body);
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      return null;
+    }
+
+    if (response.body.isEmpty) {
+      // Backend sukses tapi tidak mengembalikan body -- tidak ada id
+      // yang bisa disimpan. TransactionRepository akan tetap menandai
+      // baris ini gagal-sync supaya tidak "synced" dengan server_id kosong.
+      return null;
+    }
+
+    try {
+      final decoded = jsonDecode(response.body);
+      return _extractId(decoded);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static int? _extractId(dynamic decoded) {
+    if (decoded is! Map<String, dynamic>) return null;
+
+    final candidates = [
+      decoded["transaction_id"],
+      decoded["id"],
+      decoded["server_id"],
+      decoded["insertId"],
+      decoded["transaction"]?["id"],
+      decoded["data"]?["id"],
+    ];
+
+    for (final value in candidates) {
+      if (value != null) {
+        return int.tryParse(value.toString());
+      }
+    }
+
+    return null;
   }
 
   // ========================
@@ -563,6 +644,52 @@ class ApiService {
       return response.statusCode == 200;
     } catch (e) {
       throw Exception("Gagal force delete bahan baku: $e");
+    }
+  }
+
+  // ========================
+  // CHECK USAGE BAHAN BAKU
+  // ========================
+  static Future<BahanUsageResult> checkUsageBahanBaku(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bahan-baku/$id/check-usage"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return BahanUsageResult.fromJson(data);
+      } else {
+        throw Exception("Failed to check bahan usage");
+      }
+    } catch (e) {
+      throw Exception("Gagal cek penggunaan bahan: $e");
+    }
+  }
+
+  // ========================
+  // GET STOCK SUMMARY
+  // ========================
+  static Future<StockSummaryResult> getStockSummary() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bahan-baku/summary/stock"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return StockSummaryResult.fromJson(data);
+      } else {
+        throw Exception("Failed to get stock summary");
+      }
+    } catch (e) {
+      throw Exception("Gagal mengambil summary stok: $e");
     }
   }
 
@@ -854,6 +981,26 @@ class ApiService {
     }
   }
 
+  static Future<Produksi> getProduksiById(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/produksi/$id"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return Produksi.fromJson(data['data']);
+      } else {
+        throw Exception("Failed to get produksi detail");
+      }
+    } catch (e) {
+      throw Exception("Gagal mengambil detail produksi: $e");
+    }
+  }
+
   // ========================
   // RESEP APIS
   // ========================
@@ -1060,6 +1207,689 @@ class ApiService {
       }
     } catch (e) {
       throw Exception("Gagal memuat users: $e");
+    }
+  }
+
+  // ========================
+  // CREATE USER
+  // ========================
+  static Future<bool> createUser(User user) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/users"),
+            headers: headers,
+            body: jsonEncode(user.toJson()),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      throw Exception("Gagal membuat user: $e");
+    }
+  }
+
+  // ========================
+  // UPDATE USER
+  // ========================
+  static Future<bool> updateUser(User user) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse("$baseUrl/api/users/${user.id}"),
+            headers: headers,
+            body: jsonEncode(user.toJson()),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal update user: $e");
+    }
+  }
+
+  // ========================
+  // RESET PASSWORD USER
+  // ========================
+  // Frontend hanya mengirim password baru (plain text lewat HTTPS).
+  // Hashing password sepenuhnya dilakukan di backend.
+  static Future<bool> resetPassword({
+    required int id,
+    required String password,
+  }) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse("$baseUrl/api/users/$id/reset-password"),
+            headers: headers,
+            body: jsonEncode({"password": password}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal reset password user: $e");
+    }
+  }
+
+  // ========================
+  // DELETE USER
+  // ========================
+  static Future<bool> deleteUser(int id) async {
+    try {
+      final response = await http
+          .delete(Uri.parse("$baseUrl/api/users/$id"), headers: headers)
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal hapus user: $e");
+    }
+  }
+
+  // ========================
+  // BAKERY CALCULATION APIS
+  // ========================
+  static Future<BakeryCalculationResult> hitungKebutuhanBahan({
+    required int produkId,
+    required int quantity,
+  }) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/bakery/hitung-kebutuhan").replace(
+              queryParameters: {
+                'produk_id': produkId.toString(),
+                'quantity': quantity.toString(),
+              },
+            ),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return BakeryCalculationResult.fromJson(data);
+      } else {
+        throw Exception("Failed to calculate ingredient requirements");
+      }
+    } catch (e) {
+      throw Exception("Gagal menghitung kebutuhan bahan: $e");
+    }
+  }
+
+  // ========================
+  // PENGAMBILAN BAHAN MANUAL
+  // ========================
+  static Future<bool> createPengambilanBahanManual({
+    required List<Map<String, dynamic>> items,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/bahan-baku/pengambilan-manual"),
+            headers: headers,
+            body: jsonEncode({"items": items}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      throw Exception("Gagal melakukan pengambilan bahan manual: $e");
+    }
+  }
+
+  static Future<Map<String, dynamic>> confirmPengambilanBahanResep({
+    required int resepId,
+    required int jumlahProduksi,
+  }) async {
+    late http.Response response;
+    try {
+      response = await http
+          .post(
+            Uri.parse("$baseUrl/api/pengambilan-bahan/resep"),
+            headers: headers,
+            body: jsonEncode({
+              "resep_id": resepId,
+              "jumlah_produksi": jumlahProduksi,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+    } catch (e) {
+      throw Exception("Gagal menghubungi server: $e");
+    }
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      return data;
+    }
+
+    throw Exception(
+      data['message']?.toString() ??
+          "Gagal memproses pengambilan bahan berdasarkan resep",
+    );
+  }
+
+  static Future<BakeryAvailabilityResult> cekKetersediaanBahan({
+    required int resepId,
+    required int quantity,
+  }) async {
+    try {
+      final uri = Uri.parse("$baseUrl/api/bakery/cek-ketersediaan").replace(
+        queryParameters: {
+          'produk_id': resepId.toString(),
+          'quantity': quantity.toString(),
+        },
+      );
+
+      debugPrint('=== CEK URL: $uri ===');
+
+      final response = await http
+          .get(uri, headers: {"Connection": "close"})
+          .timeout(const Duration(seconds: 10));
+
+      debugPrint('=== CEK STATUS: ${response.statusCode} ===');
+      debugPrint('=== CEK BODY: ${response.body} ===');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return BakeryAvailabilityResult.fromJson(data);
+      } else {
+        throw Exception("Failed to check ingredient availability");
+      }
+    } catch (e) {
+      throw Exception("Gagal cek ketersediaan bahan: $e");
+    }
+  }
+
+  static Future<BakeryCostResult> hitungBiayaProduksi({
+    required int resepId,
+    required int quantity,
+  }) async {
+    try {
+      final uri = Uri.parse("$baseUrl/api/bakery/hitung-biaya").replace(
+        queryParameters: {
+          'produk_id': resepId.toString(),
+          'quantity': quantity.toString(),
+        },
+      );
+
+      debugPrint('=== BAKERY URL: $uri ===');
+
+      final response = await http
+          .get(uri, headers: {"Connection": "close"})
+          .timeout(const Duration(seconds: 10));
+
+      debugPrint('=== BAKERY STATUS: ${response.statusCode} ===');
+      debugPrint('=== BAKERY BODY: ${response.body} ===');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return BakeryCostResult.fromJson(data);
+      } else {
+        throw Exception("Failed to calculate production cost");
+      }
+    } catch (e) {
+      throw Exception("Gagal hitung biaya produksi: $e");
+    }
+  }
+
+  static Future<List<ProduksiPossibleItem>> getProduksiPossible({
+    int? quantity,
+  }) async {
+    try {
+      final queryParams = <String, String>{};
+      if (quantity != null) {
+        queryParams['quantity'] = quantity.toString();
+      }
+
+      final response = await http
+          .get(
+            Uri.parse(
+              "$baseUrl/api/bakery/produksi-possible",
+            ).replace(queryParameters: queryParams),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return (data['data'] as List)
+            .map((e) => ProduksiPossibleItem.fromJson(e))
+            .toList();
+      } else {
+        throw Exception("Failed to get production possibilities");
+      }
+    } catch (e) {
+      throw Exception("Gagal get produksi possible: $e");
+    }
+  }
+
+  // ========================
+  // FINANCIAL REPORTS
+  // ========================
+  static Future<List<FinancialReport>> getFinancialReports() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/financial"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return (data['data'] as List)
+              .map((e) => FinancialReport.fromJson(e))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception("Failed to load financial reports");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat laporan keuangan: $e");
+    }
+  }
+
+  static Future<FinancialReport?> getFinancialReportByMonth(
+    int tahun,
+    int bulan,
+  ) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/financial/$tahun/$bulan"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return FinancialReport.fromJson(data['data']);
+        }
+        return null;
+      } else {
+        throw Exception("Failed to load financial report");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat laporan keuangan: $e");
+    }
+  }
+
+  static Future<FinancialSummary?> getFinancialSummary() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/financial/summary"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return FinancialSummary.fromJson(data['data']);
+        }
+        return null;
+      } else {
+        throw Exception("Failed to load financial summary");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat summary keuangan: $e");
+    }
+  }
+
+  static Future<bool> generateFinancialReport(int tahun, int bulan) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/financial/generate"),
+            headers: headers,
+            body: jsonEncode({"tahun": tahun, "bulan": bulan}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal generate laporan keuangan: $e");
+    }
+  }
+
+  static Future<bool> deleteFinancialReport(int tahun, int bulan) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse("$baseUrl/api/financial/$tahun/$bulan"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal hapus laporan keuangan: $e");
+    }
+  }
+
+  // ========================
+  // EXPENSE CATEGORY APIS
+  // ========================
+  static Future<List<ExpenseCategory>> getAllExpenseCategories() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/expenses/categories"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return (data['data'] as List)
+              .map((e) => ExpenseCategory.fromJson(e))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception("Failed to load expense categories");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat kategori pengeluaran: $e");
+    }
+  }
+
+  static Future<ExpenseCategory> getExpenseCategoryById(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/expenses/categories/$id"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return ExpenseCategory.fromJson(data['data']);
+        }
+        throw Exception("Expense category not found");
+      } else {
+        throw Exception("Failed to load expense category");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat kategori pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> createExpenseCategory({
+    required String name,
+    String? description,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/expenses/categories"),
+            headers: headers,
+            body: jsonEncode({"name": name, "description": description}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal membuat kategori pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> updateExpenseCategory({
+    required int id,
+    required String name,
+    String? description,
+  }) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse("$baseUrl/api/expenses/categories/$id"),
+            headers: headers,
+            body: jsonEncode({"name": name, "description": description}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal update kategori pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> deleteExpenseCategory(int id) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse("$baseUrl/api/expenses/categories/$id"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal hapus kategori pengeluaran: $e");
+    }
+  }
+
+  // ========================
+  // EXPENSE APIS
+  // ========================
+  static Future<List<Expense>> getAllExpenses({
+    int? categoryId,
+    String? startDate,
+    String? endDate,
+  }) async {
+    try {
+      final queryParams = <String, String>{};
+      if (categoryId != null) {
+        queryParams['category_id'] = categoryId.toString();
+      }
+      if (startDate != null) {
+        queryParams['start_date'] = startDate;
+      }
+      if (endDate != null) {
+        queryParams['end_date'] = endDate;
+      }
+
+      final response = await http
+          .get(
+            Uri.parse(
+              "$baseUrl/api/expenses",
+            ).replace(queryParameters: queryParams),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return (data['data'] as List)
+              .map((e) => Expense.fromJson(e))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception("Failed to load expenses");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat pengeluaran: $e");
+    }
+  }
+
+  static Future<Expense> getExpenseById(int id) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/expenses/$id"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return Expense.fromJson(data['data']);
+        }
+        throw Exception("Expense not found");
+      } else {
+        throw Exception("Failed to load expense");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> createExpense({
+    required String tanggal,
+    required int categoryId,
+    required double nominal,
+    String? keterangan,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/expenses"),
+            headers: headers,
+            body: jsonEncode({
+              "tanggal": tanggal,
+              "category_id": categoryId,
+              "nominal": nominal,
+              "keterangan": keterangan,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal membuat pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> updateExpense({
+    required int id,
+    required String tanggal,
+    required int categoryId,
+    required double nominal,
+    String? keterangan,
+  }) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse("$baseUrl/api/expenses/$id"),
+            headers: headers,
+            body: jsonEncode({
+              "tanggal": tanggal,
+              "category_id": categoryId,
+              "nominal": nominal,
+              "keterangan": keterangan,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal update pengeluaran: $e");
+    }
+  }
+
+  static Future<bool> deleteExpense(int id) async {
+    try {
+      final response = await http
+          .delete(Uri.parse("$baseUrl/api/expenses/$id"), headers: headers)
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal hapus pengeluaran: $e");
+    }
+  }
+
+  static Future<Map<String, dynamic>> getExpenseSummaryByMonth(
+    int tahun,
+    int bulan,
+  ) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/expenses/summary/$tahun/$bulan"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['data'];
+        }
+        return {};
+      } else {
+        throw Exception("Failed to load expense summary");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat summary pengeluaran: $e");
+    }
+  }
+
+  // ========================
+  // DASHBOARD APIS
+  // ========================
+  static Future<DashboardSummary> getDashboardSummary() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/dashboard/summary"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return DashboardSummary.fromJson(data['data']);
+        }
+        throw Exception("Failed to load dashboard summary");
+      } else {
+        throw Exception("Failed to load dashboard summary");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat dashboard summary: $e");
+    }
+  }
+
+  static Future<List<DashboardActivity>> getDashboardActivities({
+    int limit = 10,
+  }) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse(
+              "$baseUrl/api/dashboard/activities",
+            ).replace(queryParameters: {'limit': limit.toString()}),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return (data['data'] as List)
+              .map((e) => DashboardActivity.fromJson(e))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception("Failed to load dashboard activities");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat dashboard activities: $e");
     }
   }
 }

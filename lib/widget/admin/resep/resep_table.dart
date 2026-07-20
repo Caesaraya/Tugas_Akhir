@@ -7,7 +7,7 @@ import '../../admin/table/table_pagination.dart';
 class ResepTable extends StatelessWidget {
   ResepTable({super.key});
 
-  final ctrl = Get.put(ResepTableController());
+  final ctrl = Get.find<ResepTableController>();
 
   @override
   Widget build(BuildContext context) {
@@ -38,13 +38,12 @@ class ResepTable extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: Table(
               columnWidths: const {
-                0: FixedColumnWidth(60), // ID
-                1: FlexColumnWidth(2.5), // Nama Resep (Menggunakan Flex)
-                2: FlexColumnWidth(4.0), // Deskripsi
+                0: FixedColumnWidth(60), // No (Sebelumnya ID)
+                1: FlexColumnWidth(2.5), // Nama Resep
+                2: FlexColumnWidth(3.5), // Deskripsi
                 3: FlexColumnWidth(1.5), // Jumlah Bahan
-                4: FixedColumnWidth(
-                  140,
-                ), // Ruang Aksi disesuaikan karena ada 3 tombol
+                4: FixedColumnWidth(100), // Status
+                5: FixedColumnWidth(140), // Ruang Aksi (bisa untuk 3 tombol)
               },
               defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
@@ -52,15 +51,25 @@ class ResepTable extends StatelessWidget {
                 TableRow(
                   decoration: BoxDecoration(color: headerColor),
                   children: [
-                    _buildHeaderCell('ID'),
+                    _buildHeaderCell('No'), // UBAH: Dari 'ID' menjadi 'No'
                     _buildHeaderCell('Nama Resep'),
                     _buildHeaderCell('Deskripsi'),
                     _buildHeaderCell('Jumlah Bahan'),
+                    _buildHeaderCell('Status'),
                     _buildHeaderCell('Aksi'),
                   ],
                 ),
                 // Body Data
-                ...ctrl.paginatedList.map((item) {
+                ...ctrl.paginatedList.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  var item = entry.value;
+                  bool isDeleted = item.deletedAt != null;
+
+                  // HITUNG ANGKA URUT: (Halaman_Sekarang - 1) * Item_Per_Halaman + (Index + 1)
+                  int nomorUrut =
+                      ((ctrl.currentPage.value - 1) * ctrl.itemsPerPage) +
+                      (index + 1);
+
                   return TableRow(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -72,7 +81,9 @@ class ResepTable extends StatelessWidget {
                       ),
                     ),
                     children: [
-                      _buildDataCell(item.id.toString()),
+                      _buildDataCell(
+                        nomorUrut.toString(),
+                      ), // UBAH: Menggunakan nomorUrut hasil perhitungan
                       _buildDataCell(
                         item.namaResep,
                         alignment: Alignment.centerLeft,
@@ -81,35 +92,77 @@ class ResepTable extends StatelessWidget {
                         item.deskripsi,
                         alignment: Alignment.centerLeft,
                       ),
-                      _buildDataCell((item.bahan?.length ?? 0).toString()),
+                      // Sebelumnya: _buildDataCell((item.bahan?.length ?? 0).toString()),
 
-                      // Kolom Aksi (3 Tombol rapi sejajar horizontal)
+                      // Diubah menjadi:
+                      _buildDataCell(
+                        item.bahan != null && item.bahan!.isNotEmpty
+                            ? item.bahan!.length
+                                  .toString() // Tampilkan angka jika data sudah dimuat
+                            : '-', // Tampilkan strip atau teks netral jika data belum dimuat dari API utama
+                        textColor: item.bahan != null && item.bahan!.isNotEmpty
+                            ? Colors.grey.shade800
+                            : Colors.grey.shade400,
+                      ),
+
+                      // Kolom Status
+                      _buildStatusCell(isDeleted),
+
+                      // Kolom Aksi
                       Container(
                         height: 48,
                         alignment: Alignment.center,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TableActionButton(
-                              icon: Icons.list_alt_rounded,
-                              color: Colors.green.shade700,
-                              onTap: () => ctrl.showDetailBahan(item),
-                            ),
-                            const SizedBox(width: 6),
-                            TableActionButton(
-                              icon: Icons.edit_outlined,
-                              color: Colors.blue.shade700,
-                              onTap: () => ctrl.openEditDialog(item),
-                            ),
-                            const SizedBox(width: 6),
-                            TableActionButton(
-                              icon: Icons.delete_outline_rounded,
-                              color: Colors.red.shade600,
-                              onTap: () {
-                                if (item.id != null) ctrl.deleteData(item.id!);
-                              },
-                            ),
-                          ],
+                          children: isDeleted
+                              ? [
+                                  // State Terhapus: Detail, Restore & Force Delete
+                                  TableActionButton(
+                                    icon: Icons.list_alt_rounded,
+                                    color: Colors.green.shade700,
+                                    onTap: () => ctrl.goToDetailDesktop(item),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  TableActionButton(
+                                    icon: Icons.restore,
+                                    color: Colors.green.shade700,
+                                    onTap: () => ctrl.restoreData(item.id!),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  TableActionButton(
+                                    icon: Icons.delete_forever,
+                                    color: Colors.red.shade600,
+                                    onTap: () {
+                                      if (item.id != null) {
+                                        ctrl.forceDeleteData(item.id!);
+                                      }
+                                    },
+                                  ),
+                                ]
+                              : [
+                                  // State Aktif: Detail, Edit, Soft Delete
+                                  TableActionButton(
+                                    icon: Icons.list_alt_rounded,
+                                    color: Colors.green.shade700,
+                                    onTap: () => ctrl.goToDetailDesktop(item),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  TableActionButton(
+                                    icon: Icons.edit_outlined,
+                                    color: Colors.blue.shade700,
+                                    onTap: () => ctrl.openEditDialog(item),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  TableActionButton(
+                                    icon: Icons.delete_outline_rounded,
+                                    color: Colors.red.shade600,
+                                    onTap: () {
+                                      if (item.id != null) {
+                                        ctrl.deleteData(item.id!);
+                                      }
+                                    },
+                                  ),
+                                ],
                         ),
                       ),
                     ],
@@ -130,16 +183,23 @@ class ResepTable extends StatelessWidget {
             ),
 
           const SizedBox(height: 16),
-          TablePagination(
-            currentPage: ctrl.currentPage.value,
-            totalPages: ctrl.totalPages.value,
-            onNext: ctrl.nextPage,
-            onPrevious: ctrl.previousPage,
+          Obx(
+            () => TablePagination(
+              currentPage: ctrl.currentPage.value,
+              totalPages: ctrl.totalPages.value,
+              onNext: () => ctrl.nextPage(),
+              onPrevious: () => ctrl.previousPage(),
+              onPageSelected: (targetPage) {
+                ctrl.goToPage(targetPage);
+              },
+            ),
           ),
         ],
       );
     });
   }
+
+  // ... (Sisa fungsi _buildHeaderCell, _buildDataCell, dan _buildStatusCell tetap sama di bawah)
 
   Widget _buildHeaderCell(String title) {
     return Container(
@@ -175,6 +235,32 @@ class ResepTable extends StatelessWidget {
           color: textColor ?? Colors.grey.shade800,
           fontSize: 13,
           fontWeight: fontWeight ?? FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusCell(bool isDeleted) {
+    return Container(
+      height: 48,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: isDeleted ? Colors.red.shade50 : Colors.green.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDeleted ? Colors.red.shade200 : Colors.green.shade200,
+          ),
+        ),
+        child: Text(
+          isDeleted ? 'DIHAPUS' : 'AKTIF',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: isDeleted ? Colors.red.shade700 : Colors.green.shade700,
+          ),
         ),
       ),
     );

@@ -15,7 +15,7 @@ class MobileAdminDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(color: Color(0xFF5D3A1A)),
+            decoration: BoxDecoration(color: Colors.black),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
@@ -32,6 +32,13 @@ class MobileAdminDrawer extends StatelessWidget {
                 Text('Admin Panel', style: TextStyle(color: Colors.white70)),
               ],
             ),
+          ),
+          _buildDrawerItem(
+            context,
+            icon: Icons.home_outlined,
+            title: 'Dashboard',
+            routeName: AppRoutes.dashboardMob,
+            selected: currentRoute == AppRoutes.kelolaProdukMob,
           ),
           _buildDrawerItem(
             context,
@@ -53,6 +60,21 @@ class MobileAdminDrawer extends StatelessWidget {
             title: 'Kelola Resep',
             routeName: AppRoutes.kelolaResepMob,
             selected: currentRoute == AppRoutes.kelolaResepMob,
+          ),
+          _buildDrawerItem(
+            context,
+            icon: Icons
+                .monetization_on_outlined, // Ikon tetesan air untuk Kelola Bahan
+            title: 'Monitoring Keuangan',
+            selected: currentRoute == AppRoutes.monitoringUangMob,
+            routeName: AppRoutes.monitoringUangMob,
+          ),
+          _buildDrawerItem(
+            context,
+            icon: Icons.people_alt_outlined, // ← TAMBAHAN BARU
+            title: 'Kelola User',
+            routeName: AppRoutes.kelolaUserMob,
+            selected: currentRoute == AppRoutes.kelolaUserMob,
           ),
           const Divider(),
           ListTile(

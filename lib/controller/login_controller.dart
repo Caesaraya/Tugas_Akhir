@@ -15,27 +15,27 @@ class LoginController extends GetxController {
   var isLoading = false.obs;
 
   final Rx<User?> currentUser = Rx<User?>(null);
-  static const String _userSessionKey = 'user_session';
+  static const String userSessionKey = 'user_session';
 
   void togglePasswordVisibility() {
     isPasswordVisible.value = !isPasswordVisible.value;
   }
 
-  Future<void> _saveSession(User user) async {
+  Future<void> saveSession(User user) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userSessionKey, jsonEncode(user.toJson()));
+    await prefs.setString(userSessionKey, jsonEncode(user.toJson()));
   }
 
-  Future<void> _clearSession() async {
+  Future<void> clearSession() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_userSessionKey);
+    await prefs.remove(userSessionKey);
     currentUser.value = null;
   }
 
   Future<bool> restoreSession({required bool isDesktop}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final jsonString = prefs.getString(_userSessionKey);
+      final jsonString = prefs.getString(userSessionKey);
       if (jsonString == null || jsonString.isEmpty) {
         return false;
       }
@@ -43,22 +43,22 @@ class LoginController extends GetxController {
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
       final user = User.fromJson(data);
 
-      if (!user.isValid) {
-        await _clearSession();
+      if (!user.isAdmin && !user.isKasir && !user.isBakery) {
+        await clearSession();
         return false;
       }
 
       currentUser.value = user;
-      _handleNavigation(user, isDesktop);
+      handleNavigation(user, isDesktop);
       return true;
     } catch (_) {
-      await _clearSession();
+      await clearSession();
       return false;
     }
   }
 
   Future<void> logout() async {
-    await _clearSession();
+    await clearSession();
     Get.offAllNamed(AppRoutes.mediaQuery);
   }
 
@@ -82,14 +82,14 @@ class LoginController extends GetxController {
 
       final user = User.fromJson(responseData);
       currentUser.value = user;
-      await _saveSession(user);
+      await saveSession(user);
 
       // === TAMBAHKAN DUA BARIS INI ===
       emailController.clear();
       passwordController.clear();
       // ==============================
 
-      _handleNavigation(user, isDesktop);
+      handleNavigation(user, isDesktop);
     } catch (error) {
       final message = error is Exception
           ? error.toString().replaceFirst('Exception: ', '')
@@ -100,7 +100,7 @@ class LoginController extends GetxController {
     }
   }
 
-  void _handleNavigation(User user, bool isDesktop) {
+  void handleNavigation(User user, bool isDesktop) {
     if (isDesktop) {
       navigateByRoleDesktop(user.role);
     } else {
@@ -114,7 +114,10 @@ class LoginController extends GetxController {
         Get.offAllNamed(AppRoutes.dashboardMobile);
         break;
       case 'ADMIN':
-        Get.offAllNamed(AppRoutes.kelolaProdukMob);
+        Get.offAllNamed(AppRoutes.dashboardMob);
+        break;
+      case 'BAKERY':
+        Get.offAllNamed(AppRoutes.bakery);
         break;
       default:
         showError('Role tidak dikenali untuk perangkat mobile');
@@ -124,11 +127,13 @@ class LoginController extends GetxController {
   void navigateByRoleDesktop(String role) {
     switch (role.toUpperCase()) {
       case 'ADMIN':
-        Get.offAllNamed(AppRoutes.kelolaprodukdesk);
+        Get.offAllNamed(AppRoutes.dashboarddesk);
         break;
       case 'KASIR':
         Get.offAllNamed(AppRoutes.kasirboarddesk);
         break;
+      case 'BAKERY':
+        Get.offAllNamed(AppRoutes.bakery);
       default:
         showError('Role tidak dikenali untuk perangkat desktop');
     }

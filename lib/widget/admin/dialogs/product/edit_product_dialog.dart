@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../../../controller/admin/product_table_controller.dart';
 import '../../../../models/product.dart';
@@ -21,17 +22,40 @@ class _EditProductDialogState extends State<EditProductDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // --- RESPONSIF: Deteksi lebar layar ---
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+
     final List<String> baseJenis = _getUniqueValues((p) => p.jenis);
     final List<String> baseSatuan = _getUniqueValues((p) => p.satuan);
 
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      // --- RESPONSIF: Sesuaikan inset padding agar dialog tidak terpotong di mobile ---
+      insetPadding: isMobile
+          ? const EdgeInsets.symmetric(horizontal: 12, vertical: 24)
+          : const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(isMobile ? 16 : 24),
+      ),
+      titlePadding: EdgeInsets.fromLTRB(
+        isMobile ? 16 : 24,
+        isMobile ? 16 : 20,
+        isMobile ? 16 : 24,
+        0,
+      ),
+      contentPadding: EdgeInsets.fromLTRB(
+        isMobile ? 16 : 24,
+        isMobile ? 8 : 12,
+        isMobile ? 16 : 24,
+        0,
+      ),
       title: const DialogCommonTitle(
         title: 'Ubah Data Produk',
         icon: Icons.edit_note_rounded,
       ),
       content: SizedBox(
-        width: 440,
+        // --- RESPONSIF: Lebar konten penuh di mobile ---
+        width: isMobile ? double.maxFinite : 440,
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(
@@ -47,7 +71,7 @@ class _EditProductDialogState extends State<EditProductDialog> {
                 icon: Icons.cake_outlined,
                 hint: 'Masukkan nama produk',
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
               CustomTextField(
                 controller: _ctrl.priceC,
                 label: 'Harga Jual Base',
@@ -56,28 +80,42 @@ class _EditProductDialogState extends State<EditProductDialog> {
                 prefixText: 'Rp ',
                 keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
               CustomTextField(
                 controller: _ctrl.discountC,
                 label: 'Diskon Produk (%)',
                 icon: Icons.percent_rounded,
                 hint: '0',
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    if (newValue.text.isEmpty) return newValue;
+                    final int? val = int.tryParse(newValue.text);
+                    if (val != null && val > 100) {
+                      return const TextEditingValue(
+                        text: '100',
+                        selection: TextSelection.collapsed(offset: 3),
+                      );
+                    }
+                    return newValue;
+                  }),
+                ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
               CustomStockStepper(
                 controller: _ctrl.stockC,
                 label: 'Stok Jual Kue',
                 isDouble: false,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
               CustomDropdownMenu(
                 controller: _ctrl.jenisC,
                 label: 'Kategori / Jenis',
                 icon: Icons.category_outlined,
                 items: [...baseJenis, ..._addedJenis],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
               CustomDropdownMenu(
                 controller: _ctrl.satuanC,
                 label: 'Satuan Jual',
@@ -88,18 +126,23 @@ class _EditProductDialogState extends State<EditProductDialog> {
           ),
         ),
       ),
-      actionsPadding: const EdgeInsets.all(16),
+      actionsPadding: EdgeInsets.all(isMobile ? 12 : 16),
       actions: [
-        DialogActionButtons(
-          onCancel: () {
-            _ctrl.clearForm();
-            Get.back();
-          },
-          onSave: () {
-            _ctrl.updateProductData(widget.product);
-          },
-          saveLabel: 'Simpan Perubahan',
-        ),
+        // --- RESPONSIF: Di mobile tombol full-width vertikal, desktop horizontal ---
+        isMobile
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildSaveButton(widget.product),
+                  const SizedBox(height: 8),
+                  _buildCancelButton(),
+                ],
+              )
+            : DialogActionButtons(
+                onCancel: _onCancel,
+                onSave: () => _onSave(widget.product),
+                saveLabel: 'Simpan Perubahan',
+              ),
       ],
     );
   }
@@ -113,6 +156,64 @@ class _EditProductDialogState extends State<EditProductDialog> {
         .where((e) => e.isNotEmpty)
         .toSet()
         .toList();
+  }
+
+  void _onCancel() {
+    _ctrl.clearForm();
+    Get.back();
+  }
+
+  void _onSave(Product product) {
+    if (_ctrl.nameC.text.trim().isEmpty ||
+        _ctrl.priceC.text.trim().isEmpty ||
+        _ctrl.stockC.text.trim().isEmpty ||
+        _ctrl.jenisC.text.trim().isEmpty ||
+        _ctrl.satuanC.text.trim().isEmpty ||
+        (_ctrl.selectedImage.value == null && product.image.isEmpty)) {
+      Get.snackbar(
+        "Peringatan",
+        "Semua field wajib diisi dan gambar harus tersedia (kecuali diskon)",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (_ctrl.discountC.text.trim().isEmpty) {
+      _ctrl.discountC.text = '0';
+    }
+
+    _ctrl.updateProductData(product);
+  }
+
+  Widget _buildSaveButton(Product product) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _themeColor,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onPressed: () => _onSave(product),
+      child: const Text(
+        'Simpan Perubahan',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildCancelButton() {
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      onPressed: _onCancel,
+      child: const Text(
+        'Batal',
+        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+      ),
+    );
   }
 
   Widget _buildImageSection() {

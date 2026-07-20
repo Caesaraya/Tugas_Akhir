@@ -7,6 +7,7 @@ import 'package:tugas_akhir/widget/admin/bahan/mobile/bahan_baku_list_header.dar
 import 'package:tugas_akhir/widget/admin/mobile_admin_drawer.dart';
 import 'package:tugas_akhir/widget/admin/bahan/mobile/bahan_baku_pagination_footer.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/bahan/insert_bahan_baku_dialog.dart';
+import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 
 class BahanBakuListPage extends StatelessWidget {
   final controller = Get.find<BahanBakuTableController>();
@@ -22,22 +23,23 @@ class BahanBakuListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const MobileAdminDrawer(),
-      backgroundColor: const Color(
-        0xFFF8F9FA,
-      ), // Latar belakang abu-abu terang netral
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text(
-          'Kelola Bahan Baku',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        // Mengganti judul teks lama dengan elemen Search Bar langsung
+        title: TableSearchBar(
+          controller: controller.searchC,
+          hint: 'Cari bahan baku...',
         ),
         iconTheme: const IconThemeData(color: Colors.black),
         backgroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        titleSpacing: 0,
       ),
       body: Column(
         children: [
-          BahanBakuListHeader(controller: controller),
+          // BahanBakuListHeader disesuaikan di file internalnya untuk membuang search bar lamanya
+          // BahanBakuListHeader(controller: controller),
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
@@ -78,12 +80,17 @@ class BahanBakuListPage extends StatelessWidget {
           BahanBakuPaginationFooter(controller: controller),
         ],
       ),
-      // Floating Action Button Hitam di Pojok Kanan Bawah
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        onPressed: () => Get.dialog(InsertBahanBakuDialog()),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 60.0),
+        child: FloatingActionButton(
+          backgroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          onPressed: () => Get.dialog(InsertBahanBakuDialog()),
+          child: const Icon(Icons.add, color: Colors.white, size: 28),
+        ),
       ),
     );
   }

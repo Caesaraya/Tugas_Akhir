@@ -1,16 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_akhir/controller/dashboard_controller.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/widget/widget mobile/dashboard/button.dart';
-import 'package:tugas_akhir/widget/widget%20mobile/dashboard/product_card.dart';
+import 'package:tugas_akhir/widget/widget mobile/dashboard/product_card.dart';
 
-class DashboardProductGrid extends StatelessWidget {
-  final DashboardController ctrl;
+class DashboardProductGrid extends StatefulWidget {
+  final DashboardController dashboardController;
 
-  const DashboardProductGrid({super.key, required this.ctrl});
+  const DashboardProductGrid({super.key, required this.dashboardController});
+
+  @override
+  State<DashboardProductGrid> createState() => DashboardProductGridState();
+}
+
+class DashboardProductGridState extends State<DashboardProductGrid> {
+  ScrollPosition? scrollPosition;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final newPosition = Scrollable.maybeOf(context)?.position;
+    if (newPosition != scrollPosition) {
+      scrollPosition?.removeListener(onScroll);
+      scrollPosition = newPosition;
+      scrollPosition?.addListener(onScroll);
+    }
+  }
+
+  void onScroll() {
+    final position = scrollPosition;
+    if (position == null) return;
+    final remaining = position.maxScrollExtent - position.pixels;
+    if (remaining <= 200 &&
+        widget.dashboardController.hasMore &&
+        !widget.dashboardController.isLoadingMore.value) {
+      widget.dashboardController.loadMore();
+    }
+  }
+
+  @override
+  void dispose() {
+    scrollPosition?.removeListener(onScroll);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final ctrl = widget.dashboardController;
     return Obx(() {
       if (ctrl.isLoading.value) {
         return const Center(child: CircularProgressIndicator());
@@ -35,8 +70,12 @@ class DashboardProductGrid extends StatelessWidget {
               return ProductCard(product: product, tag: product.jenis);
             },
           ),
+          if (ctrl.isLoadingMore.value)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: CircularProgressIndicator(color: Colors.orange),
+            ),
           const SizedBox(height: 16),
-          LoadMoreButton(ctrl: ctrl),
         ],
       );
     });

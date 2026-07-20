@@ -8,7 +8,7 @@ import '../../admin/table/table_pagination.dart';
 class ProductTable extends StatelessWidget {
   ProductTable({super.key});
 
-  final ctrl = Get.put(ProductTableController());
+  final ctrl = Get.find<ProductTableController>();
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
@@ -20,6 +20,11 @@ class ProductTable extends StatelessWidget {
     final headerColor = const Color(0xFF1E1E1E);
 
     return Obx(() {
+      // Mengambil data halaman aktif dan ukuran item per halaman dari controller
+      final currentList = ctrl.paginatedList;
+      final int itemsPerPage = ctrl.itemsPerPage.bitLength;
+      final int currentPage = ctrl.currentPage.value;
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -31,20 +36,20 @@ class ProductTable extends StatelessWidget {
             ),
             clipBehavior: Clip.antiAlias,
             child: Table(
-              // DIUBAH: Penyesuaian lebar index column karena penambahan Kolom Status (indeks 6)
               columnWidths: const {
-                0: FixedColumnWidth(60), // ID
+                0: FixedColumnWidth(
+                  50,
+                ), // Lebar kolom No disesuaikan lebih ramping
                 1: FlexColumnWidth(1.4), // Nama
                 2: FlexColumnWidth(1.2), // Harga
                 3: FixedColumnWidth(65), // Diskon
                 4: FlexColumnWidth(1.3), // Harga Final
                 5: FixedColumnWidth(60), // Stock
-                6: FixedColumnWidth(90), // DITAMBAHKAN: Status
+                6: FixedColumnWidth(90), // Status
                 7: FlexColumnWidth(1.0), // Jenis
                 8: FlexColumnWidth(1.0), // Satuan
-                9: FlexColumnWidth(1.2), // Barcode
-                10: FixedColumnWidth(60), // Image
-                11: FixedColumnWidth(100), // Aksi
+                9: FixedColumnWidth(60), // Image
+                10: FixedColumnWidth(100), // Aksi
               },
               defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
@@ -52,24 +57,30 @@ class ProductTable extends StatelessWidget {
                 TableRow(
                   decoration: BoxDecoration(color: headerColor),
                   children: [
-                    _buildHeaderCell('ID'),
+                    _buildHeaderCell('No'), // DIUBAH: Dari 'ID' menjadi 'No'
                     _buildHeaderCell('Nama'),
                     _buildHeaderCell('Harga'),
                     _buildHeaderCell('Diskon'),
                     _buildHeaderCell('Harga Final'),
                     _buildHeaderCell('Stock'),
-                    _buildHeaderCell('Status'), // DITAMBAHKAN
+                    _buildHeaderCell('Status'),
                     _buildHeaderCell('Jenis'),
                     _buildHeaderCell('Satuan'),
-                    _buildHeaderCell('Barcode'),
                     _buildHeaderCell('Image'),
                     _buildHeaderCell('Aksi'),
                   ],
                 ),
 
                 // ================== BODY DATA ==================
-                ...ctrl.paginatedList.map((item) {
+                // DIUBAH: Menggunakan .asMap().entries untuk mendapatkan indeks baris saat ini
+                ...currentList.asMap().entries.map((entry) {
+                  final int index = entry.key;
+                  final item = entry.value;
                   final isStokTipis = item.stock <= 5;
+
+                  // Kalkulasi Nomor Urut agar berlanjut di halaman berikutnya (Halaman 1: 1-10, Halaman 2: 11-20, dst)
+                  final int rowNumber =
+                      ((currentPage - 1) * itemsPerPage) + index + 1;
 
                   // Visual adjustment untuk item yang dihapus
                   final rowBgColor = item.isDeleted
@@ -87,7 +98,8 @@ class ProductTable extends StatelessWidget {
                       ),
                     ),
                     children: [
-                      _buildDataCell(item.id.toString()),
+                      // DIUBAH: Menampilkan nomor urut baris data, bukan ID unik database
+                      _buildDataCell(rowNumber.toString()),
                       _buildDataCell(
                         item.name,
                         alignment: Alignment.centerLeft,
@@ -112,7 +124,7 @@ class ProductTable extends StatelessWidget {
                             : FontWeight.w500,
                       ),
 
-                      // DITAMBAHKAN: Cell Status Badge
+                      // Cell Status Badge
                       TableCell(
                         child: Container(
                           height: 48,
@@ -144,7 +156,6 @@ class ProductTable extends StatelessWidget {
 
                       _buildDataCell(item.jenis),
                       _buildDataCell(item.satuan),
-                      _buildDataCell(item.barcode),
 
                       // Cell Gambar Produk
                       TableCell(
@@ -176,7 +187,7 @@ class ProductTable extends StatelessWidget {
                         ),
                       ),
 
-                      // DIUBAH: Cell Tombol Aksi Dinamis
+                      // Cell Tombol Aksi Dinamis
                       Container(
                         height: 48,
                         alignment: Alignment.center,
@@ -184,7 +195,6 @@ class ProductTable extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: item.isDeleted
                               ? [
-                                  // Jika terhapus: Tampilkan Restore dan Force Delete
                                   TableActionButton(
                                     icon: Icons.restore_rounded,
                                     color: Colors.green.shade700,
@@ -199,7 +209,6 @@ class ProductTable extends StatelessWidget {
                                   ),
                                 ]
                               : [
-                                  // Jika aktif: Tampilkan Edit dan Soft Delete
                                   TableActionButton(
                                     icon: Icons.edit_outlined,
                                     color: Colors.blue.shade700,
@@ -233,11 +242,16 @@ class ProductTable extends StatelessWidget {
             ),
 
           const SizedBox(height: 16),
-          TablePagination(
-            currentPage: ctrl.currentPage.value,
-            totalPages: ctrl.totalPages.value,
-            onNext: ctrl.nextPage,
-            onPrevious: ctrl.previousPage,
+          Obx(
+            () => TablePagination(
+              currentPage: ctrl.currentPage.value,
+              totalPages: ctrl.totalPages.value,
+              onNext: () => ctrl.nextPage(),
+              onPrevious: () => ctrl.previousPage(),
+              onPageSelected: (targetPage) {
+                ctrl.goToPage(targetPage);
+              },
+            ),
           ),
         ],
       );

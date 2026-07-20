@@ -24,21 +24,17 @@ class ProductController extends GetxController {
       products.assignAll(fetched);
     } catch (e) {
       print("Error fetch products: $e");
-     
     } finally {
       isLoading(false);
     }
   }
 
   List<Product> get filteredProducts {
-   
     return products.where((p) {
-      
       bool matchStock = isFilteringOutOfStock.value ? p.stock == 0 : true;
     
       bool matchSearch = searchQuery.value.isEmpty || 
-          p.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-          p.barcode.contains(searchQuery.value);
+          p.name.toLowerCase().contains(searchQuery.value.toLowerCase());
 
       return matchStock && matchSearch;
     }).toList();
@@ -51,7 +47,7 @@ class ProductController extends GetxController {
   List<Product> get paginatedProducts {
     final start = (currentPage.value - 1) * pageSize;
     if (start >= filteredProducts.length) return [];
-    
+
     final end = (start + pageSize).clamp(0, filteredProducts.length);
     return filteredProducts.sublist(start, end);
   }
@@ -72,8 +68,11 @@ class ProductController extends GetxController {
       if (success) {
         updateProductLocally(updatedProduct.id, updatedProduct);
         editingProduct.value = null;
-        Get.snackbar("Sukses", "Produk berhasil diperbarui", 
-          snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          "Sukses",
+          "Produk berhasil diperbarui",
+          snackPosition: SnackPosition.BOTTOM,
+        );
       } else {
         Get.snackbar("Gagal", "Gagal memperbarui produk di server");
       }
@@ -83,16 +82,14 @@ class ProductController extends GetxController {
       isLoading(false);
     }
   }
-  
- 
-  bool hasRecipe(Product product) => product.resepId != null;
 
+  bool hasRecipe(Product product) => product.resepId != null;
 
   void updateSearchQuery(String query) {
     searchQuery.value = query;
     currentPage.value = 1;
   }
-  
+
   void filterOutOfStock() {
     isFilteringOutOfStock.toggle();
     currentPage.value = 1;

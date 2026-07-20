@@ -6,16 +6,17 @@ import 'package:tugas_akhir/page/mobile/keranjang_mobile.dart';
 import 'package:tugas_akhir/widget/widget mobile/dashboard/search_bar.dart';
 import 'package:tugas_akhir/widget/widget mobile/dashboard/section_header.dart';
 import 'package:tugas_akhir/widget/widget mobile/dashboard/dashboard_produk_grid.dart';
-import 'package:tugas_akhir/widget/widget mobile/dashboard/greeting.dart';
 import 'package:tugas_akhir/widget/widget mobile/dashboard/kategori.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
+import 'package:tugas_akhir/widget/widget%20mobile/dashboard/greeting.dart';
 
 class KasirDashboardMobile extends StatelessWidget {
   const KasirDashboardMobile({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final DashboardController dashboardController = Get.find<DashboardController>();
+    final DashboardController dashboardController =
+        Get.find<DashboardController>();
     final CartController cartCtrl = Get.find<CartController>();
     return Obx(
       () => DefaultTabController(
@@ -24,19 +25,18 @@ class KasirDashboardMobile extends StatelessWidget {
           drawer: const KasirMobileDrawer(),
           backgroundColor: const Color(0xFFFDFBFA),
           appBar: AppBar(
+            toolbarHeight: 50,
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: false,
             iconTheme: const IconThemeData(color: Colors.black87),
           ),
           floatingActionButton: Obx(() {
-            final jumlahItem = cartCtrl.cartItems.length;
-            return FloatingActionButton.extended(
-              onPressed: () => Get.to(
-                () => const KeranjangMobilePage(),
-              ), 
+           final jumlahItem = cartCtrl.cartItems.fold<int>(0, (sum, item) => sum + item.qty);
+            return FloatingActionButton(
+              onPressed: () => Get.to(() => const KeranjangMobilePage()),
               backgroundColor: const Color(0xFFE8A045),
-              icon: Stack(
+              child: Stack(
                 clipBehavior: Clip.none,
                 children: [
                   const Icon(Icons.shopping_cart, color: Colors.white),
@@ -62,13 +62,6 @@ class KasirDashboardMobile extends StatelessWidget {
                     ),
                 ],
               ),
-              label: const Text(
-                'Keranjang',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             );
           }),
           body: SafeArea(
@@ -80,27 +73,18 @@ class KasirDashboardMobile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 20, bottom: 10),
-                        child: Image.asset(
-                          'assets/Logo_Rumah_Lezaa-removebg-preview.png',
-                          height: 120,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
                     const DashboardGreeting(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
                     MySearchBar(
-                      onChanged: (value) => dashboardController.applyFilter(query: value),
+                      onChanged: (value) =>
+                          dashboardController.applyFilter(query: value),
                     ),
                     const SizedBox(height: 10),
                     DashboardCategoryTabs(ctrl: dashboardController),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
                     SectionHeader(title: 'Daftar Menu'),
-                    const SizedBox(height: 10),
-                    DashboardProductGrid(ctrl: dashboardController),
+                    const SizedBox(height: 15),
+                    DashboardProductGrid(dashboardController: dashboardController),
                     const SizedBox(height: 30),
                   ],
                 ),

@@ -62,7 +62,6 @@ class SuksesMobilePage extends StatelessWidget {
 
               const Divider(),
               const SizedBox(height: 8),
-
               Obx(() => ReceiptRowItem(
                     title: 'Total Tagihan',
                     value: cart.currencyFormatter.format(cart.totalPrice),
@@ -86,7 +85,7 @@ class SuksesMobilePage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () => cart.generateAndPrintPdf(),
+                      onPressed: () => cart.printNotaSaja(),
                       icon: const Icon(Icons.print_outlined, color: Colors.white),
                       label: const Text('Print Nota',
                           style: TextStyle(color: Colors.white)),
@@ -103,7 +102,7 @@ class SuksesMobilePage extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () => cart.handleSelesaiActionMobile(false),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                        backgroundColor: const Color(0xFFE89336),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),

@@ -15,7 +15,7 @@ class KasirMobileDrawer extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(color: Color(0xFFF8D8A2)),
+              decoration: const BoxDecoration(color: Color(0xFFE89336)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -30,7 +30,7 @@ class KasirMobileDrawer extends StatelessWidget {
                     'Rumah Lezzaaa',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 20,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -47,15 +47,16 @@ class KasirMobileDrawer extends StatelessWidget {
               title: 'Beranda',
               route: AppRoutes.dashboardMobile,
             ),
-            DrawerItem(
-              icon: Icons.history,
-              title: 'Riwayat',
-              route: AppRoutes.riwayat,
-            ),
+        
             DrawerItem(
               icon: Icons.inventory,
               title: 'Kelola Produk',
               route: AppRoutes.kelolaProduk,
+            ),
+                DrawerItem(
+              icon: Icons.history,
+              title: 'Riwayat',
+              route: AppRoutes.riwayat,
             ),
             const Spacer(),
             const Divider(),

@@ -51,7 +51,6 @@ class ProductDetailBody extends StatelessWidget {
                   InfoRow(label: 'Jenis', value: product.jenis),
                   InfoRow(label: 'Satuan', value: product.satuan),
                   InfoRow(label: 'Stok Sistem', value: '${product.stock} pcs'),
-                  InfoRow(label: 'Barcode', value: product.barcode),
                 ],
               ),
             ),

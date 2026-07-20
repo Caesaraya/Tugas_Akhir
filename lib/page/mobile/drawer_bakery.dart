@@ -1,0 +1,70 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:tugas_akhir/controller/login_controller.dart';
+import 'package:tugas_akhir/routes/routes.dart';
+import 'package:tugas_akhir/widget/widget mobile/drawer/drawer_item.dart';
+
+class DrawerBakery extends StatelessWidget {
+  const DrawerBakery({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Color(0xFFE89336)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Image.asset(
+                    'assets/Logo_Rumah_Lezaa-removebg-preview.png',
+                    height: 64,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Rumah Lezzaaa',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Manajemen Inventori & Stok',
+                    style: TextStyle(color: Colors.black54, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+            DrawerItem(
+              icon: Icons.home,
+              title: 'Beranda',
+              route: AppRoutes.bakery,
+            ),
+            DrawerItem(
+              icon: Icons.inventory_2,
+              title: 'Bahan Baku',
+              route: AppRoutes.bakerybahan,
+            ),
+            const Spacer(),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () {
+                Navigator.pop(context);
+                Get.find<LoginController>().logout();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

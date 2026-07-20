@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tugas_akhir/utils/app_color.dart';
 
 class TableHeaderCell extends StatelessWidget {
   final String title;
@@ -14,7 +15,7 @@ class TableHeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = const Color(0xFFE65100);
+    final primaryColor = AppColors.black;
 
     return Container(
       width: width,

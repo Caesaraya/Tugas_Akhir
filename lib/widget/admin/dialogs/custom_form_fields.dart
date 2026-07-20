@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class RumahLezaatTheme {
   static const Color primaryColor = Color(0xFFE65100);
@@ -14,6 +15,11 @@ class CustomTextField extends StatelessWidget {
   final double width;
   final TextInputType keyboardType;
   final String? prefixText;
+  final List<TextInputFormatter>? inputFormatters;
+  final bool obscureText; // ← Ditambahkan
+  final Widget? suffixIcon; // ← Ditambahkan
+  final ValueChanged<String>?
+  onChanged; // ← Ditambahkan untuk mendeteksi perubahan input rupiah
 
   const CustomTextField({
     super.key,
@@ -24,13 +30,36 @@ class CustomTextField extends StatelessWidget {
     this.width = 440,
     this.keyboardType = TextInputType.text,
     this.prefixText,
+    this.inputFormatters,
+    this.obscureText = false, // ← Ditambahkan (default false)
+    this.suffixIcon, // ← Ditambahkan
+    this.onChanged, // ← Ditambahkan
   });
 
   @override
   Widget build(BuildContext context) {
+    // Auto-apply filter angka jika keyboardType adalah number
+    final List<TextInputFormatter> effectiveFormatters =
+        inputFormatters ??
+        (keyboardType == TextInputType.number ||
+                keyboardType ==
+                    const TextInputType.numberWithOptions(decimal: false) ||
+                keyboardType ==
+                    const TextInputType.numberWithOptions(signed: false) ||
+                keyboardType ==
+                    const TextInputType.numberWithOptions(
+                      signed: false,
+                      decimal: false,
+                    )
+            ? [FilteringTextInputFormatter.digitsOnly]
+            : []);
+
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: effectiveFormatters,
+      obscureText: obscureText, // ← Ditambahkan ke TextField
+      onChanged: onChanged, // ← Ditambahkan ke TextField
       style: const TextStyle(
         color: Colors.black,
         fontWeight: FontWeight.w600,
@@ -39,9 +68,9 @@ class CustomTextField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-
         prefixText: prefixText,
         prefixIcon: Icon(icon, size: 22, color: Colors.black),
+        suffixIcon: suffixIcon, // ← Ditambahkan ke TextField
         labelStyle: const TextStyle(
           color: Colors.black87,
           fontWeight: FontWeight.bold,
@@ -131,8 +160,7 @@ class CustomDropdownMenu extends StatelessWidget {
 class CustomStockStepper extends StatelessWidget {
   final TextEditingController controller;
   final String label;
-  final bool
-  isDouble; // true untuk Bahan Baku (double), false untuk Produk (int)
+  final bool isDouble;
 
   const CustomStockStepper({
     super.key,
@@ -176,6 +204,13 @@ class CustomStockStepper extends StatelessWidget {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  inputFormatters: isDouble
+                      ? [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d*'),
+                          ),
+                        ]
+                      : [FilteringTextInputFormatter.digitsOnly],
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -202,7 +237,6 @@ class CustomStockStepper extends StatelessWidget {
                           double current =
                               double.tryParse(controller.text) ?? 0.0;
                           if (current > 0) {
-                            // Menghilangkan trailing zero yang tidak perlu jika angkanya bulat
                             double res = current - 1;
                             controller.text = res % 1 == 0
                                 ? res.toInt().toString()
@@ -314,7 +348,7 @@ class DialogActionButtons extends StatelessWidget {
   }
 }
 
-/// 5. Komponen Header Dialog Judul + Icon
+/// 5. Komponen Header Dialog Judul + Icon (Responsible / Auto-wrap agar tidak overflow)
 class DialogCommonTitle extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -324,15 +358,22 @@ class DialogCommonTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: Colors.black, size: 28),
         const SizedBox(width: 12),
-        Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 21,
-            color: Colors.black,
+        Expanded(
+          // ← Membungkus judul dalam Expanded agar membungkus baris baru saat di mobile
+          child: Text(
+            title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize:
+                  20, // Menyesuaikan ukuran agar pas di layar handphone kecil
+              color: Colors.black,
+            ),
           ),
         ),
       ],

@@ -28,27 +28,31 @@ class KeranjangMobilePage extends StatelessWidget {
       body: Obx(() {
         if (cartController.cartItems.isEmpty) {
           return const Center(
-            child: Text('Belum ada produk di keranjang'),
+            child: Text('Belum ada produk di keranjang.'),
           );
         }
         return Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                itemCount: cartController.cartItems.length,
-                itemBuilder: (context, index) {
-                  final item = cartController.cartItems[index];
-                  return KeranjangItemCard(ctrl: paymentController, item: item);
-                },
-              ),
-            ),
-            KeranjangBottomPanel(ctrl: paymentController),
-          ],
-        );
+  children: [
+    Expanded(
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 10,
+        ),
+        itemCount: cartController.cartItems.length,
+        itemBuilder: (context, index) {
+          final item = cartController.cartItems[index];
+          return KeranjangItemCard(ctrl: paymentController, item: item);
+        },
+      ),
+    ),
+    SafeArea(
+      top: false, 
+      minimum: const EdgeInsets.only(bottom: 8), 
+      child: KeranjangBottomPanel(ctrl: paymentController),
+    ),
+  ],
+);
       }),
     );
   }

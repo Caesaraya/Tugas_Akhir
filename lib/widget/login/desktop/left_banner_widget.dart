@@ -1,95 +1,145 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+// IMPORT FILE WARNA KAMU
+import 'package:tugas_akhir/utils/app_color.dart';
 
-class LeftBannerWidget extends StatelessWidget {
+class LeftBannerWidget extends StatefulWidget {
   const LeftBannerWidget({super.key});
+
+  @override
+  State<LeftBannerWidget> createState() => _LeftBannerWidgetState();
+}
+
+class _LeftBannerWidgetState extends State<LeftBannerWidget> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  Timer? _timer;
+
+  // 1. DAFTAR FOTO PRODUK (Sesuaikan path sesuai aset proyekmu)
+  final List<String> _images = [
+    'assets/rumah1.jpg',
+    'assets/rumah2.jpg',
+    'assets/rumah3.jpg',
+  ];
+
+  // 2. DAFTAR KALIMAT MOTIVASI BISNIS / BACKERY
+  final List<String> _motivations = [
+    "“Kehangatan setiap adonan adalah kunci kebahagiaan para pelanggan.”",
+    "“Konsistensi dalam rasa membangun kepercayaan yang tak bernilai.”",
+    "“Kualitas bahan terbaik melahirkan kelezatan yang selalu dirindukan.”",
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Membuat gambar bergeser otomatis setiap 4 detik
+    _timer = Timer.periodic(const Duration(seconds: 4), (Timer timer) {
+      if (_currentPage < _images.length - 1) {
+        _currentPage++;
+      } else {
+        _currentPage = 0;
+      }
+
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          _currentPage,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOutCubic,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF4A2E1B), // Warna cokelat gelap sesuai gambar
-      child: Stack(
-        children: [
-          // Background Icon / Pattern (Bisa disesuaikan opacity-nya)
-          Positioned(
-            right: -50,
-            bottom: -50,
-            child: Icon(
-              Icons.cookie_outlined,
-              size: 400,
-              color: Colors.black.withOpacity(0.05),
-            ),
-          ),
-          Positioned(
-            left: 40,
-            bottom: 150,
-            child: Icon(
-              Icons.bakery_dining_outlined,
-              size: 200,
-              color: Colors.white.withOpacity(0.05),
-            ),
-          ),
+      color: AppColors.ba, // Menggunakan warna dasar bawaan
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 48.0, vertical: 32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // BRAND HEADER
 
-          // Konten Teks
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 64.0),
-            child: Column(
+            // IMAGE SLIDER CONTAINER
+            Container(
+              height: 420,
+              width: 320,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (int page) {
+                    setState(() {
+                      _currentPage = page;
+                    });
+                  },
+                  itemCount: _images.length,
+                  itemBuilder: (context, index) {
+                    return Image.asset(_images[index], fit: BoxFit.cover);
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // SLIDER INDICATOR DOTS
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Rumah Lezaa",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 44,
-                    fontWeight: FontWeight.bold,
+              children: List.generate(
+                _images.length,
+                (index) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  height: 6,
+                  width: _currentPage == index ? 24 : 6,
+                  decoration: BoxDecoration(
+                    color: _currentPage == index
+                        ? AppColors.primaryOrange
+                        : AppColors.textWhiteMuted,
+                    borderRadius: BorderRadius.circular(3),
                   ),
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  "Kelola data penjualan, stok roti, dan panggangan hanya dalam satu dasbor terintegrasi. Modernitas pengrajin roti dalam setiap data.",
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 16,
-                    height: 1.6,
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Indikator halaman (garis oranye & abu-abu)
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFC86A37),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 16,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 16,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 40),
+
+            // MOTIVATIONAL TEXT AREA
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              child: Text(
+                _motivations[_currentPage],
+                key: ValueKey<int>(_currentPage),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.black,
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  height: 1.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

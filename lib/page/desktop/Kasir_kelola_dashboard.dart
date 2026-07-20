@@ -9,7 +9,8 @@ class KasirKelolaDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final KelolaProdukController kelolaProdukController =   Get.find<KelolaProdukController>();
+    final KelolaProdukController kelolaProdukController =
+        Get.find<KelolaProdukController>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5F2),
@@ -21,12 +22,7 @@ class KasirKelolaDashboard extends StatelessWidget {
         ),
         backgroundColor: const Color(0xFFE89336),
         elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: kelolaProdukController.fetchData,
-            icon: const Icon(Icons.refresh, color: Colors.white),
-          ),
-        ],
+        foregroundColor: Colors.white,
       ),
       body: Column(
         children: [

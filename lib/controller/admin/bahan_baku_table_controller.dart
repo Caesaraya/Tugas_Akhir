@@ -6,9 +6,9 @@ import 'package:tugas_akhir/widget/admin/dialogs/bahan/edit_bahan_baku_dialog.da
 import '../../api service/api_service.dart';
 import '../../models/bahan_baku.dart';
 import '../../controller/admin/table/base_table_controller.dart';
+import '../../controller/admin/keuangan_controller.dart'; // Import KeuanganController
 
 class BahanBakuTableController extends BaseTableController<BahanBaku> {
-  // Properti filter bawaan desktop Anda tetap dipertahankan
   final RxBool filterStockHabis = false.obs;
 
   BahanBakuTableController() {
@@ -34,36 +34,19 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
   final stokC = TextEditingController();
   final satuanC = TextEditingController();
   final hargaC = TextEditingController();
-  final currencyFormatter = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
+  final currencyFormatter = NumberFormat('#,###', 'id_ID');
 
-  // SATU FUNGSI FETCH DATA GABUNGAN (Aman untuk Desktop & Mobile)
   @override
   Future<void> fetchData() async {
     isLoading.value = true;
     try {
       final data = await ApiService.getAllBahanBaku();
 
-      // === SEKARANG AKAN PASTI TER-PRINT DI CONSOLE DESKTOP / MOBILE ===
-      print("=========================================");
-      print("=== DEBUG JSON BAHAN BAKU ===");
-      try {
-        print(data.map((e) => e.toJson()).toList());
-      } catch (logError) {
-        print("Gagal print format JSON: $logError");
-      }
-      print("=========================================");
-
-      // Menjalankan penyaringan filterStockHabis bawaan Desktop Anda jika aktif
       List<BahanBaku> processedData = data;
       if (filterStockHabis.value) {
         processedData = processedData.where((item) => item.stok <= 0).toList();
       }
 
-      // Urutkan data secara aman: Data aktif di atas, data terhapus (Soft-Delete) di bawah
       processedData.sort((a, b) {
         if (a.deletedAt == null && b.deletedAt != null) return -1;
         if (a.deletedAt != null && b.deletedAt == null) return 1;
@@ -84,10 +67,9 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     }
   }
 
-  // Fungsi toggle filter bawaan Desktop Anda tetap utuh
   void toggleFilterStockHabis() {
     filterStockHabis.value = !filterStockHabis.value;
-    fetchData(); // Panggil ulang data setelah filter diubah
+    fetchData();
   }
 
   void search(String query) {
@@ -114,7 +96,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
   void showEditDialog(BahanBaku bahan) {
     namaC.text = bahan.namaBahan;
     merkC.text = bahan.merk;
-    // Mengamankan tampilan angka stok di dalam input form (.0 dibuang)
     stokC.text = bahan.stok == bahan.stok.roundToDouble()
         ? bahan.stok.toInt().toString()
         : bahan.stok.toString();
@@ -124,14 +105,66 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     Get.dialog(EditBahanBakuDialog(item: bahan));
   }
 
+  // =======================================================================
+  // REUSABLE HELPER FUNCTION UNTUK MENCATAT PENGELUARAN KE DATABASE
+  // =======================================================================
+  Future<void> _recordStockPurchaseExpense({
+    required double totalBiaya,
+    required String keterangan,
+  }) async {
+    if (totalBiaya <= 0) return;
+
+    try {
+      // Daftarkan atau temukan KeuanganController secara aman
+      final keuanganCtrl = Get.isRegistered<KeuanganController>()
+          ? Get.find<KeuanganController>()
+          : Get.put(KeuanganController());
+
+      // Ambil daftar kategori yang ada di backend
+      if (keuanganCtrl.listCategories.isEmpty) {
+        await keuanganCtrl.fetchCategories();
+      }
+
+      // Cari ID dari kategori "Bahan Baku"
+      var targetCategory = keuanganCtrl.listCategories.firstWhereOrNull(
+        (cat) => cat.name.toLowerCase() == 'bahan baku',
+      );
+
+      int? categoryId = targetCategory?.id;
+
+      // Jika kategori "Bahan Baku" belum ada sama sekali di database backend, buat otomatis
+      if (categoryId == null) {
+        categoryId = await keuanganCtrl.tambahKategoriBaru('Bahan Baku');
+      }
+
+      if (categoryId != null) {
+        final tanggalHariIni = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+        // Simpan transaksi pengeluaran langsung ke database online melalui ApiService
+        await ApiService.createExpense(
+          tanggal: tanggalHariIni,
+          categoryId: categoryId,
+          nominal: totalBiaya,
+          keterangan: keterangan,
+        );
+
+        // Trigerred refresh state keuangan (Summary, Komposisi Chart, & Laporan Tahunan)
+        await keuanganCtrl.loadDataKeuangan();
+      }
+    } catch (e) {
+      print("Gagal otomatis mencatat pengeluaran keuangan: $e");
+    }
+  }
+
   Future<void> insertBahanBaku() async {
     try {
       final hg = hargaC.text.replaceAll(RegExp(r'[^0-9]'), '');
       final harga = double.tryParse(hg) ?? 0;
       final stok = double.tryParse(stokC.text) ?? 0.0;
+      final namaBahan = namaC.text.trim();
 
       final baru = BahanBaku(
-        namaBahan: namaC.text.trim(),
+        namaBahan: namaBahan,
         merk: merkC.text.trim(),
         stok: stok,
         satuan: satuanC.text.trim(),
@@ -140,6 +173,15 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
 
       final success = await ApiService.createBahanBaku(baru);
       if (success) {
+        // Alur A: Jika stok awal saat pembuatan baru > 0, langsung catat pengeluaran ke database
+        if (stok > 0) {
+          final double totalBiaya = stok * harga;
+          await _recordStockPurchaseExpense(
+            totalBiaya: totalBiaya,
+            keterangan: "Pembelian awal bahan baku $namaBahan",
+          );
+        }
+
         Get.back();
         clearForm();
         fetchData();
@@ -165,10 +207,15 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
       final hg = hargaC.text.replaceAll(RegExp(r'[^0-9]'), '');
       final harga = double.tryParse(hg) ?? 0;
       final stok = double.tryParse(stokC.text) ?? 0.0;
+      final namaBahan = namaC.text.trim();
+
+      final oldItem = originalList.firstWhereOrNull(
+        (element) => element.id == id,
+      );
 
       final updateData = BahanBaku(
         id: id,
-        namaBahan: namaC.text.trim(),
+        namaBahan: namaBahan,
         merk: merkC.text.trim(),
         stok: stok,
         satuan: satuanC.text.trim(),
@@ -177,6 +224,23 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
 
       final success = await ApiService.updateBahanBaku(updateData);
       if (success) {
+        // Alur B: Bandingkan stok lama dengan stok baru untuk mencatat pengeluaran tambahan
+        if (oldItem != null && stok > oldItem.stok) {
+          final double selisih = stok - oldItem.stok;
+          final double totalBiaya = selisih * harga;
+
+          // Format angka selisih agar tampilan di keterangan rapi (menghilangkan .0 jika integer)
+          final String formatSelisih = selisih == selisih.roundToDouble()
+              ? selisih.toInt().toString()
+              : selisih.toString();
+
+          await _recordStockPurchaseExpense(
+            totalBiaya: totalBiaya,
+            keterangan:
+                "Penambahan stok $namaBahan sebanyak $formatSelisih ${satuanC.text.trim()}",
+          );
+        }
+
         Get.back();
         clearForm();
         fetchData();
@@ -346,7 +410,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     super.onClose();
   }
 
-  // Perhitungan Ringkasan / Summary Card Utama (Mendukung tipe double secara presisi)
   double get totalNilaiInventory {
     return originalList.fold(
       0.0,

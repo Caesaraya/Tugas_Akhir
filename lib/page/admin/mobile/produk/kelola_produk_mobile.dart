@@ -7,6 +7,7 @@ import 'package:tugas_akhir/widget/admin/produk/mobile/product_list_header.dart'
 import 'package:tugas_akhir/widget/admin/mobile_admin_drawer.dart';
 import 'package:tugas_akhir/widget/admin/produk/mobile/product_pagination_footer.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/product/insert_product_dialog.dart';
+import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 
 class ProductListPage extends StatelessWidget {
   final controller = Get.find<ProductTableController>();
@@ -22,22 +23,24 @@ class ProductListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: const MobileAdminDrawer(),
-      backgroundColor: const Color(
-        0xFFF8F9FA,
-      ), // Latar belakang abu-abu terang sesuai gambar
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: const Text(
-          'Kelola Produk',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        // Mengganti title teks menjadi Search Bar yang menyatu dengan AppBar
+        title: TableSearchBar(
+          controller: controller.searchC,
+          hint: 'Cari nama produk...',
         ),
         iconTheme: const IconThemeData(color: Colors.black),
         backgroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
+        centerTitle:
+            false, // Diubah ke false agar search bar mengambil ruang maksimal setelah drawer icon
+        titleSpacing:
+            0, // Memaksimalkan kerapatan horizontal search bar dengan tombol menu
       ),
       body: Column(
         children: [
-          ProductListHeader(controller: controller),
+          // ProductListHeader(controller: controller),
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {
@@ -58,7 +61,6 @@ class ProductListPage extends StatelessWidget {
                     horizontal: 16,
                     vertical: 12,
                   ),
-
                   itemCount: controller.paginatedList.length,
                   separatorBuilder: (context, index) =>
                       const SizedBox(height: 12),
@@ -77,12 +79,17 @@ class ProductListPage extends StatelessWidget {
           ProductPaginationFooter(controller: controller),
         ],
       ),
-      // Tombol FAB Hitam di Pojok Kanan Bawah
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        onPressed: () => Get.dialog(InsertProductDialog()),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 60.0),
+        child: FloatingActionButton(
+          backgroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          onPressed: () => Get.dialog(InsertProductDialog()),
+          child: const Icon(Icons.add, color: Colors.white, size: 28),
+        ),
       ),
     );
   }

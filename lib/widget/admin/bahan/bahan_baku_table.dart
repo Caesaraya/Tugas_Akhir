@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/bahan/edit_bahan_baku_dialog.dart';
 import '../../../controller/admin/bahan_baku_table_controller.dart';
 import '../../admin/table/table_action_button.dart';
 import '../../admin/table/table_pagination.dart';
@@ -21,6 +22,11 @@ class BahanBakuTable extends StatelessWidget {
     final headerColor = const Color(0xFF1E1E1E);
 
     return Obx(() {
+      final currentList = ctrl.paginatedList;
+      // MENGGUNAKAN METHOD/PROPERTI YANG SUDAH ADA DI CONTROLLER (WARISAN BASE CONTROLLER)
+      final int itemsPerPage = ctrl.itemsPerPage;
+      final int currentPage = ctrl.currentPage.value;
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -33,40 +39,49 @@ class BahanBakuTable extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: Table(
               columnWidths: const {
-                0: FixedColumnWidth(60), // ID
+                0: FixedColumnWidth(50), // Sesuai No (lebih ramping)
                 1: FlexColumnWidth(2.5), // Nama Bahan
                 2: FlexColumnWidth(1.5), // Merk
-                3: FlexColumnWidth(1.2), // Stok (Double format ready)
-                4: FlexColumnWidth(1.5), // Harga Satuan
-                5: FlexColumnWidth(1.5), // Total Harga
-                6: FixedColumnWidth(110), // Status (KOLOM BARU)
-                7: FixedColumnWidth(200), // Aksi
+                3: FlexColumnWidth(1.5), // Stok Aktual
+                4: FlexColumnWidth(1.5), // Satuan Unit
+                5: FlexColumnWidth(1.8), // Harga Estimasi
+                6: FixedColumnWidth(90), // Status Badge
+                7: FixedColumnWidth(100), // Aksi
               },
               defaultVerticalAlignment: TableCellVerticalAlignment.middle,
               children: [
-                // Header Table
+                // ================== HEADER TABEL ==================
                 TableRow(
                   decoration: BoxDecoration(color: headerColor),
                   children: [
-                    _buildHeaderCell("ID"),
-                    _buildHeaderCell("Nama Bahan"),
-                    _buildHeaderCell("Merk"),
-                    _buildHeaderCell("Stok"),
-                    _buildHeaderCell("Harga Satuan"),
-                    _buildHeaderCell("Total Harga"),
-                    _buildHeaderCell("Status"), // HEADER BARU
-                    _buildHeaderCell("Aksi"),
+                    _buildHeaderCell('No'), // DIUBAH: ID -> No
+                    _buildHeaderCell('Nama Bahan'),
+                    _buildHeaderCell('Merk'),
+                    _buildHeaderCell('Stok'),
+                    _buildHeaderCell('Satuan'),
+                    _buildHeaderCell('Harga satuan'),
+                    _buildHeaderCell('Status'),
+                    _buildHeaderCell('Aksi'),
                   ],
                 ),
-                // Data Rows
-                ...ctrl.paginatedList.map((item) {
-                  final isDeleted = item.deletedAt != null;
+
+                // ================== BODY DATA ==================
+                ...currentList.asMap().entries.map((entry) {
+                  final int index = entry.key;
+                  final item = entry.value;
+
+                  // KALKULASI NOMOR URUT BERDASARKAN CURRENT PAGE & ITEMS PER PAGE CONTROLLER
+                  final int rowNumber =
+                      ((currentPage - 1) * itemsPerPage) + index + 1;
+
+                  final isStokTipis = item.stok <= 5;
+                  final rowBgColor = item.deletedAt != null
+                      ? Colors.red.shade50
+                      : Colors.white;
 
                   return TableRow(
                     decoration: BoxDecoration(
-                      color: isDeleted
-                          ? Colors.red.shade50.withOpacity(0.4)
-                          : Colors.white,
+                      color: rowBgColor,
                       border: Border(
                         bottom: BorderSide(
                           color: Colors.grey.shade100,
@@ -75,77 +90,73 @@ class BahanBakuTable extends StatelessWidget {
                       ),
                     ),
                     children: [
-                      _buildDataCell("#${item.id}"),
+                      // DIUBAH: Menggunakan rowNumber hasil kalkulasi
+                      _buildDataCell(rowNumber.toString()),
                       _buildDataCell(
                         item.namaBahan,
                         alignment: Alignment.centerLeft,
-                        fontWeight: FontWeight.w500,
                       ),
                       _buildDataCell(
-                        item.merk,
+                        item.merk.isEmpty ? '-' : item.merk,
                         alignment: Alignment.centerLeft,
                       ),
-                      // Menampilkan stok format desimal jika berupa pecahan secara aman
                       _buildDataCell(
-                        "${item.stok % 1 == 0 ? item.stok.toInt() : item.stok} ${item.satuan}",
+                        item.stok.toString(),
+                        textColor: isStokTipis
+                            ? Colors.red.shade700
+                            : Colors.grey.shade800,
+                        fontWeight: isStokTipis
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                       ),
+                      _buildDataCell(item.satuan),
                       _buildDataCell(
                         currencyFormatter.format(item.hargaSatuan),
                         alignment: Alignment.centerRight,
                       ),
-                      _buildDataCell(
-                        currencyFormatter.format(
-                          item.totalHarga ?? (item.stok * item.hargaSatuan),
-                        ),
-                        alignment: Alignment.centerRight,
-                      ),
-
-                      // BADGE STATUS (BAGIAN BARU)
-                      Container(
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      TableCell(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDeleted
-                                ? Colors.red.shade100
-                                : Colors.green.shade100,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            isDeleted ? "DIHAPUS" : "AKTIF",
-                            style: TextStyle(
-                              color: isDeleted
-                                  ? Colors.red.shade800
-                                  : Colors.green.shade800,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                          height: 48,
+                          alignment: Alignment.center,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: item.deletedAt != null
+                                  ? Colors.red.shade100
+                                  : Colors.green.shade100,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              item.deletedAt != null ? 'DIHAPUS' : 'AKTIF',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: item.deletedAt != null
+                                    ? Colors.red.shade700
+                                    : Colors.green.shade700,
+                              ),
                             ),
                           ),
                         ),
                       ),
-
-                      // DINAMIS ACTION BUTTONS (BAGIAN BARU)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
+                      Container(
+                        height: 48,
+                        alignment: Alignment.center,
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: isDeleted
+                          mainAxisSize: MainAxisSize.min,
+                          children: item.deletedAt != null
                               ? [
                                   TableActionButton(
-                                    icon: Icons.restore_outlined,
-                                    color: Colors.green,
+                                    icon: Icons.restore_rounded,
+                                    color: Colors.green.shade700,
                                     onTap: () => ctrl.restoreBahan(item.id!),
                                   ),
                                   const SizedBox(width: 8),
                                   TableActionButton(
-                                    icon: Icons.delete_forever_outlined,
+                                    icon: Icons.delete_forever_rounded,
                                     color: Colors.red.shade900,
                                     onTap: () =>
                                         ctrl.forceDeleteBahan(item.id!),
@@ -154,13 +165,15 @@ class BahanBakuTable extends StatelessWidget {
                               : [
                                   TableActionButton(
                                     icon: Icons.edit_outlined,
-                                    color: Colors.blue,
-                                    onTap: () => ctrl.showEditDialog(item),
+                                    color: Colors.blue.shade700,
+                                    onTap: () => ctrl.showEditDialog(
+                                      item,
+                                    ), // <-- Panggil fungsi dari controller
                                   ),
                                   const SizedBox(width: 8),
                                   TableActionButton(
-                                    icon: Icons.delete_outline,
-                                    color: Colors.red,
+                                    icon: Icons.delete_outline_rounded,
+                                    color: Colors.red.shade600,
                                     onTap: () => ctrl.softDeleteBahan(item.id!),
                                   ),
                                 ],
@@ -177,16 +190,21 @@ class BahanBakuTable extends StatelessWidget {
               height: 150,
               alignment: Alignment.center,
               child: Text(
-                "Tidak ada data bahan baku",
+                "Tidak ada bahan baku ditemukan",
                 style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               ),
             ),
           const SizedBox(height: 16),
-          TablePagination(
-            currentPage: ctrl.currentPage.value,
-            totalPages: ctrl.totalPages.value,
-            onNext: ctrl.nextPage,
-            onPrevious: ctrl.previousPage,
+          Obx(
+            () => TablePagination(
+              currentPage: ctrl.currentPage.value,
+              totalPages: ctrl.totalPages.value,
+              onNext: () => ctrl.nextPage(),
+              onPrevious: () => ctrl.previousPage(),
+              onPageSelected: (targetPage) {
+                ctrl.goToPage(targetPage);
+              },
+            ),
           ),
         ],
       );
@@ -225,8 +243,8 @@ class BahanBakuTable extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: textColor ?? Colors.grey.shade800,
-          fontWeight: fontWeight ?? FontWeight.normal,
           fontSize: 13,
+          fontWeight: fontWeight ?? FontWeight.w500,
         ),
       ),
     );
