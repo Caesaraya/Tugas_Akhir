@@ -61,7 +61,7 @@ class TransactionDetailMobile extends StatelessWidget {
               value: detailController.totalFormatted,
               isBold: true,
             ),
-            SummaryRow(label: 'Bayar:', value: detailController.bayarFormatted),
+            SummaryRow(label: 'Bayar:', value: detailController.bayarFormatted),  
             SummaryRow(
               label: 'Kembalian:',
               value: detailController.kembalianFormatted,
@@ -69,13 +69,15 @@ class TransactionDetailMobile extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            Center(
-              child: SizedBox(
-                width: 200,
-                child: ReceiptActionButton(
-                  label: 'Print Nota',
-                  onPressed: () =>
-                      cartController.printFromDetail(detailController),
+            SafeArea(
+              child: Center(
+                child: SizedBox(
+                  width: 200,
+                  child: ReceiptActionButton(
+                    label: 'Print Nota',
+                    onPressed: () =>
+                        cartController.printFromDetail(detailController),
+                  ),
                 ),
               ),
             ),

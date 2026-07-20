@@ -45,10 +45,12 @@ class KalkulatorCashPage extends StatelessWidget {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: KonfirmasiBayarButton(ctrl: kalkulatorController),
-          ),
+         SafeArea(
+  child: Padding(
+    padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+    child: KonfirmasiBayarButton(ctrl: kalkulatorController),
+  ),
+),
         ],
       ),
     );

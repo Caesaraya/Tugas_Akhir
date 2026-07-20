@@ -9,6 +9,7 @@ class DashboardController extends GetxController {
   var productList = <Product>[].obs;
   var filteredList = <Product>[].obs;
   var sortOption = 'none'.obs;
+  var showOutOfStockOnly = false.obs;
 
   var displayedList = <Product>[].obs;
   static const int pageSize = 6;
@@ -76,10 +77,16 @@ class DashboardController extends GetxController {
     applyFilter();
   }
 
-  void applyFilter({String? query, String? category, String? sort}) {
+  void applyFilter({
+    String? query,
+    String? category,
+    String? sort,
+    bool? outOfStockOnly,
+  }) {
     if (query != null) lastQuery.value = query;
     if (category != null) selectedCategory.value = category;
     if (sort != null) sortOption.value = sort;
+    if (outOfStockOnly != null) showOutOfStockOnly.value = outOfStockOnly;
 
     var temp = productList.where((product) {
       bool matchCategory =
@@ -88,7 +95,8 @@ class DashboardController extends GetxController {
       bool matchSearch = product.name.toLowerCase().contains(
         lastQuery.value.toLowerCase(),
       );
-      return matchCategory && matchSearch;
+      bool matchStock = !showOutOfStockOnly.value || product.stock <= 0;
+      return matchCategory && matchSearch && matchStock;
     }).toList();
     final indexed = temp.asMap().entries.toList();
 

@@ -109,14 +109,12 @@ class CartController extends GetxController {
     cartRepository.removeItem(productId);
   }
 
-  // ── increaseQty ────────────────────────────────────────────────────────────
   void increaseQty(int productId) {
     var item = cartItems.firstWhereOrNull(
       (item) => item.productId == productId,
     );
     if (item != null) {
       if (item.qty >= item.stock) {
-        // Validasi stok — tidak bisa melebihi stok
         return;
       }
       item.qty++;
@@ -125,7 +123,6 @@ class CartController extends GetxController {
     }
   }
 
-  // ── setQty ─────────────────────────────────────────────────────────────────
   void setQty(Product product, int qty) {
     final maxQty = product.stock;
     final finalQty = qty > maxQty ? maxQty : qty;
@@ -155,10 +152,10 @@ class CartController extends GetxController {
 
     if (qty > maxQty) {
       Get.snackbar(
-        "Stok Terbatas",
+        "Stok ",
         "Maksimal ${product.name} hanya $maxQty ${product.satuan}",
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.orange,
+        backgroundColor: Colors.red,
         colorText: Colors.white,
         duration: const Duration(milliseconds: 1500),
         margin: const EdgeInsets.all(10),

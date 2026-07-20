@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
 import 'package:tugas_akhir/controller/admin/navigation_controller.dart';
+import 'package:tugas_akhir/utils/app_color.dart';
 import 'package:tugas_akhir/widget/admin/bahan/bahan_baku_table.dart';
 import 'package:tugas_akhir/widget/admin/bahan/summary_card.dart';
 import 'package:tugas_akhir/widget/admin/custom_sidebar.dart';
@@ -11,7 +12,7 @@ import 'package:tugas_akhir/widget/admin/table/table_search_bar.dart';
 import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 
 class BahanBakuScreen extends StatelessWidget {
-  BahanBakuScreen({super.key});
+  const BahanBakuScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -97,26 +98,31 @@ class BahanBakuScreen extends StatelessWidget {
                         ToolbarButton(
                           title: 'Tambah Bahan',
                           icon: Icons.add_rounded,
-                          color: const Color(0xFF1E1E1E),
+                          color: AppColors.black,
                           onTap: () {
                             ctrl.clearForm();
                             Get.dialog(InsertBahanBakuDialog());
                           },
                         ),
                         const SizedBox(width: 12),
-                        ToolbarButton(
-                          title: "Stock habis",
-                          icon: Icons.warning_amber_rounded,
-                          color: Colors.black54,
-                          onTap: () {
-                            ctrl.toggleFilterStockHabis();
-                          },
+                        Obx(
+                          () => ToolbarButton(
+                            title: "Stok Menipis",
+                            icon: Icons.warning_amber_rounded,
+                            // Warna tombol akan berubah jadi oranye gelap saat filter aktif
+                            color: ctrl.filterStokMenipis.value
+                                ? AppColors.iconMutedLight
+                                : AppColors.black,
+                            onTap: () {
+                              ctrl.toggleFilterStokMenipis();
+                            },
+                          ),
                         ),
                         const SizedBox(width: 12),
                         ToolbarButton(
                           title: "",
                           icon: Icons.refresh_outlined,
-                          color: Colors.grey.shade400,
+                          color: AppColors.black,
                           onTap: () {
                             ctrl.fetchData();
                           },

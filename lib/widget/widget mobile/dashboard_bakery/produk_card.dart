@@ -40,7 +40,6 @@ class BakeryResepCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Badge jumlah produk terkait
                   if (jumlahProduk > 0)
                     Positioned(
                       top: 8,

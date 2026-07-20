@@ -38,6 +38,7 @@ class CartRepository extends BaseRepository {
       'price': item.price,
       'discount': item.discount,
       'qty': item.qty,
+      'stock': item.stock,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 

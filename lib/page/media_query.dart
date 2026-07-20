@@ -27,7 +27,6 @@ class DashboardWrapper extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        // Tidak perlu LayoutBuilder — cukup pakai isDesktop yang sudah dihitung sekali di atas
         return isDesktop ? DesktopLoginPage() : LoginPage();
       },
     );

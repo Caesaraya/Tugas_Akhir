@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/bakery_controller.dart';
 import 'package:tugas_akhir/models/resep.dart';
-import 'package:tugas_akhir/page/mobile/bakery_production_preview.dart'; // Pastikan path ini sesuai dengan project Anda
+import 'package:tugas_akhir/page/mobile/bakery_production_preview.dart';
 
 class BakeryEstimasiButton extends StatelessWidget {
   final BakeryController ctrl;
@@ -23,7 +23,7 @@ class BakeryEstimasiButton extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withAlpha(
               20,
-            ), // Menggunakan .withAlpha agar aman di versi Flutter lama/baru
+            ),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -35,11 +35,7 @@ class BakeryEstimasiButton extends StatelessWidget {
               ? null
               : () async {
                   if (resep.id == null) return;
-
-                  // 1. Tunggu proses hitung biaya dari API selesai
                   await ctrl.loadBakeryCalculation(resep.id!);
-
-                  // 2. Langsung pindah ke halaman Preview, TANPA lewat Get.dialog() lagi
                   if (ctrl.selectedResep.value != null) {
                     Get.to(() => const BakeryProductionPreviewPage());
                   }

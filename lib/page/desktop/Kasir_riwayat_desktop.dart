@@ -4,7 +4,7 @@ import 'package:tugas_akhir/controller/riwayat_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import 'package:tugas_akhir/widget/widget desktop/dashboard/app_bar_desktop.dart';
 import 'package:tugas_akhir/widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
-import 'package:tugas_akhir/widget/widget%20desktop/detail_transaction/transaction_card_desktop.dart';
+import 'package:tugas_akhir/widget/widget desktop/detail_transaction/transaction_card_desktop.dart';
 
 class KasirRiwayatDesktop extends StatelessWidget {
   final RiwayatController riwayatController = Get.find<RiwayatController>();

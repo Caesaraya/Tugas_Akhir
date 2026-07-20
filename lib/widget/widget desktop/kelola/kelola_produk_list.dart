@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/kelola_controller.dart';
-import 'package:tugas_akhir/widget/widget%20desktop/kelola/product_card_kelola.dart';
+import 'package:tugas_akhir/widget/widget desktop/kelola/product_card_kelola.dart';
 
 class KelolaProdukList extends StatelessWidget {
   final KelolaProdukController ctrl;

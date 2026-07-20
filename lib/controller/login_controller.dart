@@ -62,7 +62,6 @@ class LoginController extends GetxController {
     Get.offAllNamed(AppRoutes.mediaQuery);
   }
 
-  // Menambahkan parameter isDesktop untuk membedakan asal login
   Future<void> login({required bool isDesktop}) async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -83,11 +82,8 @@ class LoginController extends GetxController {
       final user = User.fromJson(responseData);
       currentUser.value = user;
       await saveSession(user);
-
-      // === TAMBAHKAN DUA BARIS INI ===
       emailController.clear();
       passwordController.clear();
-      // ==============================
 
       handleNavigation(user, isDesktop);
     } catch (error) {

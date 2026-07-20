@@ -27,7 +27,6 @@ class ProductCardDesktop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // ── Hitung qty produk ini di keranjang ─────────────────────────
       final qty = cartController.cartItems
           .where((item) => item.productId == product.id)
           .fold<int>(0, (sum, item) => sum + item.qty);
@@ -44,7 +43,6 @@ class ProductCardDesktop extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Gambar + badge qty ────────────────────────────────
               Expanded(
                 child: Stack(
                   children: [
@@ -67,7 +65,6 @@ class ProductCardDesktop extends StatelessWidget {
                       ),
                     ),
 
-                    // Badge qty — muncul jika produk ada di keranjang
                     if (qty > 0)
                       Positioned(
                         top: 8,
@@ -92,7 +89,6 @@ class ProductCardDesktop extends StatelessWidget {
                         ),
                       ),
 
-                    // Badge stok habis
                     if (product.stock <= 0)
                       Positioned(
                         bottom: 0,
@@ -115,8 +111,6 @@ class ProductCardDesktop extends StatelessWidget {
                   ],
                 ),
               ),
-
-              // ── Info produk ───────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(

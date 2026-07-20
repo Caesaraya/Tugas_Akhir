@@ -116,6 +116,27 @@ class ProductTableController extends BaseTableController<Product> {
   }
 
   // ── Data ─────────────────────────────────────────────────────────────────
+  void _sortProducts(List<Product> list) {
+    list.sort((a, b) {
+      // 1. Produk aktif terlebih dahulu, soft delete paling akhir
+      if (a.isDeleted && !b.isDeleted) return 1;
+      if (!a.isDeleted && b.isDeleted) return -1;
+
+      // Jika keduanya berada di status yang sama (sama-sama aktif atau sama-sama deleted)
+      if (!a.isDeleted && !b.isDeleted) {
+        // 2. Stok 0 berada di bagian paling bawah dari produk aktif
+        if (a.stock == 0 && b.stock > 0) return 1;
+        if (a.stock > 0 && b.stock == 0) return -1;
+
+        // 3. Urutkan berdasarkan stok terbanyak ke paling sedikit
+        int stockCompare = b.stock.compareTo(a.stock);
+        if (stockCompare != 0) return stockCompare;
+      }
+
+      // Jika stok sama atau keduanya soft delete, urutkan berdasarkan ID
+      return a.id.compareTo(b.id);
+    });
+  }
 
   @override
   Future<void> fetchData() async {
@@ -124,13 +145,19 @@ class ProductTableController extends BaseTableController<Product> {
 
       final data = await ApiService.getProducts();
 
-      data.sort((a, b) {
-        if (a.isDeleted && !b.isDeleted) return 1;
-        if (!a.isDeleted && b.isDeleted) return -1;
-        return a.id.compareTo(b.id);
-      });
+      // Gunakan fungsi helper sort baru
+      _sortProducts(data);
 
       setData(data);
+
+      // Jika filter stok habis sedang aktif saat refresh, terapkan ulang filter
+      if (isFilterStockHabis.value) {
+        filteredList.assignAll(
+          originalList.where((e) => e.stock <= 0).toList(),
+        );
+        currentPage.value = 1;
+        setupPagination();
+      }
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -146,35 +173,49 @@ class ProductTableController extends BaseTableController<Product> {
   @override
   void search(String query) {
     if (query.isEmpty) {
-      filteredList.assignAll(originalList);
+      // Jika filter stok habis aktif, tampilkan stok habis saja
+      if (isFilterStockHabis.value) {
+        filteredList.assignAll(
+          originalList.where((e) => e.stock <= 0).toList(),
+        );
+      } else {
+        filteredList.assignAll(originalList);
+      }
     } else {
       final searchText = query.toLowerCase();
 
-      filteredList.assignAll(
-        originalList.where((product) {
-          final matchesString =
-              product.name.toLowerCase().contains(searchText) ||
-              product.jenis.toLowerCase().contains(searchText) ||
-              product.satuan.toLowerCase().contains(searchText);
+      // Filter data terlebih dahulu berdasarkan query pencarian
+      final searchResults = originalList.where((product) {
+        final matchesString =
+            product.name.toLowerCase().contains(searchText) ||
+            product.jenis.toLowerCase().contains(searchText) ||
+            product.satuan.toLowerCase().contains(searchText);
 
-          final matchesNumbers =
-              product.price.toString().contains(searchText) ||
-              product.stock.toString().contains(searchText) ||
-              product.discount.toString().contains(searchText) ||
-              product.priceAfterDiscount.toString().contains(searchText);
+        final matchesNumbers =
+            product.price.toString().contains(searchText) ||
+            product.stock.toString().contains(searchText) ||
+            product.discount.toString().contains(searchText) ||
+            product.priceAfterDiscount.toString().contains(searchText);
 
-          final matchesResep =
-              product.resepId?.toString().contains(searchText) ?? false;
+        final matchesResep =
+            product.resepId?.toString().contains(searchText) ?? false;
 
-          final statusString = product.isDeleted ? 'dihapus' : 'aktif';
-          final matchesStatus = statusString.contains(searchText);
+        final statusString = product.isDeleted ? 'dihapus' : 'aktif';
+        final matchesStatus = statusString.contains(searchText);
 
-          return matchesString ||
-              matchesNumbers ||
-              matchesResep ||
-              matchesStatus;
-        }).toList(),
-      );
+        // Jika tombol filter stok habis aktif, hasil pencarian juga disaring hanya yang stok <= 0
+        final matchesFilter = !isFilterStockHabis.value || product.stock <= 0;
+
+        return (matchesString ||
+                matchesNumbers ||
+                matchesResep ||
+                matchesStatus) &&
+            matchesFilter;
+      }).toList();
+
+      // Terapkan pengurutan default pada hasil pencarian
+      _sortProducts(searchResults);
+      filteredList.assignAll(searchResults);
     }
 
     currentPage.value = 1;
@@ -185,8 +226,10 @@ class ProductTableController extends BaseTableController<Product> {
     isFilterStockHabis.value = !isFilterStockHabis.value;
 
     if (isFilterStockHabis.value) {
+      // Hanya menampilkan produk dengan stok habis (stok = 0 atau kurang)
       filteredList.assignAll(originalList.where((e) => e.stock <= 0).toList());
     } else {
+      // Ketika dimatikan, kembali menampilkan seluruh data dengan urutan default (karena originalList sudah terurut)
       filteredList.assignAll(originalList);
     }
 
@@ -280,8 +323,7 @@ class ProductTableController extends BaseTableController<Product> {
         stock: int.tryParse(stockC.text) ?? 0, // FIX: tryParse bukan parse
         jenis: jenisC.text,
         satuan: satuanC.text,
-        imageFile: selectedImage
-            .value,
+        imageFile: selectedImage.value,
         resepId: product.resepId, // Pertahankan resepId lama
       );
 

@@ -9,8 +9,8 @@ import '../../controller/admin/table/base_table_controller.dart';
 import '../../controller/admin/keuangan_controller.dart'; // Import KeuanganController
 
 class BahanBakuTableController extends BaseTableController<BahanBaku> {
-  final RxBool filterStockHabis = false.obs;
-
+  // Ganti nama variable state-nya
+  final RxBool filterStokMenipis = false.obs; // Sebelumnya filterStockHabis
   BahanBakuTableController() {
     itemsPerPage = 10;
     // Format harga saat input
@@ -40,35 +40,50 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
   Future<void> fetchData() async {
     isLoading.value = true;
     try {
-      final data = await ApiService.getAllBahanBaku();
+      final data = await ApiService.getAllBahanBaku(); //
 
-      List<BahanBaku> processedData = data;
-      if (filterStockHabis.value) {
-        processedData = processedData.where((item) => item.stok <= 0).toList();
+      List<BahanBaku> processedData = data; //
+
+      // 1. Filter data: ambil yang stoknya di bawah 10
+      if (filterStokMenipis.value) {
+        processedData = processedData.where((item) => item.stok < 10).toList();
       }
 
+      // 2. Logika Pengurutan (Sorting)
       processedData.sort((a, b) {
-        if (a.deletedAt == null && b.deletedAt != null) return -1;
-        if (a.deletedAt != null && b.deletedAt == null) return 1;
-        return 0;
+        // Jika filter aktif, urutkan berdasarkan stok terbesar ke terkecil (Descending)
+        if (filterStokMenipis.value) {
+          return b.stok.compareTo(a.stok);
+        }
+
+        // Urutan default bawaan jika filter tidak aktif (Bahan aktif di atas, soft-deleted di bawah)
+        if (a.deletedAt == null && b.deletedAt != null) return -1; //
+        if (a.deletedAt != null && b.deletedAt == null) return 1; //
+        return 0; //
       });
 
-      setData(processedData);
+      setData(processedData); //
     } catch (e) {
-      print("Error Fetch Data: $e");
+      print("Error Fetch Data: $e"); //
       Get.snackbar(
-        "Error",
-        "Gagal mengambil data bahan baku: $e",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+        "Error", //
+        "Gagal mengambil data bahan baku: $e", //
+        backgroundColor: Colors.red, //
+        colorText: Colors.white, //
       );
     } finally {
-      isLoading.value = false;
+      isLoading.value = false; //
     }
   }
 
+  // Ganti nama fungsi toggle-nya
+  void toggleFilterStokMenipis() {
+    filterStokMenipis.value = !filterStokMenipis.value;
+    fetchData();
+  }
+
   void toggleFilterStockHabis() {
-    filterStockHabis.value = !filterStockHabis.value;
+    filterStokMenipis.value = !filterStokMenipis.value;
     fetchData();
   }
 

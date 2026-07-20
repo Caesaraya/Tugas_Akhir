@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/kelola_controller.dart';
 import 'package:tugas_akhir/widget/widget desktop/dashboard/desktop_navigation_drawer.dart';
-import 'package:tugas_akhir/widget/widget desktop/kelola/product_card_kelola.dart';
 
 class KasirKelolaDashboard extends StatelessWidget {
   const KasirKelolaDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final KelolaProdukController kelolaProdukController =
-        Get.find<KelolaProdukController>();
+    final ctrl = Get.find<KelolaProdukController>();
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F5F2),
@@ -22,15 +26,20 @@ class KasirKelolaDashboard extends StatelessWidget {
         ),
         backgroundColor: const Color(0xFFE89336),
         elevation: 0,
-        foregroundColor: Colors.white,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
       ),
       body: Column(
         children: [
+          // Search bar
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
-              onChanged: (value) =>
-                  kelolaProdukController.searchQuery.value = value,
+              onChanged: (value) => ctrl.searchQuery.value = value,
               decoration: InputDecoration(
                 hintText: 'Cari Produk...',
                 prefixIcon: const Icon(Icons.search, color: Color(0xFFE89336)),
@@ -48,14 +57,15 @@ class KasirKelolaDashboard extends StatelessWidget {
               ),
             ),
           ),
+
           Expanded(
             child: Obx(() {
-              if (kelolaProdukController.isLoading.value) {
+              if (ctrl.isLoading.value) {
                 return const Center(
                   child: CircularProgressIndicator(color: Color(0xFFE89336)),
                 );
               }
-              if (kelolaProdukController.filteredProducts.isEmpty) {
+              if (ctrl.filteredProducts.isEmpty) {
                 return const Center(
                   child: Text(
                     'Produk tidak ditemukan',
@@ -63,19 +73,260 @@ class KasirKelolaDashboard extends StatelessWidget {
                   ),
                 );
               }
-              return RefreshIndicator(
-                onRefresh: kelolaProdukController.fetchData,
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: kelolaProdukController.filteredProducts.length,
-                  itemBuilder: (context, index) {
-                    final produk =
-                        kelolaProdukController.filteredProducts[index];
-                    return ProductCardKelola(
-                      ctrl: kelolaProdukController,
-                      produk: produk,
-                    );
-                  },
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: DataTable(
+                      headingRowColor: WidgetStateProperty.all(
+                        const Color(0xFFE89336),
+                      ),
+                      headingTextStyle: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                      dataRowColor: WidgetStateProperty.resolveWith(
+                        (states) => Colors.white,
+                      ),
+                      border: TableBorder.all(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      columnSpacing: 20,
+                      columns: const [
+                        DataColumn(label: Text('No')),
+                        DataColumn(label: Text('Nama')),
+                        DataColumn(label: Text('Harga')),
+                        DataColumn(label: Text('Diskon')),
+                        DataColumn(label: Text('Harga Final')),
+                        DataColumn(label: Text('Stock')),
+                        DataColumn(label: Text('Status')),
+                        DataColumn(label: Text('Jenis')),
+                        DataColumn(label: Text('Satuan')),
+                        DataColumn(label: Text('Image')),
+                        DataColumn(label: Text('Aksi')),
+                      ],
+                      rows: List.generate(ctrl.filteredProducts.length, (i) {
+                        final produk = ctrl.filteredProducts[i];
+                        final bool outOfStock = produk.stock <= 0;
+                        final bool lowStock = produk.stock < 10;
+
+                        return DataRow(
+                          cells: [
+                            // No
+                            DataCell(
+                              Text(
+                                '${i + 1}',
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ),
+                            DataCell(
+                              SizedBox(
+                                width: 180,
+                                child: Text(
+                                  produk.name,
+                                  softWrap: true,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Harga
+                            DataCell(
+                              Text(
+                                currencyFormat.format(produk.price),
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+
+                            // Diskon
+                            DataCell(
+                              Text(
+                                produk.discount > 0
+                                    ? '${produk.discount}%'
+                                    : '-',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: produk.discount > 0
+                                      ? Colors.red
+                                      : Colors.grey,
+                                ),
+                              ),
+                            ),
+
+                            // Harga Final
+                            DataCell(
+                              Text(
+                                currencyFormat.format(
+                                  produk.priceAfterDiscount,
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFFE89336),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+
+                            // Stock — merah kalau stok menipis (<10)
+                            DataCell(
+                              Text(
+                                '${produk.stock}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: lowStock ? Colors.red : Colors.black87,
+                                ),
+                              ),
+                            ),
+
+                            // Status
+                            DataCell(
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: outOfStock
+                                      ? Colors.red.shade50
+                                      : Colors.green.shade50,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  outOfStock ? 'HABIS' : 'AKTIF',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: outOfStock
+                                        ? Colors.red
+                                        : Colors.green,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Jenis
+                            DataCell(
+                              Text(
+                                produk.jenis,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+
+                            // Satuan
+                            DataCell(
+                              SizedBox(
+                                width: 60,
+                                child: Text(
+                                  produk.satuan,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ),
+
+                            // Image
+                            DataCell(
+                              produk.image.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: Image.network(
+                                        produk.image,
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            const Icon(
+                                              Icons.broken_image,
+                                              size: 40,
+                                              color: Colors.grey,
+                                            ),
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.image_not_supported,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
+                            ),
+
+                            // Aksi
+                            DataCell(
+                              Row(
+                                children: [
+                                  // Edit
+                                  IconButton(
+                                    onPressed: () =>
+                                        ctrl.showEditForm(context, produk),
+                                    icon: const Icon(
+                                      Icons.edit,
+                                      color: Colors.blue,
+                                      size: 20,
+                                    ),
+                                    tooltip: 'Edit',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Hapus
+                                  IconButton(
+                                    onPressed: () {
+                                      Get.dialog(
+                                        AlertDialog(
+                                          title: const Text('Hapus Produk'),
+                                          content: Text(
+                                            'Yakin hapus "${produk.name}"?',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Get.back(),
+                                              child: const Text('Batal'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () async {
+                                                Get.back();
+                                                // panggil delete jika ada di controller
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                              ),
+                                              child: const Text(
+                                                'Hapus',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
+                                    tooltip: 'Hapus',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                    ),
+                  ),
                 ),
               );
             }),

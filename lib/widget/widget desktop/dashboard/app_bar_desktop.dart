@@ -47,7 +47,7 @@ class AppBarDesktop extends StatelessWidget {
             SizedBox(
               width: 250,
               child: MySearchBar(
-                hintText: 'Cari produk...',
+                hintText: 'Search',
                 onChanged: (value) => controller.applyFilter(query: value),
               ),
             ),

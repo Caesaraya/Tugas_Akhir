@@ -85,7 +85,6 @@ class ReceiptActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TAMBAHKAN WIDGET EXPANDED DI SINI SEBAGAI PEMBUNGKUS UTAMA
     return Expanded(
       child: SizedBox(
         width: double.infinity,
