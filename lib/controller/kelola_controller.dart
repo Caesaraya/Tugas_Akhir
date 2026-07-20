@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:tugas_akhir/api%20service/api_service.dart';
+import 'package:tugas_akhir/api service/api_service.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -146,7 +146,6 @@ final selectedSatuan = ''.obs;
             buildTextField(stockController, "Stok", isNumber: true),
             const SizedBox(height: 12),
 
-            // ✅ Dropdown Jenis
             Obx(() => DropdownButtonFormField<String>(
               value: selectedJenis.value,
               decoration: InputDecoration(
@@ -168,8 +167,6 @@ final selectedSatuan = ''.obs;
               },
             )),
             const SizedBox(height: 12),
-
-            // ✅ Dropdown Satuan
             Obx(() => DropdownButtonFormField<String>(
               value: selectedSatuan.value,
               decoration: InputDecoration(
@@ -216,7 +213,6 @@ final selectedSatuan = ''.obs;
   return TextField(
     controller: controller,
     keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-    // ✅ Hanya angka untuk diskon dan number field
     inputFormatters: isDiscount || isNumber
         ? [FilteringTextInputFormatter.digitsOnly]
         : null,

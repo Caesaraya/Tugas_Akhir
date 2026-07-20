@@ -16,7 +16,6 @@ class DeleteValidation {
       contentPadding: const EdgeInsets.all(20),
       backgroundColor: Colors.white,
       radius: 20,
-      // Bagian Isi Dialog
       content: Column(
         children: [
           const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 50),
@@ -28,7 +27,6 @@ class DeleteValidation {
           ),
         ],
       ),
-      // Tombol Aksi
       confirm: SizedBox(
         width: 100,
         child: ElevatedButton(

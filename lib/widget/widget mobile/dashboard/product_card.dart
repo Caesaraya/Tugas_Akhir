@@ -104,7 +104,6 @@ class ProductCard extends StatelessWidget {
                           ),
                         ),
 
-                      // Stok Habis
                       if (outOfStock)
                         Positioned(
                           bottom: 0,
@@ -133,7 +132,7 @@ class ProductCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        height: 34,
+                        height: 38,
                         child: Text(
                           product.name,
                           maxLines: 2,
@@ -141,6 +140,7 @@ class ProductCard extends StatelessWidget {
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
+                            height: 1.2,
                           ),
                         ),
                       ),

@@ -6,8 +6,7 @@ import 'package:tugas_akhir/models/bahan_baku.dart';
 class ManualBahanPage extends StatelessWidget {
   const ManualBahanPage({super.key});
 
-  // Fungsi Pembantu untuk Memunculkan Popup Input Qty saat Bahan Baku diklik
-  void _tampilkanPopupInputQty(
+  void tampilkanPopupInputQty(
     BuildContext context,
     BakeryController ctrl,
     BahanBaku bahan,
@@ -78,8 +77,6 @@ class ManualBahanPage extends StatelessWidget {
                 );
                 return;
               }
-
-              // Masukkan ke logika keranjang controller
               ctrl.tambahKeKeranjangManualDenganQty(bahan, qty);
               Get.back();
             },
@@ -93,8 +90,7 @@ class ManualBahanPage extends StatelessWidget {
     );
   }
 
-  // Fungsi Pembantu untuk Memunculkan Bottom Sheet Tinjauan Keranjang
-  void _tampilkanBottomSheetKeranjang(
+  void tampilkanBottomSheetKeranjang(
     BuildContext context,
     BakeryController ctrl,
   ) {
@@ -329,21 +325,19 @@ class ManualBahanPage extends StatelessWidget {
                     );
                     return;
                   }
-                  _tampilkanPopupInputQty(context, ctrl, bahan);
+                  tampilkanPopupInputQty(context, ctrl, bahan);
                 },
               ),
             );
           },
         );
       }),
-
-      // FLOATING ACTION BUTTON KERANJANG SINKRON & REALTIME
       floatingActionButton: Obx(() {
         if (ctrl.manualCart.isEmpty)
-          return const SizedBox.shrink(); // Sembunyikan jika kosong
+          return const SizedBox.shrink();
 
         return FloatingActionButton.extended(
-          onPressed: () => _tampilkanBottomSheetKeranjang(context, ctrl),
+          onPressed: () => tampilkanBottomSheetKeranjang(context, ctrl),
           backgroundColor: const Color(0xFFE89336),
           icon: Badge(
             label: Text(

@@ -1,8 +1,8 @@
   import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tugas_akhir/controller/kalkulator_controller.dart';
-import 'package:tugas_akhir/widget/widget%20mobile/cash/CurrencyInputFormatter.dart';
-import 'package:tugas_akhir/widget/widget%20mobile/cash/kalkulator_input.dart';
+import 'package:tugas_akhir/widget/widget mobile/cash/CurrencyInputFormatter.dart';
+import 'package:tugas_akhir/widget/widget mobile/cash/kalkulator_input.dart';
 
 class UangDiterimaInput extends StatelessWidget {
   final KalkulatorController ctrl;

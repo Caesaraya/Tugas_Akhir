@@ -25,7 +25,6 @@ class BakeryProductionPreviewPage extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: Obx(() {
-        // PERBAIKAN 1: Validasi jika selectedResep masih null saat halaman terbuka
         final resep = ctrl.selectedResep.value;
         if (resep == null) {
           return const Center(
@@ -107,8 +106,6 @@ class BakeryProductionPreviewPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    // PERBAIKAN 2: Antisipasi jika resep tidak memiliki bahan baku baku sama sekali
                     daftarBahan.isEmpty
                         ? const Padding(
                             padding: EdgeInsets.symmetric(vertical: 20),

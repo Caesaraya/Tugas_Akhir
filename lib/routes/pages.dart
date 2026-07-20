@@ -37,23 +37,21 @@ import 'package:tugas_akhir/bindings/bindings.dart';
 
 import 'routes.dart';
 
-// ... semua import Anda tetap sama ...
-
 class AppPages {
   static final pages = [
     GetPage(name: AppRoutes.splash, page: () => const SplashPage()),
     // ── Login ──────────────────────────────────────────────────────────────
     GetPage(
       name: AppRoutes.login,
-      page: () => LoginPage(), // Hapus properti binding
+      page: () => LoginPage(), 
     ),
     GetPage(
       name: AppRoutes.logindesk,
-      page: () => DesktopLoginPage(), // Hapus properti binding
+      page: () => DesktopLoginPage(),
     ),
     GetPage(
       name: AppRoutes.mediaQuery,
-      page: () => DashboardWrapper(), // Hapus properti binding
+      page: () => DashboardWrapper(), 
     ),
 
     // ── Kasir Mobile ───────────────────────────────────────────────────────
@@ -120,7 +118,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.kelolaUserMob,
       page: () => KelolaUserMobilePage(),
-    ), // ← TAMBAHAN BARU
+    ),
     // ── Bakery ──────────────────────────────────────────────────────
     GetPage(name: AppRoutes.bakery, page: () => BakeryPage()),
     GetPage(

@@ -45,25 +45,29 @@ class MySearchBar extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         GetX<DashboardController>(
-          builder: (ctrl) => GestureDetector(
-            onTap: () => SortBottomSheet.show(context),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: ctrl.sortOption.value != 'none'
-                    ? const Color(0xFFE89336)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.grey.shade200),
+          builder: (ctrl) {
+            final bool isFilterActive =
+                ctrl.sortOption.value != 'none' ||
+                ctrl.showOutOfStockOnly.value;
+
+            return GestureDetector(
+              onTap: () => SortBottomSheet.show(context),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isFilterActive
+                      ? const Color(0xFFE89336)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Icon(
+                  Icons.tune,
+                  color: isFilterActive ? Colors.white : Colors.grey,
+                ),
               ),
-              child: Icon(
-                Icons.tune,
-                color: ctrl.sortOption.value != 'none'
-                    ? Colors.white
-                    : Colors.grey,
-              ),
-            ),
-          ),
+            );
+          },
         ),
       ],
     );

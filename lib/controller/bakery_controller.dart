@@ -336,8 +336,6 @@ class BakeryController extends GetxController {
   Future<void> loadBakeryCalculation(int resepId) async {
     try {
       isLoading(true);
-
-      // 1. Amankan pencarian resep (hanya untuk validasi keberadaan resep)
       final resepTarget = resepList.firstWhereOrNull((r) => r.id == resepId);
       if (resepTarget == null) {
         Get.snackbar(
@@ -348,8 +346,6 @@ class BakeryController extends GetxController {
         );
         return;
       }
-
-      // 2. Ambil data biaya dari API
       final biaya = await ApiService.hitungBiayaProduksi(
         resepId: resepId,
         quantity: jumlahProduksi.value,

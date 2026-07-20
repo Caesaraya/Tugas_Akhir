@@ -3,9 +3,9 @@ import 'package:tugas_akhir/controller/kelola_controller.dart';
 
 class KelolaProdukSearchBar extends StatelessWidget {
   final KelolaProdukController ctrl;
- 
+
   const KelolaProdukSearchBar({super.key, required this.ctrl});
- 
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -14,7 +14,7 @@ class KelolaProdukSearchBar extends StatelessWidget {
         onChanged: (value) => ctrl.searchQuery.value = value,
         decoration: InputDecoration(
           hintText: 'Search',
-          prefixIcon: const Icon(Icons.search, color: Color(0xFFE89336)),
+          prefixIcon: const Icon(Icons.search, color: Colors.grey),
           filled: true,
           fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(vertical: 0),

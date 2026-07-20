@@ -26,7 +26,6 @@ class CartPanel extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // ✅ Header user
           Container(
             padding: const EdgeInsets.all(12),
             child: const Row(
@@ -38,8 +37,6 @@ class CartPanel extends StatelessWidget {
             ),
           ),
           const Divider(),
-
-          // ✅ List item — pakai KeranjangItemCard sama seperti mobile
           Expanded(
             child: Obx(() {
               if (cartController.cartItems.isEmpty) {
@@ -64,8 +61,6 @@ class CartPanel extends StatelessWidget {
               );
             }),
           ),
-
-          // ✅ Tombol bayar — tetap sama seperti desktop
           Obx(() {
             final bool hasItems = cartController.cartItems.isNotEmpty;
             return InkWell(
