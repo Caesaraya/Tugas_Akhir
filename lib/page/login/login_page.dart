@@ -14,34 +14,24 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Mengambil tinggi layar untuk pembagian background secara dinamis
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: AppColors.ba,
       body: Stack(
         children: [
-          // 1. BACKGROUND SPLIT (Atas Oranye, Bawah Abu-abu)
           Column(
             children: [
-              Container(
-                height:
-                    screenHeight * 0.4, // 40% tinggi layar untuk warna oranye
-                color: AppColors.ba, // Menggunakan warna oranye kamu
-              ),
+              Container(height: screenHeight * 0.4, color: AppColors.ba),
               Expanded(child: Container(color: AppColors.ba)),
             ],
           ),
-
-          // 2. KONTEN UTAMA (Scrollable agar aman dari keyboard overflow)
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-
-                  // LOGO AREA
                   SizedBox(
                     height: 150,
                     child: Center(
@@ -52,18 +42,13 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
-                  // FLOATING LOGIN CARD
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(28.0),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(
-                        36,
-                      ), // Membuat semua sudut melengkung
+                      borderRadius: BorderRadius.circular(36),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black26, // Soft shadow

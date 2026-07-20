@@ -35,8 +35,8 @@ class CartController extends GetxController {
     decimalDigits: 0,
   );
 
-  final CartRepository _cartRepository = CartRepository.instance;
-  final TransactionRepository _transactionRepository =
+  final CartRepository cartRepository = CartRepository.instance;
+  final TransactionRepository transactionRepository =
       TransactionRepository.instance;
 
   // Injeksi komponen Printer Multi-Layer baru
@@ -64,46 +64,105 @@ class CartController extends GetxController {
   }
 
   Future<void> _loadPersistedCart() async {
-    final persisted = await _cartRepository.getCart();
+    final persisted = await cartRepository.getCart();
     if (persisted.isNotEmpty) {
       cartItems.assignAll(persisted);
     }
   }
 
-  void addToCart(Product product) {
+  bool addToCart(Product product) {
     var existingItem = cartItems.firstWhereOrNull(
       (item) => item.productId == product.id,
     );
     if (existingItem != null) {
+      if (existingItem.qty >= product.stock) {
+        Get.snackbar(
+          "Stok Habis",
+          "Stok ${product.name} hanya ${product.stock} ${product.satuan}",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          duration: const Duration(milliseconds: 1500),
+          margin: const EdgeInsets.all(10),
+        );
+        return false;
+      }
       existingItem.qty++;
       cartItems.refresh();
-      _cartRepository.upsertItem(existingItem);
     } else {
-      final newItem = CartItem(
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        discount: product.discount,
-        qty: 1,
+      cartItems.add(
+        CartItem(
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          discount: product.discount ?? 0,
+          stock: product.stock,
+          qty: 1,
+        ),
       );
-      cartItems.add(newItem);
-      _cartRepository.upsertItem(newItem);
     }
+    return true;
   }
 
   void removeFromCart(int productId) {
     cartItems.removeWhere((item) => item.productId == productId);
-    _cartRepository.removeItem(productId);
+    cartRepository.removeItem(productId);
   }
 
+  // ── increaseQty ────────────────────────────────────────────────────────────
   void increaseQty(int productId) {
     var item = cartItems.firstWhereOrNull(
       (item) => item.productId == productId,
     );
     if (item != null) {
+      if (item.qty >= item.stock) {
+        // Validasi stok — tidak bisa melebihi stok
+        return;
+      }
       item.qty++;
       cartItems.refresh();
-      _cartRepository.upsertItem(item);
+      cartRepository.upsertItem(item);
+    }
+  }
+
+  // ── setQty ─────────────────────────────────────────────────────────────────
+  void setQty(Product product, int qty) {
+    final maxQty = product.stock;
+    final finalQty = qty > maxQty ? maxQty : qty;
+
+    if (finalQty <= 0) {
+      removeFromCart(product.id);
+      return;
+    }
+    var existing = cartItems.firstWhereOrNull(
+      (item) => item.productId == product.id,
+    );
+    if (existing != null) {
+      existing.qty = finalQty;
+      cartItems.refresh();
+    } else {
+      cartItems.add(
+        CartItem(
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          discount: product.discount ?? 0,
+          stock: product.stock,
+          qty: finalQty,
+        ),
+      );
+    }
+
+    if (qty > maxQty) {
+      Get.snackbar(
+        "Stok Terbatas",
+        "Maksimal ${product.name} hanya $maxQty ${product.satuan}",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        duration: const Duration(milliseconds: 1500),
+        margin: const EdgeInsets.all(10),
+      );
     }
   }
 
@@ -115,7 +174,7 @@ class CartController extends GetxController {
       if (item.qty > 1) {
         item.qty--;
         cartItems.refresh();
-        _cartRepository.upsertItem(item);
+        cartRepository.upsertItem(item);
       } else {
         removeFromCart(productId);
       }
@@ -135,7 +194,7 @@ class CartController extends GetxController {
     cartItems.clear();
     selectedPayment.value = 'cash';
     inputUang.value = 0.0;
-    _cartRepository.clear();
+    cartRepository.clear();
   }
 
   Map<String, String> getSuksesData(dynamic args) {
@@ -203,7 +262,7 @@ class CartController extends GetxController {
   Future<void> prosesKeApi() async {
     if (cartItems.isEmpty) return;
 
-    await _transactionRepository.checkout(
+    await transactionRepository.checkout(
       cart: cartItems,
       total: totalPrice,
       bayar: selectedPayment.value == "cash" ? inputUang.value : totalPrice,

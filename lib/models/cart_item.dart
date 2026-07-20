@@ -3,6 +3,7 @@ class CartItem {
   final String name;
   final int price;   
   final int discount;
+  final int stock; 
   int qty;
 
   CartItem({
@@ -10,6 +11,7 @@ class CartItem {
     required this.name,
     required this.price,
     required this.discount,
+    required this.stock,
     this.qty = 1,
   });
 

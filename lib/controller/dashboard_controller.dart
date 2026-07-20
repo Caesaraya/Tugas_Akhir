@@ -1,11 +1,3 @@
-// lib/controller/dashboard_controller.dart
-//
-// PERUBAHAN dari versi sebelumnya: fetchProducts() sekarang membaca dari
-// ProductRepository (SQLite lokal) sebagai sumber utama -- selalu berhasil
-// walau offline. Refresh dari server tetap dicoba di background supaya
-// data lokal ikut ter-update, tapi kegagalannya tidak lagi membuat
-// productList kosong seperti sebelumnya.
-
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/data/repository/product_repository.dart';
@@ -16,16 +8,17 @@ class DashboardController extends GetxController {
   var isLoadingMore = false.obs;
   var productList = <Product>[].obs;
   var filteredList = <Product>[].obs;
+  var sortOption = 'none'.obs;
 
   var displayedList = <Product>[].obs;
-  static const int _pageSize = 6;
+  static const int pageSize = 6;
   var currentPage = 1;
 
   var categories = <String>[].obs;
   var selectedCategory = 'Semua'.obs;
   var lastQuery = ''.obs;
 
-  final ProductRepository _productRepository = ProductRepository.instance;
+  final ProductRepository productRepository = ProductRepository.instance;
 
   bool get hasMore => displayedList.length < filteredList.length;
 
@@ -35,19 +28,13 @@ class DashboardController extends GetxController {
     super.onInit();
   }
 
-  /// Sekarang selalu baca dari SQLite dulu (cepat, jalan offline).
-  /// Refresh dari server dijalankan di background dan tidak memblokir UI --
-  /// kalau berhasil, kita baca ulang dari SQLite supaya UI ikut update.
   Future<void> fetchProducts() async {
     try {
       isLoading(true);
 
-      final localProducts = await _productRepository.getLocalProducts();
-      _applyToState(localProducts);
-
-      // Refresh di background. Tidak di-await secara blocking terhadap
-      // isLoading supaya UI tidak menggantung menunggu network.
-      unawaited(_refreshInBackground());
+      final localProducts = await productRepository.getLocalProducts();
+      applyToState(localProducts);
+      unawaited(refreshInBackground());
     } catch (e) {
       print('Error Fetch Dashboard: $e');
     } finally {
@@ -55,13 +42,13 @@ class DashboardController extends GetxController {
     }
   }
 
-  Future<void> _refreshInBackground() async {
-    await _productRepository.refreshFromServer();
-    final refreshed = await _productRepository.getLocalProducts();
-    _applyToState(refreshed);
+  Future<void> refreshInBackground() async {
+    await productRepository.refreshFromServer();
+    final refreshed = await productRepository.getLocalProducts();
+    applyToState(refreshed);
   }
 
-  void _applyToState(List<Product> products) {
+  void applyToState(List<Product> products) {
     List<Product> updatedProducts = [];
 
     for (var product in products) {
@@ -89,26 +76,45 @@ class DashboardController extends GetxController {
     applyFilter();
   }
 
-  void applyFilter({String? query, String? category}) {
+  void applyFilter({String? query, String? category, String? sort}) {
     if (query != null) lastQuery.value = query;
     if (category != null) selectedCategory.value = category;
+    if (sort != null) sortOption.value = sort;
 
     var temp = productList.where((product) {
-      bool isAvailable = product.stock > 0;
       bool matchCategory =
           selectedCategory.value == 'Semua' ||
           product.jenis == selectedCategory.value;
       bool matchSearch = product.name.toLowerCase().contains(
         lastQuery.value.toLowerCase(),
       );
-
-      return matchCategory && matchSearch && isAvailable;
+      return matchCategory && matchSearch;
     }).toList();
+    final indexed = temp.asMap().entries.toList();
 
-    filteredList.assignAll(temp);
+    indexed.sort((a, b) {
+      final productA = a.value;
+      final productB = b.value;
+      if (productA.stock > 0 && productB.stock <= 0) return -1;
+      if (productA.stock <= 0 && productB.stock > 0) return 1;
 
+      switch (sortOption.value) {
+        case 'low_to_high':
+          return productA.priceAfterDiscount.compareTo(
+            productB.priceAfterDiscount,
+          );
+        case 'high_to_low':
+          return productB.priceAfterDiscount.compareTo(
+            productA.priceAfterDiscount,
+          );
+        default:
+          return a.key.compareTo(b.key);
+      }
+    });
+
+    filteredList.assignAll(indexed.map((e) => e.value).toList());
     currentPage = 1;
-    displayedList.assignAll(filteredList.take(_pageSize).toList());
+    displayedList.assignAll(filteredList.take(pageSize).toList());
   }
 
   Future<void> loadMore() async {
@@ -121,7 +127,7 @@ class DashboardController extends GetxController {
     currentPage++;
     final nextItems = filteredList
         .skip(displayedList.length)
-        .take(_pageSize)
+        .take(pageSize)
         .toList();
 
     displayedList.addAll(nextItems);

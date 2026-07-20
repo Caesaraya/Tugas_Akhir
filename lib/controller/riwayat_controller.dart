@@ -47,7 +47,7 @@ Future<void> fetchDetail(int id) async {
   } catch (e) {
     Get.snackbar("Error", "Gagal ambil detail: $e");
   } finally {
-    if (Get.isDialogOpen ?? false) Get.back(); // tutup loading
+    if (Get.isDialogOpen ?? false) Get.back();
   }
 }
 Future<void> navigateToDetail(Map<String, dynamic> trx, String route) async {

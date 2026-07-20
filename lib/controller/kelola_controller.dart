@@ -14,7 +14,7 @@ class KelolaProdukController extends GetxController {
   var isLoading = false.obs;
   var searchQuery = "".obs;
 
-  final ImagePicker _picker = ImagePicker();
+  final ImagePicker picker = ImagePicker();
   var selectedImage = Rx<File?>(null);
 
   final currencyFormatter = NumberFormat.currency(
@@ -82,7 +82,7 @@ final selectedSatuan = ''.obs;
   }
 
   Future<void> pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       selectedImage.value = File(image.path);
     }
@@ -141,7 +141,7 @@ final selectedSatuan = ''.obs;
             const SizedBox(height: 12),
             buildTextField(priceController, "Harga", isNumber: true, isPrice: true),
             const SizedBox(height: 12),
-buildTextField(discountPercentController, "Diskon (%)", isNumber: true, isDiscount: true),
+            buildTextField(discountPercentController, "Diskon (%)", isNumber: true, isDiscount: true),
             const SizedBox(height: 12),
             buildTextField(stockController, "Stok", isNumber: true),
             const SizedBox(height: 12),

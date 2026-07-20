@@ -39,13 +39,26 @@ class ProductListDesktop extends StatelessWidget {
         itemCount: controller.filteredList.length,
         itemBuilder: (context, index) {
           final product = controller.filteredList[index];
-          return ProductCardDesktop(
-            product: product,
-            
-            onTap: onProductTap != null
-                ? () => onProductTap!(product)
-                : null,
-          );
+        return ProductCardDesktop(
+  product: product,
+  onTap: onProductTap != null
+      ? () {
+          if (product.stock <= 0) {
+            Get.snackbar(
+              "Stok Habis",
+              "${product.name} sudah habis",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red,
+              colorText: Colors.white,
+              duration: const Duration(milliseconds: 1500),
+              margin: const EdgeInsets.all(10),
+            );
+            return;
+          }
+          onProductTap!(product);
+        }
+      : null,
+);
         },
       );
     });
