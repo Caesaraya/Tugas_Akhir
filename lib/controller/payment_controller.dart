@@ -14,10 +14,9 @@ class PaymentController extends GetxController {
   String get totalFormatted =>
       cartController.currencyFormatter.format(cartController.totalPrice);
 
-  String get inputFormatted =>
-      cartController.currencyFormatter.format(
-        double.tryParse(input.value) ?? 0,
-      );
+  String get inputFormatted => cartController.currencyFormatter.format(
+    double.tryParse(input.value) ?? 0,
+  );
 
   String get subtotalFormatted =>
       cartController.currencyFormatter.format(cartController.subtotal);
@@ -30,8 +29,8 @@ class PaymentController extends GetxController {
   String itemTotalFormatted(dynamic item) {
     final double hargaAsli = item.price.toDouble();
     final double persen = (item.discount ?? 0).toDouble();
-    final double hargaDiskon =
-        (hargaAsli - (hargaAsli * persen / 100)).roundToDouble();
+    final double hargaDiskon = (hargaAsli - (hargaAsli * persen / 100))
+        .roundToDouble();
     return cartController.currencyFormatter.format(hargaDiskon * item.qty);
   }
 
@@ -63,14 +62,6 @@ class PaymentController extends GetxController {
       onConfirm: () {
         cartController.removeFromCart(item.productId);
         Get.back();
-        Get.snackbar(
-          'Berhasil',
-          '${item.name} dihapus',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.black87,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(15),
-        );
       },
     );
   }
@@ -94,10 +85,7 @@ class PaymentController extends GetxController {
         final newInput = input.value + value;
         final nominal = double.tryParse(newInput) ?? 0;
         if (nominal > maxCashInput) {
-          showWarning(
-            'Batas Maksimal',
-            'Maksimal input cash Rp 99.999.999',
-          );
+          showWarning('Batas Maksimal', 'Maksimal input cash Rp 99.999.999');
           return;
         }
         input.value = newInput;
@@ -130,8 +118,9 @@ class PaymentController extends GetxController {
     }
 
     cartController.selectedPayment.value = selectedMethod.value;
-    cartController.inputUang.value =
-        selectedMethod.value == 'cash' ? paidAmount : cartController.totalPrice;
+    cartController.inputUang.value = selectedMethod.value == 'cash'
+        ? paidAmount
+        : cartController.totalPrice;
     Get.offAllNamed(AppRoutes.kasirprint);
   }
 
@@ -146,16 +135,19 @@ class PaymentController extends GetxController {
 
   void showWarning(String title, String msg) {
     Get.snackbar(
-      title, msg,
+      title,
+      msg,
       backgroundColor: Colors.orange,
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(10),
     );
   }
+
   void showStockWarning(String title, String msg) {
     Get.snackbar(
-      title, msg,
+      title,
+      msg,
       backgroundColor: Colors.red,
       colorText: Colors.white,
       snackPosition: SnackPosition.TOP,
@@ -165,7 +157,8 @@ class PaymentController extends GetxController {
 
   void showError(String title, String msg) {
     Get.snackbar(
-      title, msg,
+      title,
+      msg,
       backgroundColor: Colors.red,
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
