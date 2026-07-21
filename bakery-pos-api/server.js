@@ -5,6 +5,8 @@ const fs = require("fs");
 const path = require("path");
 
 const db = require("./config/db");
+const swaggerUi = require('swagger-ui-express');
+const specs = require('./config/swagger');
 
 // ========================
 // HELPER: CHECK DEFAULT IMAGE
@@ -42,6 +44,11 @@ app.use(express.json());
 // ======================
 app.use("/images", express.static("public/images"));
 app.use("/uploads", express.static("uploads"));
+
+// ======================
+// SWAGGER DOCUMENTATION
+// ======================
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // ======================
 // ROUTES
