@@ -33,6 +33,7 @@ import 'package:tugas_akhir/page/mobile/riwayat_mobile.dart';
 import 'package:tugas_akhir/page/mobile/Kelolaproduk_mobile.dart';
 import 'package:tugas_akhir/page/mobile/transaction_detail_mobile.dart';
 import 'package:tugas_akhir/bindings/bindings.dart';
+import 'package:tugas_akhir/page/qris_payment_page.dart';
 
 
 import 'routes.dart';
@@ -119,6 +120,7 @@ class AppPages {
       name: AppRoutes.kelolaUserMob,
       page: () => KelolaUserMobilePage(),
     ),
+    GetPage(name: AppRoutes.qrisPayment, page: () => const QrisPaymentPage()),
     // ── Bakery ──────────────────────────────────────────────────────
     GetPage(name: AppRoutes.bakery, page: () => BakeryPage()),
     GetPage(

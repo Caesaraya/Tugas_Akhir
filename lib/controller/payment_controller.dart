@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/controller/midtrans_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/keranjang/delete_validation.dart';
@@ -100,38 +101,88 @@ class PaymentController extends GetxController {
     }
   }
 
-  void processPayment() {
-    if (selectedMethod.value.isEmpty) {
-      showWarning('Pilih Metode', 'Silakan pilih metode pembayaran!');
+  
+
+void processPayment() {
+  if (selectedMethod.value.isEmpty) {
+    showWarning('Pilih Metode', 'Silakan pilih metode pembayaran!');
+    return;
+  }
+
+  if (selectedMethod.value == 'cash') {
+    // Cash — validasi input uang
+    if (paidAmount <= 0) {
+      showError('Input Kosong', 'Masukkan jumlah uang yang diterima');
       return;
     }
-
-    if (selectedMethod.value == 'cash') {
-      if (paidAmount <= 0) {
-        showError('Input Kosong', 'Masukkan jumlah uang yang diterima');
-        return;
-      }
-      if (paidAmount < cartController.totalPrice) {
-        showError('Pembayaran Gagal', 'Uang yang dimasukkan kurang!');
-        return;
-      }
+    if (paidAmount < cartController.totalPrice) {
+      showError('Pembayaran Gagal', 'Uang yang dimasukkan kurang!');
+      return;
     }
+    cartController.selectedPayment.value = 'cash';
+    cartController.inputUang.value = paidAmount;
+    Get.offAllNamed(AppRoutes.kasirprint);
+
+  } else {
+    // QRIS / VA → Midtrans
+    prosesMidtransDesktop();
+  }
+}
+
+Future<void> prosesMidtransDesktop() async {
+  try {
+    final BuyController buyCtrl = Get.put(BuyController());
+    final int total = cartController.totalPrice.toInt();
+    final String title = cartController.cartItems
+        .map((item) => item.name)
+        .join(', ');
 
     cartController.selectedPayment.value = selectedMethod.value;
-    cartController.inputUang.value = selectedMethod.value == 'cash'
-        ? paidAmount
-        : cartController.totalPrice;
-    Get.offAllNamed(AppRoutes.kasirprint);
-  }
+    cartController.inputUang.value = cartController.totalPrice;
 
-  void bayarSekarang() {
-    if (cartController.selectedPayment.value == 'cash') {
-      Get.toNamed(AppRoutes.kalkulator);
-    } else {
-      cartController.inputUang.value = cartController.totalPrice;
-      Get.toNamed(AppRoutes.sukses);
-    }
+    await buyCtrl.checkout(
+      title: title.isEmpty ? 'Pembayaran' : title,
+      amount: total,
+    );
+  } catch (e) {
+    showError('Error', 'Gagal memproses pembayaran: $e');
   }
+}
+
+
+void bayarSekarang() {
+  if (cartController.selectedPayment.value == 'cash') {
+    Get.toNamed(AppRoutes.kalkulator);
+  } else if (cartController.selectedPayment.value == 'qris' ||
+             cartController.selectedPayment.value == 'va') {
+    // ✅ VA dan QRIS sama-sama ke halaman foto bukti
+    Get.toNamed(AppRoutes.qrisPayment);
+  } else {
+    cartController.inputUang.value = cartController.totalPrice;
+    Get.toNamed(AppRoutes.sukses);
+  }
+}
+
+Future<void> prosesMidtrans() async {
+  try {
+    final BuyController buyCtrl = Get.put(BuyController());
+    final int total = cartController.totalPrice.toInt();
+    final String title = cartController.cartItems
+        .map((item) => item.name)
+        .join(', ');
+
+    cartController.selectedPayment.value =
+        cartController.selectedPayment.value; // tetap VA atau QRIS
+    cartController.inputUang.value = cartController.totalPrice;
+
+    await buyCtrl.checkout(
+      title: title.isEmpty ? 'Pembayaran' : title,
+      amount: total,
+    );
+  } catch (e) {
+    showError('Error', 'Gagal memproses pembayaran: $e');
+  }
+}
 
   void showWarning(String title, String msg) {
     Get.snackbar(
