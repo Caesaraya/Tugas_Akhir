@@ -35,13 +35,12 @@ class KasirKelolaDashboard extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Search bar
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
               onChanged: (value) => ctrl.searchQuery.value = value,
               decoration: InputDecoration(
-                hintText: 'Cari Produk...',
+                hintText: 'Search',
                 prefixIcon: const Icon(Icons.search, color: Color(0xFFE89336)),
                 filled: true,
                 fillColor: Colors.white,
@@ -73,261 +72,287 @@ class KasirKelolaDashboard extends StatelessWidget {
                   ),
                 );
               }
+              final paginatedList = ctrl.paginatedProducts;
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: DataTable(
-                      headingRowColor: WidgetStateProperty.all(
-                        const Color(0xFFE89336),
-                      ),
-                      headingTextStyle: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                      dataRowColor: WidgetStateProperty.resolveWith(
-                        (states) => Colors.white,
-                      ),
-                      border: TableBorder.all(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      columnSpacing: 20,
-                      columns: const [
-                        DataColumn(label: Text('No')),
-                        DataColumn(label: Text('Nama')),
-                        DataColumn(label: Text('Harga')),
-                        DataColumn(label: Text('Diskon')),
-                        DataColumn(label: Text('Harga Final')),
-                        DataColumn(label: Text('Stock')),
-                        DataColumn(label: Text('Status')),
-                        DataColumn(label: Text('Jenis')),
-                        DataColumn(label: Text('Satuan')),
-                        DataColumn(label: Text('Image')),
-                        DataColumn(label: Text('Aksi')),
-                      ],
-                      rows: List.generate(ctrl.filteredProducts.length, (i) {
-                        final produk = ctrl.filteredProducts[i];
-                        final bool outOfStock = produk.stock <= 0;
-                        final bool lowStock = produk.stock < 10;
-
-                        return DataRow(
-                          cells: [
-                            // No
-                            DataCell(
-                              Text(
-                                '${i + 1}',
-                                style: const TextStyle(fontSize: 13),
-                              ),
+              return Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: DataTable(
+                            headingRowColor: WidgetStateProperty.all(
+                              const Color(0xFFE89336),
                             ),
-                            DataCell(
-                              SizedBox(
-                                width: 180,
-                                child: Text(
-                                  produk.name,
-                                  softWrap: true,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
+                            headingTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
                             ),
-
-                            // Harga
-                            DataCell(
-                              Text(
-                                currencyFormat.format(produk.price),
-                                style: const TextStyle(fontSize: 12),
-                              ),
+                            dataRowColor: WidgetStateProperty.resolveWith(
+                              (states) => Colors.white,
                             ),
-
-                            // Diskon
-                            DataCell(
-                              Text(
-                                produk.discount > 0
-                                    ? '${produk.discount}%'
-                                    : '-',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: produk.discount > 0
-                                      ? Colors.red
-                                      : Colors.grey,
-                                ),
-                              ),
+                            border: TableBorder.all(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(12),
                             ),
+                            columnSpacing: 20,
+                            columns: const [
+                              DataColumn(label: Text('No')),
+                              DataColumn(label: Text('Nama')),
+                              DataColumn(label: Text('Harga')),
+                              DataColumn(label: Text('Diskon')),
+                              DataColumn(label: Text('Harga Final')),
+                              DataColumn(label: Text('Stock')),
+                              DataColumn(label: Text('Status')),
+                              DataColumn(label: Text('Jenis')),
+                              DataColumn(label: Text('Satuan')),
+                              DataColumn(label: Text('Image')),
+                              DataColumn(label: Text('Aksi')),
+                            ],
+                            rows: List.generate(paginatedList.length, (i) {
+                              final produk = paginatedList[i];
+                              final bool outOfStock = produk.stock <= 0;
+                              final bool lowStock = produk.stock < 10;
 
-                            // Harga Final
-                            DataCell(
-                              Text(
-                                currencyFormat.format(
-                                  produk.priceAfterDiscount,
-                                ),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFFE89336),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                              // Menghitung nomor urut kontinu lintas halaman
+                              final int globalIndex =
+                                  ((ctrl.currentPage.value - 1) *
+                                      KelolaProdukController.pageSize) +
+                                  i +
+                                  1;
 
-                            // Stock — merah kalau stok menipis (<10)
-                            DataCell(
-                              Text(
-                                '${produk.stock}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: lowStock ? Colors.red : Colors.black87,
-                                ),
-                              ),
-                            ),
-
-                            // Status
-                            DataCell(
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: outOfStock
-                                      ? Colors.red.shade50
-                                      : Colors.green.shade50,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  outOfStock ? 'HABIS' : 'AKTIF',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: outOfStock
-                                        ? Colors.red
-                                        : Colors.green,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // Jenis
-                            DataCell(
-                              Text(
-                                produk.jenis,
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ),
-
-                            // Satuan
-                            DataCell(
-                              SizedBox(
-                                width: 60,
-                                child: Text(
-                                  produk.satuan,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ),
-                            ),
-
-                            // Image
-                            DataCell(
-                              produk.image.isNotEmpty
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(6),
-                                      child: Image.network(
-                                        produk.image,
-                                        width: 40,
-                                        height: 40,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            const Icon(
-                                              Icons.broken_image,
-                                              size: 40,
-                                              color: Colors.grey,
-                                            ),
-                                      ),
-                                    )
-                                  : const Icon(
-                                      Icons.image_not_supported,
-                                      size: 40,
-                                      color: Colors.grey,
+                              return DataRow(
+                                cells: [
+                                  // No
+                                  DataCell(
+                                    Text(
+                                      '$globalIndex',
+                                      style: const TextStyle(fontSize: 13),
                                     ),
-                            ),
-
-                            // Aksi
-                            DataCell(
-                              Row(
-                                children: [
-                                  // Edit
-                                  IconButton(
-                                    onPressed: () =>
-                                        ctrl.showEditForm(context, produk),
-                                    icon: const Icon(
-                                      Icons.edit,
-                                      color: Colors.blue,
-                                      size: 20,
-                                    ),
-                                    tooltip: 'Edit',
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
                                   ),
-                                  const SizedBox(width: 8),
-                                  // Hapus
-                                  IconButton(
-                                    onPressed: () {
-                                      Get.dialog(
-                                        AlertDialog(
-                                          title: const Text('Hapus Produk'),
-                                          content: Text(
-                                            'Yakin hapus "${produk.name}"?',
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Get.back(),
-                                              child: const Text('Batal'),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () async {
-                                                Get.back();
-                                                // panggil delete jika ada di controller
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.red,
-                                              ),
-                                              child: const Text(
-                                                'Hapus',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                  DataCell(
+                                    SizedBox(
+                                      width: 180,
+                                      child: Text(
+                                        produk.name,
+                                        softWrap: true,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13,
                                         ),
-                                      );
-                                    },
-                                    icon: const Icon(
-                                      Icons.delete,
-                                      color: Colors.red,
-                                      size: 20,
+                                      ),
                                     ),
-                                    tooltip: 'Hapus',
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
+                                  ),
+
+                                  // Harga
+                                  DataCell(
+                                    Text(
+                                      currencyFormat.format(produk.price),
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+
+                                  // Diskon
+                                  DataCell(
+                                    Text(
+                                      produk.discount > 0
+                                          ? '${produk.discount}%'
+                                          : '-',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: produk.discount > 0
+                                            ? Colors.red
+                                            : Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Harga Final
+                                  DataCell(
+                                    Text(
+                                      currencyFormat.format(
+                                        produk.priceAfterDiscount,
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFFE89336),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Stock — merah kalau stok menipis (<10)
+                                  DataCell(
+                                    Text(
+                                      '${produk.stock}',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: lowStock
+                                            ? Colors.red
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Status
+                                  DataCell(
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: outOfStock
+                                            ? Colors.red.shade50
+                                            : Colors.green.shade50,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        outOfStock ? 'HABIS' : 'AKTIF',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: outOfStock
+                                              ? Colors.red
+                                              : Colors.green,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Jenis
+                                  DataCell(
+                                    Text(
+                                      produk.jenis,
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+
+                                  // Satuan
+                                  DataCell(
+                                    SizedBox(
+                                      width: 60,
+                                      child: Text(
+                                        produk.satuan,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Image
+                                  DataCell(
+                                    produk.image.isNotEmpty
+                                        ? ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                            child: Image.network(
+                                              produk.image,
+                                              width: 40,
+                                              height: 40,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) =>
+                                                  const Icon(
+                                                    Icons.broken_image,
+                                                    size: 40,
+                                                    color: Colors.grey,
+                                                  ),
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.image_not_supported,
+                                            size: 40,
+                                            color: Colors.grey,
+                                          ),
+                                  ),
+
+                                  // Aksi
+                                  DataCell(
+                                    Row(
+                                      children: [
+                                        // Edit
+                                        IconButton(
+                                          onPressed: () => ctrl.showEditForm(
+                                            context,
+                                            produk,
+                                          ),
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            color: Colors.blue,
+                                            size: 20,
+                                          ),
+                                          tooltip: 'Edit',
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        // Hapus
+                                      ],
+                                    ),
                                   ),
                                 ],
-                              ),
-                            ),
-                          ],
-                        );
-                      }),
+                              );
+                            }),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    margin: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.chevron_left),
+                              onPressed: ctrl.currentPage.value > 1
+                                  ? () => ctrl.prevPage()
+                                  : null,
+                            ),
+                            Text(
+                              'Halaman ${ctrl.currentPage.value} dari ${ctrl.totalPages}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.chevron_right),
+                              onPressed:
+                                  ctrl.currentPage.value < ctrl.totalPages
+                                  ? () => ctrl.nextPage()
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               );
             }),
           ),
