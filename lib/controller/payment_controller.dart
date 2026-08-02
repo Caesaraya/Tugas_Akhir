@@ -156,7 +156,7 @@ void bayarSekarang() {
   } else if (cartController.selectedPayment.value == 'qris' ||
              cartController.selectedPayment.value == 'va') {
     // ✅ VA dan QRIS sama-sama ke halaman foto bukti
-    Get.toNamed(AppRoutes.qrisPayment);
+    prosesMidtransDesktop();
   } else {
     cartController.inputUang.value = cartController.totalPrice;
     Get.toNamed(AppRoutes.sukses);
