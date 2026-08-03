@@ -35,6 +35,7 @@ class AppRoutes {
   static const String kelolaProduk = '/kelolaProduk';
   static const String kasirmobiledrawer = '/kasirmobiledrawer';
   static const String transactionDetailMobile = '/transactionDetailMobile';
+  static const String qrisPayment = '/qrisPayment';
   //desktop
   static const String kasirboarddesk = '/KasirBoardDesk';
   static const String kasirbayar = '/KasirBayar';

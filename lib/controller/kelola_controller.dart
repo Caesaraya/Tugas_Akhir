@@ -14,7 +14,7 @@ class KelolaProdukController extends GetxController {
   var isLoading = false.obs;
   var searchQuery = "".obs;
   var currentPage = 1.obs;
-  static const int pageSize = 15; 
+  static const int pageSize = 15;
 
   List<Product> get paginatedProducts {
     if (filteredProducts.isEmpty) return [];
@@ -84,7 +84,7 @@ class KelolaProdukController extends GetxController {
     'KUE KERING',
     'MINUMAN',
     'PACKAGING',
-    'PUTUS'
+    'PUTUS',
   ].obs;
 
   final listSatuan = [
@@ -101,7 +101,7 @@ class KelolaProdukController extends GetxController {
     'pouch',
     'kg',
     'gram',
-    'lusin'
+    'lusin',
   ].obs;
 
   final selectedJenis = ''.obs;
@@ -118,34 +118,37 @@ class KelolaProdukController extends GetxController {
     );
   }
 
- Future<void> fetchData() async {
-  try {
-    isLoading(true);
-    final data = await ApiService.getProducts();
-    products.assignAll(data);
-    if (searchQuery.value.isEmpty) {
-      filteredProducts.assignAll(products);
-    } else {
-      filteredProducts.assignAll(
-        products
-            .where((p) =>
-                p.name.toLowerCase().contains(searchQuery.value.toLowerCase()))
-            .toList(),
+  Future<void> fetchData() async {
+    try {
+      isLoading(true);
+      final data = await ApiService.getProducts();
+      products.assignAll(data);
+      if (searchQuery.value.isEmpty) {
+        filteredProducts.assignAll(products);
+      } else {
+        filteredProducts.assignAll(
+          products
+              .where(
+                (p) => p.name.toLowerCase().contains(
+                  searchQuery.value.toLowerCase(),
+                ),
+              )
+              .toList(),
+        );
+      }
+      if (currentPage.value > totalPages) {
+        currentPage.value = totalPages;
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Gagal memuat produk: $e",
+        snackPosition: SnackPosition.BOTTOM,
       );
+    } finally {
+      isLoading(false);
     }
-    if (currentPage.value > totalPages) {
-      currentPage.value = totalPages;
-    }
-  } catch (e) {
-    Get.snackbar(
-      "Error",
-      "Gagal memuat produk: $e",
-      snackPosition: SnackPosition.BOTTOM,
-    );
-  } finally {
-    isLoading(false);
   }
-}
 
   @override
   void onClose() {
@@ -173,15 +176,20 @@ class KelolaProdukController extends GetxController {
     stockController.text = product.stock.toString();
     jenisController.text = product.jenis;
     satuanController.text = product.satuan;
-    selectedJenis.value =
-        listJenis.contains(product.jenis) ? product.jenis : listJenis.first;
-    selectedSatuan.value =
-        listSatuan.contains(product.satuan) ? product.satuan : listSatuan.first;
+    selectedJenis.value = listJenis.contains(product.jenis)
+        ? product.jenis
+        : listJenis.first;
+    selectedSatuan.value = listSatuan.contains(product.satuan)
+        ? product.satuan
+        : listSatuan.first;
 
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Text("Edit Produk", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Edit Produk",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -201,76 +209,88 @@ class KelolaProdukController extends GetxController {
                     child: selectedImage.value != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(10),
-                            child: Image.file(selectedImage.value!, fit: BoxFit.cover),
+                            child: Image.file(
+                              selectedImage.value!,
+                              fit: BoxFit.cover,
+                            ),
                           )
                         : (product.image.isNotEmpty
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  product.image,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (c, e, s) =>
-                                      const Icon(Icons.image, size: 50),
-                                ),
-                              )
-                            : const Icon(Icons.add_a_photo, size: 50)),
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    product.image,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (c, e, s) =>
+                                        const Icon(Icons.image, size: 50),
+                                  ),
+                                )
+                              : const Icon(Icons.add_a_photo, size: 50)),
                   ),
                 ),
               ),
               buildTextField(nameController, "Nama Produk"),
               const SizedBox(height: 12),
-              buildTextField(priceController, "Harga", isNumber: true, isPrice: true),
-              const SizedBox(height: 12),
-              buildTextField(discountPercentController, "Diskon (%)",
-                  isNumber: true, isDiscount: true),
-              const SizedBox(height: 12),
-              buildTextField(stockController, "Stok", isNumber: true),
-              const SizedBox(height: 12),
-              Obx(() => DropdownButtonFormField<String>(
-                    value: selectedJenis.value,
-                    decoration: InputDecoration(
-                      labelText: 'Jenis',
-                      labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              Obx(
+                () => DropdownButtonFormField<String>(
+                  value: selectedJenis.value,
+                  decoration: InputDecoration(
+                    labelText: 'Jenis',
+                    labelStyle: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
                     ),
-                    items: listJenis
-                        .map((jenis) => DropdownMenuItem(
-                              value: jenis,
-                              child: Text(jenis),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        selectedJenis.value = val;
-                        jenisController.text = val;
-                      }
-                    },
-                  )),
-              const SizedBox(height: 12),
-              Obx(() => DropdownButtonFormField<String>(
-                    value: selectedSatuan.value,
-                    decoration: InputDecoration(
-                      labelText: 'Satuan',
-                      labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    items: listSatuan
-                        .map((satuan) => DropdownMenuItem(
-                              value: satuan,
-                              child: Text(satuan),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) {
-                        selectedSatuan.value = val;
-                        satuanController.text = val;
-                      }
-                    },
-                  )),
+                  ),
+                  items: listJenis
+                      .map(
+                        (jenis) =>
+                            DropdownMenuItem(value: jenis, child: Text(jenis)),
+                      )
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      selectedJenis.value = val;
+                      jenisController.text = val;
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              Obx(
+                () => DropdownButtonFormField<String>(
+                  value: selectedSatuan.value,
+                  decoration: InputDecoration(
+                    labelText: 'Satuan',
+                    labelStyle: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  items: listSatuan
+                      .map(
+                        (satuan) => DropdownMenuItem(
+                          value: satuan,
+                          child: Text(satuan),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      selectedSatuan.value = val;
+                      satuanController.text = val;
+                    }
+                  },
+                ),
+              ),
             ],
           ),
         ),
@@ -278,7 +298,9 @@ class KelolaProdukController extends GetxController {
           TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
           ElevatedButton(
             onPressed: () => updateProduct(product),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE89336)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE89336),
+            ),
             child: const Text("Simpan", style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -317,8 +339,9 @@ class KelolaProdukController extends GetxController {
           if (val > 99) {
             String clamped = value.substring(0, value.length - 1);
             controller.text = clamped;
-            controller.selection =
-                TextSelection.collapsed(offset: clamped.length);
+            controller.selection = TextSelection.collapsed(
+              offset: clamped.length,
+            );
           }
         }
       },
@@ -355,7 +378,10 @@ class KelolaProdukController extends GetxController {
       String cleanDiscountText = discountPercentController.text.isEmpty
           ? "0"
           : discountPercentController.text;
-      int discountPercent = (int.tryParse(cleanDiscountText) ?? 0).clamp(0, 100);
+      int discountPercent = (int.tryParse(cleanDiscountText) ?? 0).clamp(
+        0,
+        100,
+      );
 
       Get.back();
       isLoading(true);
@@ -411,8 +437,11 @@ class KelolaProdukController extends GetxController {
     } else {
       filteredProducts.assignAll(
         products
-            .where((p) =>
-                p.name.toLowerCase().contains(searchQuery.value.toLowerCase()))
+            .where(
+              (p) => p.name.toLowerCase().contains(
+                searchQuery.value.toLowerCase(),
+              ),
+            )
             .toList(),
       );
     }

@@ -9,7 +9,8 @@ class KasirPembayaranDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final PaymentController paymentDashboardController = Get.find<PaymentController>();
+    final PaymentController paymentDashboardController =
+        Get.find<PaymentController>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pembayaran'),
@@ -64,43 +65,73 @@ class KasirPembayaranDesktop extends StatelessWidget {
           ),
           Expanded(
             flex: 3,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Obx(
-                      () => Text(
-                        paymentDashboardController.inputFormatted,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+            child: Obx(() {
+              final isQris =
+                  paymentDashboardController.selectedMethod.value == 'qris';
+              return Column(
+                children: [
+                  if (!isQris) ...[
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Obx(
+                          () => Text(
+                            paymentDashboardController.inputFormatted,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-                CalculatorKeypad(
-                  onButtonPressed: paymentDashboardController.onButtonPressed,
-                ),
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.all(10),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    CalculatorKeypad(
+                      onButtonPressed:
+                          paymentDashboardController.onButtonPressed,
                     ),
-                    onPressed: paymentDashboardController.processPayment,
-                    child: const Text(
-                      'Bayar',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                  ],
+                  if (isQris)
+                    const Expanded(
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.qr_code_2,
+                              size: 100,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              'Pembayaran via Midtrans',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.all(10),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepOrange,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      onPressed: paymentDashboardController.processPayment,
+                      child: const Text(
+                        'Bayar',
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              );
+            }),
           ),
         ],
       ),

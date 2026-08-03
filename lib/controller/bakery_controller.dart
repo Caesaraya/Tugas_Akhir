@@ -13,8 +13,7 @@ import 'package:tugas_akhir/controller/admin/keuangan_controller.dart';
 class BakeryController extends GetxController {
   var isLoading = false.obs;
   var resepList = <Resep>[].obs;
-  var bahanBakuList =
-      <BahanBaku>[].obs; 
+  var bahanBakuList = <BahanBaku>[].obs;
   var searchQuery = ''.obs;
   var totalBiaya = 0.obs;
   var semuaBahanCukup = true.obs;
@@ -42,6 +41,7 @@ class BakeryController extends GetxController {
     inputController.dispose();
     super.onClose();
   }
+
   List<Resep> get filteredResep {
     if (searchQuery.isEmpty) return resepList;
     return resepList
@@ -78,6 +78,7 @@ class BakeryController extends GetxController {
       debugPrint("Gagal memuat bahan baku: $e");
     }
   }
+
   void tambahKeKeranjangManualDenganQty(BahanBaku bahan, double qty) {
     final index = manualCart.indexWhere((item) => item.bahan.id == bahan.id);
 
@@ -221,6 +222,7 @@ class BakeryController extends GetxController {
       Get.to(() => const BakeryProductionPreviewPage());
     }
   }
+
   Future<void> simpanTransaksiProduksi() async {
     try {
       isLoading(true);
