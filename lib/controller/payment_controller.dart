@@ -34,103 +34,100 @@ class PaymentController extends GetxController {
     return cartController.currencyFormatter.format(hargaDiskon * item.qty);
   }
 
-  String get methodLabel => selectedMethod.value;
-
-  double get paidAmount => double.tryParse(input.value) ?? 0;
-
-  double get changeAmount {
-    final change = paidAmount - cartController.totalPrice;
-    return change > 0 ? change : 0;
-  }
-
-  void increaseQty(int productId) {
-    final item = cartController.cartItems.firstWhereOrNull(
-      (item) => item.productId == productId,
-    );
-    if (item != null && item.qty >= item.stock) {
-      showStockWarning('Stok Terbatas', 'Stok maksimal ${item.stock}');
-      return;
-    }
-    cartController.increaseQty(productId);
-  }
-
-  void decreaseQty(int productId) => cartController.decreaseQty(productId);
-
-  void removeItem(dynamic item) {
-    DeleteValidation.show(
-      productName: item.name,
-      onConfirm: () {
-        cartController.removeFromCart(item.productId);
-        Get.back();
-      },
-    );
-  }
-
-  void onButtonPressed(String value) {
-    if (selectedMethod.value != 'cash') {
-      showWarning('Info', 'Input angka hanya untuk metode Cash');
-      return;
-    }
-
-    if (value == 'X') {
+  void onButtonPressed(String text) {
+    if (text == 'C') {
+      input.value = '';
+    } else if (text == '⌫') {
       if (input.value.isNotEmpty) {
         input.value = input.value.substring(0, input.value.length - 1);
       }
-    } else if (value == 'CLEAR') {
-      input.value = '';
     } else {
-      if (input.value.length < 12) {
-        if (input.value.isEmpty && (value == '0' || value == '000')) return;
+      if (input.value.length >= 8) return;
+      if (input.value == '0' && text == '0') return;
+      if (input.value == '' && (text == '00' || text == '000')) return;
 
-        final newInput = input.value + value;
-        final nominal = double.tryParse(newInput) ?? 0;
-        if (nominal > maxCashInput) {
-          showWarning('Batas Maksimal', 'Maksimal input cash Rp 99.999.999');
-          return;
-        }
-        input.value = newInput;
+      String newInputValue = input.value + text;
+      double newAmount = double.tryParse(newInputValue) ?? 0;
+
+      if (newAmount > maxCashInput) {
+        showWarning(
+          'Batas Maksimal',
+          'Nominal tidak boleh melebihi Rp 99.999.999',
+        );
+        return;
       }
+
+      input.value = newInputValue;
     }
   }
 
-  void onPaymentMethodChanged(String? value) {
-    if (value != null) {
-      selectedMethod.value = value;
+  /// Fungsi untuk memilih metode pembayaran
+  void selectPaymentMethod(String method) {
+    selectedMethod.value = method;
+    if (method != 'cash') {
       input.value = '';
     }
   }
 
+  /// Alias/Getter/Callback untuk kompatibilitas dengan UI widget
+  void onPaymentMethodChanged(String method) {
+    selectPaymentMethod(method);
+  }
+
+  /// Memproses pembayaran dari tampilan Desktop
   void processPayment() {
-    if (selectedMethod.value.isEmpty) {
-      showWarning('Pilih Metode', 'Silakan pilih metode pembayaran!');
+    // Arahkan ke halaman QRIS jika metode yang dipilih adalah QRIS
+    if (selectedMethod.value == 'qris') {
+      cartController.selectedPayment.value = 'qris';
+      Get.toNamed(AppRoutes.qrisPayment);
       return;
     }
 
+    // Alur pembayaran Cash
     if (selectedMethod.value == 'cash') {
+      double paidAmount = double.tryParse(input.value) ?? 0;
       if (paidAmount <= 0) {
-        showError('Input Kosong', 'Masukkan jumlah uang yang diterima');
+        showError('Pembayaran Gagal', 'Masukkan jumlah uang yang diterima');
         return;
       }
       if (paidAmount < cartController.totalPrice) {
         showError('Pembayaran Gagal', 'Uang yang dimasukkan kurang!');
         return;
       }
+
+      cartController.selectedPayment.value = selectedMethod.value;
+      cartController.inputUang.value = paidAmount;
+      Get.offAllNamed(AppRoutes.kasirprint);
+      return;
     }
 
+    // Metode pembayaran lainnya
     cartController.selectedPayment.value = selectedMethod.value;
-    cartController.inputUang.value = selectedMethod.value == 'cash'
-        ? paidAmount
-        : cartController.totalPrice;
+    cartController.inputUang.value = cartController.totalPrice;
     Get.offAllNamed(AppRoutes.kasirprint);
   }
 
+  /// Memproses pembayaran dari tampilan Mobile
   void bayarSekarang() {
     if (cartController.selectedPayment.value == 'cash') {
       Get.toNamed(AppRoutes.kalkulator);
+    } else if (cartController.selectedPayment.value == 'qris') {
+      Get.toNamed(AppRoutes.qrisPayment);
     } else {
       cartController.inputUang.value = cartController.totalPrice;
       Get.toNamed(AppRoutes.sukses);
     }
+  }
+
+  void showError(String title, String msg) {
+    Get.snackbar(
+      title,
+      msg,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(10),
+    );
   }
 
   void showWarning(String title, String msg) {
@@ -151,17 +148,6 @@ class PaymentController extends GetxController {
       backgroundColor: Colors.red,
       colorText: Colors.white,
       snackPosition: SnackPosition.TOP,
-      margin: const EdgeInsets.all(10),
-    );
-  }
-
-  void showError(String title, String msg) {
-    Get.snackbar(
-      title,
-      msg,
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(10),
     );
   }

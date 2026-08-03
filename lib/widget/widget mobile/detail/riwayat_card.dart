@@ -10,8 +10,11 @@ class RiwayatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DateTime dt = DateTime.parse(trx['tanggal']);
+    DateTime dt = DateTime.parse(trx['tanggal'].toString());
     String formattedDate = DateFormat('dd MMM yyyy, HH:mm').format(dt);
+
+    // Ambil total harga dengan aman, baik dari tipe double, int, maupun String
+    double totalHarga = double.tryParse(trx['total_harga'].toString()) ?? 0.0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -48,7 +51,7 @@ class RiwayatCard extends StatelessWidget {
           ],
         ),
         trailing: Text(
-          formatRupiah(double.parse(trx['total_harga']).toInt()),
+          formatRupiah(totalHarga.toInt()),
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Color(0xFFE89336),

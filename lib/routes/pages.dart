@@ -16,6 +16,7 @@ import 'package:tugas_akhir/page/desktop/Kasir_pembayaran_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_selesai_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_riwayat_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_kelola_dashboard.dart';
+import 'package:tugas_akhir/page/desktop/qris_payment_page.dart';
 import 'package:tugas_akhir/page/desktop/transaction_detail_desktop.dart';
 import 'package:tugas_akhir/page/login/desktop_login_page.dart';
 import 'package:tugas_akhir/page/login/splash_page.dart';
@@ -34,25 +35,15 @@ import 'package:tugas_akhir/page/mobile/Kelolaproduk_mobile.dart';
 import 'package:tugas_akhir/page/mobile/transaction_detail_mobile.dart';
 import 'package:tugas_akhir/bindings/bindings.dart';
 
-
 import 'routes.dart';
 
 class AppPages {
   static final pages = [
     GetPage(name: AppRoutes.splash, page: () => const SplashPage()),
     // ── Login ──────────────────────────────────────────────────────────────
-    GetPage(
-      name: AppRoutes.login,
-      page: () => LoginPage(), 
-    ),
-    GetPage(
-      name: AppRoutes.logindesk,
-      page: () => DesktopLoginPage(),
-    ),
-    GetPage(
-      name: AppRoutes.mediaQuery,
-      page: () => DashboardWrapper(), 
-    ),
+    GetPage(name: AppRoutes.login, page: () => LoginPage()),
+    GetPage(name: AppRoutes.logindesk, page: () => DesktopLoginPage()),
+    GetPage(name: AppRoutes.mediaQuery, page: () => DashboardWrapper()),
 
     // ── Kasir Mobile ───────────────────────────────────────────────────────
     GetPage(
@@ -83,7 +74,7 @@ class AppPages {
       page: () => KasirKelolaDashboard(),
     ),
     GetPage(name: AppRoutes.transactionDetail, page: () => DetailScreen()),
-
+    GetPage(name: AppRoutes.qrisPayment, page: () => QrisPaymentPage()),
     // ── Admin Desktop ──────────────────────────────────────────────────────
     GetPage(name: AppRoutes.dashboarddesk, page: () => DashboardPage()),
     GetPage(
@@ -115,10 +106,7 @@ class AppPages {
       name: AppRoutes.monitoringUangMob,
       page: () => MonitoringKeuanganMobilePage(),
     ),
-    GetPage(
-      name: AppRoutes.kelolaUserMob,
-      page: () => KelolaUserMobilePage(),
-    ),
+    GetPage(name: AppRoutes.kelolaUserMob, page: () => KelolaUserMobilePage()),
     // ── Bakery ──────────────────────────────────────────────────────
     GetPage(name: AppRoutes.bakery, page: () => BakeryPage()),
     GetPage(

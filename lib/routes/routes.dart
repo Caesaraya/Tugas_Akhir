@@ -43,4 +43,6 @@ class AppRoutes {
   static const String kalkulatordesk = '/kalkulatordesk';
   static const String transactionDetail = '/transactionDetail';
   static const String kelolaprodukdashboard = '/kelolaprodukdashboard';
+  //QRIS Payment (Baru)
+  static const String qrisPayment = '/qrisPayment';
 }

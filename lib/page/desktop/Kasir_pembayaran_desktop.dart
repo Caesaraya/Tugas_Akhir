@@ -9,7 +9,8 @@ class KasirPembayaranDesktop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final PaymentController paymentDashboardController = Get.find<PaymentController>();
+    final PaymentController paymentDashboardController =
+        Get.find<PaymentController>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pembayaran'),
@@ -44,8 +45,11 @@ class KasirPembayaranDesktop extends StatelessWidget {
                       value: 'cash',
                       selectedMethod:
                           paymentDashboardController.selectedMethod.value,
-                      onChanged:
-                          paymentDashboardController.onPaymentMethodChanged,
+                      onChanged: (String? value) {
+                        if (value != null) {
+                          paymentDashboardController.selectPaymentMethod(value);
+                        }
+                      },
                     ),
                   ),
                   Obx(
@@ -54,8 +58,13 @@ class KasirPembayaranDesktop extends StatelessWidget {
                       value: 'qris',
                       selectedMethod:
                           paymentDashboardController.selectedMethod.value,
-                      onChanged:
-                          paymentDashboardController.onPaymentMethodChanged,
+                      onChanged: (String? value) {
+                        if (value != null) {
+                          paymentDashboardController.onPaymentMethodChanged(
+                            value,
+                          );
+                        }
+                      },
                     ),
                   ),
                 ],

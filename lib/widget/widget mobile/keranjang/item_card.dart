@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/controller/payment_controller.dart';
+
 class KeranjangItemCard extends StatelessWidget {
   final PaymentController ctrl;
   final dynamic item;
- 
+
   const KeranjangItemCard({super.key, required this.ctrl, required this.item});
- 
+
   @override
   Widget build(BuildContext context) {
+    final CartController cartCtrl = Get.find<CartController>();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(12),
@@ -44,7 +49,7 @@ class KeranjangItemCard extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: item.qty > 1
-                    ? () => ctrl.decreaseQty(item.productId)
+                    ? () => cartCtrl.decreaseQty(item.productId)
                     : null,
                 icon: Icon(
                   Icons.remove_circle_outline,
@@ -56,14 +61,14 @@ class KeranjangItemCard extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               IconButton(
-                onPressed: () => ctrl.increaseQty(item.productId),
+                onPressed: () => cartCtrl.increaseQty(item.productId),
                 icon: const Icon(
                   Icons.add_circle_outline,
                   color: Colors.orange,
                 ),
               ),
               IconButton(
-                onPressed: () => ctrl.removeItem(item),
+                onPressed: () => cartCtrl.removeFromCart(item.productId),
                 icon: const Icon(
                   Icons.delete_outline,
                   color: Colors.brown,
