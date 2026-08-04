@@ -271,6 +271,7 @@ exports.updateProduct = async (req, res) => {
       name,
       price,
       discount,
+      stock,
       jenis,
       satuan,
 
@@ -279,6 +280,7 @@ exports.updateProduct = async (req, res) => {
 
     price = parseInt(price);
     discount = parseInt(discount || 0);
+    stock = parseInt(stock || 0);
     resep_id = resep_id ? parseInt(resep_id) : null;
 
     let image;
@@ -303,6 +305,7 @@ exports.updateProduct = async (req, res) => {
         name = ?,
         price = ?,
         discount = ?,
+        stock = ?,
         jenis = ?,
         satuan = ?,
         image = ?,
@@ -313,6 +316,7 @@ exports.updateProduct = async (req, res) => {
         name,
         price,
         discount,
+        stock,
         jenis,
         satuan,
 

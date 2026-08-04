@@ -17,7 +17,6 @@ import 'package:tugas_akhir/models/expense_category.dart';
 import 'package:tugas_akhir/models/expense.dart';
 import 'package:tugas_akhir/models/dashboard_summary.dart';
 import 'package:tugas_akhir/models/dashboard_activity.dart';
-import 'package:tugas_akhir/models/stock_adjustment.dart';
 
 class ApiService {
   static const String baseUrl =
@@ -144,6 +143,7 @@ class ApiService {
     required String name,
     required int price,
     required int discount,
+    required int stock,
     required String jenis,
     required String satuan,
     File? imageFile,
@@ -162,6 +162,7 @@ class ApiService {
       request.fields['name'] = name;
       request.fields['price'] = price.toString();
       request.fields['discount'] = discount.toString();
+      request.fields['stock'] = stock.toString();
       request.fields['jenis'] = jenis;
       request.fields['satuan'] = satuan;
       
@@ -255,6 +256,7 @@ class ApiService {
         "name": product.name,
         "price": product.price,
         "discount": product.discount,
+        "stock": product.stock,
         "jenis": product.jenis,
         "satuan": product.satuan,
         
@@ -1733,91 +1735,6 @@ class ApiService {
       }
     } catch (e) {
       throw Exception("Gagal memuat dashboard activities: $e");
-    }
-  }
-
-  // ========================
-  // STOCK ADJUSTMENT APIS
-  // ========================
-  static Future<bool> createStockAdjustment({
-    required String localId,
-    required int productId,
-    required int oldStock,
-    required int newStock,
-    required int difference,
-    required String reason,
-    String? note,
-    required int createdBy,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse("$baseUrl/api/stock-adjustments"),
-        headers: headers,
-        body: jsonEncode({
-          "local_id": localId,
-          "product_id": productId,
-          "old_stock": oldStock,
-          "new_stock": newStock,
-          "difference": difference,
-          "reason": reason,
-          "note": note,
-          "created_by": createdBy,
-        }),
-      ).timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal create stock adjustment: $e");
-    }
-  }
-
-  static Future<List<StockAdjustment>> getStockAdjustments() async {
-    try {
-      final response = await http
-          .get(
-            Uri.parse("$baseUrl/api/stock-adjustments"),
-            headers: {"Connection": "close"},
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          return (data['data'] as List)
-              .map((e) => StockAdjustment.fromJson(e))
-              .toList();
-        }
-        return [];
-      } else {
-        throw Exception("Failed to load stock adjustments");
-      }
-    } catch (e) {
-      throw Exception("Gagal memuat stock adjustments: $e");
-    }
-  }
-
-  static Future<List<StockAdjustment>> getStockAdjustmentsByProduct(int productId) async {
-    try {
-      final response = await http
-          .get(
-            Uri.parse("$baseUrl/api/stock-adjustments/product/$productId"),
-            headers: {"Connection": "close"},
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true) {
-          return (data['data'] as List)
-              .map((e) => StockAdjustment.fromJson(e))
-              .toList();
-        }
-        return [];
-      } else {
-        throw Exception("Failed to load stock adjustments by product");
-      }
-    } catch (e) {
-      throw Exception("Gagal memuat stock adjustments by product: $e");
     }
   }
 }
