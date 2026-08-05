@@ -274,6 +274,7 @@ exports.updateProduct = async (req, res) => {
       stock,
       jenis,
       satuan,
+      alasan_stock,
 
       resep_id,
     } = req.body;
@@ -324,6 +325,20 @@ exports.updateProduct = async (req, res) => {
         resep_id,
         req.params.id,
       ]
+    );
+
+    // Activity Log
+    let deskripsi = `Update produk: ${name}`;
+    if (alasan_stock) {
+      deskripsi += ` - Alasan: ${alasan_stock}`;
+    }
+
+    await db.query(
+      `
+      INSERT INTO dashboard_activities (jenis_aktivitas, deskripsi, icon, waktu)
+      VALUES ('update', ?, 'edit', NOW())
+      `,
+      [deskripsi]
     );
 
     res.json({
