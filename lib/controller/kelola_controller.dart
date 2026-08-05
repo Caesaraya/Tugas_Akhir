@@ -70,6 +70,9 @@ class KelolaProdukController extends GetxController {
   final stockController = TextEditingController();
   final jenisController = TextEditingController();
   final satuanController = TextEditingController();
+  final alasanStockController = TextEditingController(); // BARU
+
+  int _oldStock = 0; // BARU - simpan stock sebelum diubah, buat dibandingkan
 
   final listJenis = [
     'BREAD',
@@ -158,6 +161,7 @@ class KelolaProdukController extends GetxController {
     stockController.dispose();
     jenisController.dispose();
     satuanController.dispose();
+    alasanStockController.dispose(); // BARU
     super.onClose();
   }
 
@@ -176,6 +180,8 @@ class KelolaProdukController extends GetxController {
     stockController.text = product.stock.toString();
     jenisController.text = product.jenis;
     satuanController.text = product.satuan;
+    alasanStockController.clear(); // BARU
+    _oldStock = product.stock; // BARU
     selectedJenis.value = listJenis.contains(product.jenis)
         ? product.jenis
         : listJenis.first;
@@ -230,65 +236,21 @@ class KelolaProdukController extends GetxController {
               ),
               buildTextField(nameController, "Nama Produk"),
               const SizedBox(height: 12),
-              Obx(
-                () => DropdownButtonFormField<String>(
-                  value: selectedJenis.value,
-                  decoration: InputDecoration(
-                    labelText: 'Jenis',
-                    labelStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  items: listJenis
-                      .map(
-                        (jenis) =>
-                            DropdownMenuItem(value: jenis, child: Text(jenis)),
-                      )
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) {
-                      selectedJenis.value = val;
-                      jenisController.text = val;
-                    }
-                  },
-                ),
-              ),
+              buildTextField(stockController, "Stock", isNumber: true),
               const SizedBox(height: 12),
-              Obx(
-                () => DropdownButtonFormField<String>(
-                  value: selectedSatuan.value,
-                  decoration: InputDecoration(
-                    labelText: 'Satuan',
-                    labelStyle: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+              // BARU - field alasan perubahan stock
+              TextField(
+                controller: alasanStockController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: "Alasan Perubahan Stock",
+                  hintText: "Wajib diisi kalau stock diubah",
+                  labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  items: listSatuan
-                      .map(
-                        (satuan) => DropdownMenuItem(
-                          value: satuan,
-                          child: Text(satuan),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) {
-                      selectedSatuan.value = val;
-                      satuanController.text = val;
-                    }
-                  },
                 ),
               ),
             ],
@@ -356,80 +318,115 @@ class KelolaProdukController extends GetxController {
   }
 
   Future<void> updateProduct(Product oldProduct) async {
-    if (nameController.text.isEmpty || priceController.text.isEmpty) {
-      Get.snackbar(
-        "Validasi",
-        "Nama dan Harga tidak boleh kosong",
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
-      );
-      return;
-    }
+  if (nameController.text.isEmpty || priceController.text.isEmpty) {
+    Get.snackbar(
+      "Validasi",
+      "Nama dan Harga tidak boleh kosong",
+      backgroundColor: Colors.redAccent,
+      colorText: Colors.white,
+    );
+    return;
+  }
 
-    try {
-      String cleanPriceText = priceController.text.replaceAll(
-        RegExp(r'[^0-9]'),
-        '',
-      );
-      int numericPrice = int.parse(
-        cleanPriceText.isEmpty ? "0" : cleanPriceText,
-      );
+  String cleanPriceText =
+      priceController.text.replaceAll(RegExp(r'[^0-9]'), '');
+  int numericPrice =
+      int.parse(cleanPriceText.isEmpty ? "0" : cleanPriceText);
 
-      String cleanDiscountText = discountPercentController.text.isEmpty
+  int newStock = int.tryParse(stockController.text) ?? 0;
+
+  String cleanDiscountText =
+      discountPercentController.text.isEmpty
           ? "0"
           : discountPercentController.text;
-      int discountPercent = (int.tryParse(cleanDiscountText) ?? 0).clamp(
-        0,
-        100,
-      );
 
-      Get.back();
-      isLoading(true);
+  int discountPercent =
+      (int.tryParse(cleanDiscountText) ?? 0).clamp(0, 100);
 
-      final success = await ApiService.updateProductWithImage(
-        id: oldProduct.id,
-        name: nameController.text,
-        price: numericPrice,
-        discount: discountPercent,
-        stock: int.tryParse(stockController.text) ?? 0,
-        jenis: jenisController.text,
-        satuan: satuanController.text,
-        resepId: oldProduct.resepId,
-        imageFile: selectedImage.value,
-      );
+  // ============================
+  // BARU - cek apakah ada perubahan
+  // ============================
+  final bool hasChanged =
+      nameController.text.trim() != oldProduct.name ||
+      numericPrice != oldProduct.price ||
+      discountPercent != oldProduct.discount ||
+      newStock != oldProduct.stock ||
+      jenisController.text != oldProduct.jenis ||
+      satuanController.text != oldProduct.satuan ||
+      selectedImage.value != null;
 
-      if (success) {
-        Get.snackbar(
-          "Sukses",
-          "Produk berhasil diperbarui",
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+  if (!hasChanged) {
+    Get.back();
 
-        if (Get.isRegistered<DashboardController>()) {
-          Get.find<DashboardController>().fetchProducts();
-        }
 
-        fetchData();
-      } else {
-        Get.snackbar(
-          "Gagal",
-          "Gagal memperbarui produk",
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } catch (e) {
+    return;
+  }
+
+  // ============================
+  // wajib isi alasan jika stock berubah
+  // ============================
+  if (newStock != oldProduct.stock &&
+      alasanStockController.text.trim().isEmpty) {
+    Get.snackbar(
+      "Validasi",
+      "Alasan perubahan stock wajib diisi",
+      backgroundColor: Colors.redAccent,
+      colorText: Colors.white,
+    );
+    return;
+  }
+
+  try {
+    Get.back();
+    isLoading(true);
+
+    final success = await ApiService.updateProductWithImage(
+      id: oldProduct.id,
+      name: nameController.text.trim(),
+      price: numericPrice,
+      discount: discountPercent,
+      stock: newStock,
+      jenis: jenisController.text,
+      satuan: satuanController.text,
+      resepId: oldProduct.resepId,
+      imageFile: selectedImage.value,
+      alasanStock: newStock != oldProduct.stock
+          ? alasanStockController.text.trim()
+          : null,
+    );
+
+    if (success) {
       Get.snackbar(
-        "Error",
-        "Gagal memperbarui: $e",
+        "Sukses",
+        "Produk berhasil diperbarui",
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+
+      if (Get.isRegistered<DashboardController>()) {
+        Get.find<DashboardController>().fetchProducts();
+      }
+
+      fetchData();
+    } else {
+      Get.snackbar(
+        "Gagal",
+        "Gagal memperbarui produk",
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-    } finally {
-      isLoading(false);
     }
+  } catch (e) {
+    Get.snackbar(
+      "Error",
+      "Gagal memperbarui: $e",
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  } finally {
+    isLoading(false);
   }
+}
 
   void runFilter() {
     if (searchQuery.value.isEmpty) {
