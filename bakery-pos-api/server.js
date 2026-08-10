@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
 const cron = require("node-cron");
@@ -5,8 +6,8 @@ const fs = require("fs");
 const path = require("path");
 
 const db = require("./config/db");
-const swaggerUi = require('swagger-ui-express');
-const specs = require('./config/swagger');
+// const swaggerUi = require('swagger-ui-express');
+// const specs = require('./config/swagger');
 
 // ========================
 // HELPER: CHECK DEFAULT IMAGE
@@ -48,7 +49,7 @@ app.use("/uploads", express.static("uploads"));
 // ======================
 // SWAGGER DOCUMENTATION
 // ======================
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 // ======================
 // ROUTES
@@ -67,6 +68,7 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const pembelianRoutes = require("./routes/pembelianRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const pengambilanBahanRoutes = require("./routes/pengambilanBahanRoutes");
+const stockAdjustmentRequestRoutes = require("./routes/stockAdjustmentRequestRoutes");
 
 app.use("/api/products", productRoutes);
 app.use("/api/transactions", transactionRoutes);
@@ -82,6 +84,7 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/pembelian", pembelianRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/pengambilan-bahan", pengambilanBahanRoutes);
+app.use("/api/stock-adjustment-requests", stockAdjustmentRequestRoutes);
 
 // ======================
 // AUTO CLEANUP SOFT DELETE

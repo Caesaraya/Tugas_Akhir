@@ -279,6 +279,8 @@ exports.updateProduct = async (req, res) => {
       resep_id,
     } = req.body;
 
+    const userRole = req.user?.role || 'admin'; // Default to admin if no auth
+
     price = parseInt(price);
     discount = parseInt(discount || 0);
     stock = parseInt(stock || 0);
@@ -299,33 +301,61 @@ exports.updateProduct = async (req, res) => {
         getImageByJenis(jenis);
     }
 
-    await db.query(
-      `
-      UPDATE products
-      SET
-        name = ?,
-        price = ?,
-        discount = ?,
-        stock = ?,
-        jenis = ?,
-        satuan = ?,
-        image = ?,
-        resep_id = ?
-      WHERE id = ?
-      `,
-      [
+    // Role-based stock update
+    let updateQuery, updateParams;
+    if (userRole === 'kasir') {
+      // Kasir cannot update stock directly
+      updateQuery = `
+        UPDATE products
+        SET
+          name = ?,
+          price = ?,
+          discount = ?,
+          jenis = ?,
+          satuan = ?,
+          image = ?,
+          resep_id = ?
+        WHERE id = ?
+      `;
+      updateParams = [
+        name,
+        price,
+        discount,
+        jenis,
+        satuan,
+        image,
+        resep_id,
+        req.params.id,
+      ];
+    } else {
+      // Admin can update stock directly
+      updateQuery = `
+        UPDATE products
+        SET
+          name = ?,
+          price = ?,
+          discount = ?,
+          stock = ?,
+          jenis = ?,
+          satuan = ?,
+          image = ?,
+          resep_id = ?
+        WHERE id = ?
+      `;
+      updateParams = [
         name,
         price,
         discount,
         stock,
         jenis,
         satuan,
-
         image,
         resep_id,
         req.params.id,
-      ]
-    );
+      ];
+    }
+
+    await db.query(updateQuery, updateParams);
 
     // Activity Log
     let deskripsi = `Update produk: ${name}`;
