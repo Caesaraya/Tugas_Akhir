@@ -20,6 +20,8 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffixIcon; // ← Ditambahkan
   final ValueChanged<String>?
   onChanged; // ← Ditambahkan untuk mendeteksi perubahan input rupiah
+  final bool hasError; // ← Ditambahkan untuk state error validasi
+  final String? errorText; // ← Ditambahkan untuk pesan error validasi
 
   const CustomTextField({
     super.key,
@@ -34,6 +36,8 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false, // ← Ditambahkan (default false)
     this.suffixIcon, // ← Ditambahkan
     this.onChanged, // ← Ditambahkan
+    this.hasError = false, // ← Ditambahkan (default false)
+    this.errorText, // ← Ditambahkan (default null)
   });
 
   @override
@@ -69,24 +73,40 @@ class CustomTextField extends StatelessWidget {
         labelText: label,
         hintText: hint,
         prefixText: prefixText,
-        prefixIcon: Icon(icon, size: 22, color: Colors.black),
+        prefixIcon: Icon(
+          icon,
+          size: 22,
+          color: hasError ? Colors.red : Colors.black,
+        ),
         suffixIcon: suffixIcon, // ← Ditambahkan ke TextField
-        labelStyle: const TextStyle(
-          color: Colors.black87,
+        errorText: errorText, // ← Ditambahkan untuk pesan error di bawah field
+        labelStyle: TextStyle(
+          color: hasError ? Colors.red : Colors.black87,
           fontWeight: FontWeight.bold,
           fontSize: 15,
         ),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: RumahLezaatTheme.borderColor,
+          borderSide: BorderSide(
+            color: hasError ? Colors.red : RumahLezaatTheme.borderColor,
             width: 2.0,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.black, width: 2.5),
+          borderSide: BorderSide(
+            color: hasError ? Colors.red : Colors.black,
+            width: 2.5,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red, width: 2.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -104,6 +124,8 @@ class CustomDropdownMenu extends StatelessWidget {
   final IconData icon;
   final List<String> items;
   final double width;
+  final bool hasError; // ← Ditambahkan untuk state error validasi
+  final String? errorText; // ← Ditambahkan untuk pesan error validasi
 
   const CustomDropdownMenu({
     super.key,
@@ -112,46 +134,68 @@ class CustomDropdownMenu extends StatelessWidget {
     required this.icon,
     required this.items,
     this.width = 440,
+    this.hasError = false, // ← Ditambahkan (default false)
+    this.errorText, // ← Ditambahkan (default null)
   });
 
   @override
   Widget build(BuildContext context) {
-    return DropdownMenu<String>(
-      controller: controller,
-      width: width,
-      menuHeight: 200,
-      label: Text(label),
-      leadingIcon: Icon(icon, size: 22, color: Colors.black),
-      requestFocusOnTap: true,
-      enableFilter: true,
-      textStyle: const TextStyle(
-        color: Colors.black,
-        fontWeight: FontWeight.w600,
-        fontSize: 16,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        labelStyle: const TextStyle(
-          color: Colors.black87,
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: RumahLezaatTheme.borderColor,
-            width: 2.0,
+    final Color normalBorderColor = hasError
+        ? Colors.red
+        : RumahLezaatTheme.borderColor;
+    final Color focusedBorderColor = hasError ? Colors.red : Colors.black;
+    final Color labelColor = hasError ? Colors.red : Colors.black87;
+    final Color iconColor = hasError ? Colors.red : Colors.black;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownMenu<String>(
+          controller: controller,
+          width: width,
+          menuHeight: 200,
+          label: Text(label, style: TextStyle(color: labelColor)),
+          leadingIcon: Icon(icon, size: 22, color: iconColor),
+          requestFocusOnTap: true,
+          enableFilter: true,
+          textStyle: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
+          inputDecorationTheme: InputDecorationTheme(
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            labelStyle: TextStyle(
+              color: labelColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: normalBorderColor, width: 2.0),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: focusedBorderColor, width: 2.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+          ),
+          dropdownMenuEntries: items
+              .map((val) => DropdownMenuEntry<String>(value: val, label: val))
+              .toList(),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.black, width: 2.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      ),
-      dropdownMenuEntries: items
-          .map((val) => DropdownMenuEntry<String>(value: val, label: val))
-          .toList(),
+        if (hasError && errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 4),
+            child: Text(
+              errorText!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -161,25 +205,35 @@ class CustomStockStepper extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final bool isDouble;
+  final bool hasError; // ← Ditambahkan untuk state error validasi
+  final String? errorText; // ← Ditambahkan untuk pesan error validasi
 
   const CustomStockStepper({
     super.key,
     required this.controller,
     this.label = 'Stok Produk',
     this.isDouble = false,
+    this.hasError = false, // ← Ditambahkan (default false)
+    this.errorText, // ← Ditambahkan (default null)
   });
 
   @override
   Widget build(BuildContext context) {
+    final Color borderColor = hasError
+        ? Colors.red
+        : RumahLezaatTheme.borderColor;
+    final Color labelColor = hasError ? Colors.red : Colors.black87;
+    final Color iconColor = hasError ? Colors.red : Colors.black;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           '  $label',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: labelColor,
           ),
         ),
         const SizedBox(height: 6),
@@ -188,15 +242,11 @@ class CustomStockStepper extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.grey.shade50,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: RumahLezaatTheme.borderColor, width: 2.0),
+            border: Border.all(color: borderColor, width: 2.0),
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.inventory_2_rounded,
-                color: Colors.black,
-                size: 22,
-              ),
+              Icon(Icons.inventory_2_rounded, color: iconColor, size: 22),
               const SizedBox(width: 14),
               Expanded(
                 child: TextField(
@@ -286,6 +336,14 @@ class CustomStockStepper extends StatelessWidget {
             ],
           ),
         ),
+        if (hasError && errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 4, top: 4),
+            child: Text(
+              errorText!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
       ],
     );
   }

@@ -148,6 +148,7 @@ class ApiService {
     required String satuan,
     File? imageFile,
     int? resepId,
+    String? alasanStock,
   }) async {
     try {
       final request = http.MultipartRequest(
@@ -166,9 +167,13 @@ class ApiService {
       request.fields['jenis'] = jenis;
       request.fields['satuan'] = satuan;
 
-      if (resepId != null) {
-        request.fields['resep_id'] = resepId.toString();
-      }
+     if (resepId != null) {
+  request.fields['resep_id'] = resepId.toString();
+}
+
+if (alasanStock != null && alasanStock.isNotEmpty) {
+  request.fields['alasan_stock'] = alasanStock;
+}
 
       // Add image file if provided
       if (imageFile != null) {

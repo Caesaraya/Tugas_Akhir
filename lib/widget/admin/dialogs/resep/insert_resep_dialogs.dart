@@ -17,6 +17,7 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
   final bahanBakuCtrl = Get.find<BahanBakuTableController>();
 
   final TextEditingController _bahanDropdownC = TextEditingController();
+  bool _submitted = false;
 
   static const Color _themeColor = Color(0xFF1E1E1E);
 
@@ -66,6 +67,13 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
                 label: 'Nama Formulasi Resep',
                 icon: Icons.dinner_dining_outlined,
                 hint: 'Contoh: Resep Blackforest Base 22cm',
+                hasError: _submitted && ctrl.namaResepC.text.trim().isEmpty,
+                errorText: _submitted && ctrl.namaResepC.text.trim().isEmpty
+                    ? 'Nama resep wajib diisi'
+                    : null,
+                onChanged: (_) {
+                  if (_submitted) setState(() {});
+                },
               ),
               const SizedBox(height: 16),
               CustomTextField(
@@ -73,6 +81,13 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
                 label: 'Deskripsi / Instruksi Singkat',
                 icon: Icons.description_outlined,
                 hint: 'Masukkan keterangan resep produksi',
+                hasError: _submitted && ctrl.deskripsiC.text.trim().isEmpty,
+                errorText: _submitted && ctrl.deskripsiC.text.trim().isEmpty
+                    ? 'Deskripsi wajib diisi'
+                    : null,
+                onChanged: (_) {
+                  if (_submitted) setState(() {});
+                },
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 18),
@@ -196,9 +211,19 @@ class _InsertResepDialogState extends State<InsertResepDialog> {
   }
 
   void _onSave() {
-    if (ctrl.namaResepC.text.trim().isEmpty ||
-        ctrl.deskripsiC.text.trim().isEmpty ||
-        ctrl.tempBahanList.isEmpty) {
+    setState(() {
+      _submitted = true;
+    });
+
+    final isTextValid =
+        ctrl.namaResepC.text.trim().isNotEmpty &&
+        ctrl.deskripsiC.text.trim().isNotEmpty;
+
+    if (!isTextValid) {
+      return;
+    }
+
+    if (ctrl.tempBahanList.isEmpty) {
       Get.snackbar(
         'Peringatan',
         'Semua data formulir wajib diisi dan minimal 1 takaran bahan harus dimasukkan.',
