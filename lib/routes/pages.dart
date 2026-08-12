@@ -16,6 +16,7 @@ import 'package:tugas_akhir/page/desktop/Kasir_pembayaran_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_selesai_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_riwayat_desktop.dart';
 import 'package:tugas_akhir/page/desktop/Kasir_kelola_dashboard.dart';
+import 'package:tugas_akhir/page/desktop/lapor_dashboard_desktop.dart';
 import 'package:tugas_akhir/page/desktop/transaction_detail_desktop.dart';
 import 'package:tugas_akhir/page/login/desktop_login_page.dart';
 import 'package:tugas_akhir/page/login/splash_page.dart';
@@ -28,6 +29,7 @@ import 'package:tugas_akhir/page/mobile/bakery_mobile_detail.dart';
 import 'package:tugas_akhir/page/mobile/drawer_mobile.dart';
 import 'package:tugas_akhir/page/mobile/kalkulator_mobile.dart';
 import 'package:tugas_akhir/page/mobile/keranjang_mobile.dart';
+import 'package:tugas_akhir/page/mobile/lapor_produk.dart';
 import 'package:tugas_akhir/page/mobile/qris_payment_page.dart';
 import 'package:tugas_akhir/page/mobile/sukses_mobile_page.dart';
 import 'package:tugas_akhir/page/mobile/riwayat_mobile.dart';
@@ -69,6 +71,7 @@ class AppPages {
       page: () => TransactionDetailMobile(),
     ),
     GetPage(name: AppRoutes.kasirmobiledrawer, page: () => KasirMobileDrawer()),
+    GetPage(name: AppRoutes.laporProduk, page: () => LaporProdukPage()),
 
     // ── Kasir Desktop ──────────────────────────────────────────────────────
     GetPage(
@@ -83,6 +86,9 @@ class AppPages {
       page: () => KasirKelolaDashboard(),
     ),
     GetPage(name: AppRoutes.transactionDetail, page: () => DetailScreen()),
+    GetPage(name: AppRoutes.lapordesk, page: () => LaporProdukDesk()),
+
+    
 
     // ── Admin Desktop ──────────────────────────────────────────────────────
     GetPage(name: AppRoutes.dashboarddesk, page: () => DashboardPage()),

@@ -51,6 +51,12 @@ class DesktopNavigationDrawer extends StatelessWidget {
           ),
           buildDrawerItem(
             context,
+            icon: Icons.report_problem_outlined,
+            label: 'Lapor Produk',
+            route: AppRoutes.lapordesk,
+          ),
+          buildDrawerItem(
+            context,
             icon: Icons.history,
             label: 'Riwayat',
             route: AppRoutes.riwayatdesk,

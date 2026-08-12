@@ -36,8 +36,11 @@ class AppRoutes {
   static const String kasirmobiledrawer = '/kasirmobiledrawer';
   static const String transactionDetailMobile = '/transactionDetailMobile';
   static const String qrisPayment = '/qrisPayment';
+  static const String laporProduk = '/laporProduk';
+
   //desktop
   static const String kasirboarddesk = '/KasirBoardDesk';
+  static const String lapordesk = '/laporProdukdesk';
   static const String kasirbayar = '/KasirBayar';
   static const String kasirprint = '/KasirSelesai';
   static const String riwayatdesk = '/riwayatdesk';
