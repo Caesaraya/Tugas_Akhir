@@ -4,9 +4,11 @@ import 'package:tugas_akhir/page/admin/desktop/kelola_bahan_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_produk_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_resep_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/kelola_user_desktop.dart';
+import 'package:tugas_akhir/page/admin/desktop/laporan_desktop.dart';
 import 'package:tugas_akhir/page/admin/desktop/monitoring_keuangan_desktop.dart';
 import 'package:tugas_akhir/page/admin/mobile/bahanbaku/kelola_bahan_baku_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/dashboard_mobile.dart';
+import 'package:tugas_akhir/page/admin/mobile/laporan/laporan_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/produk/kelola_produk_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/resep/kelola_resep_mobile.dart';
 import 'package:tugas_akhir/page/admin/mobile/uang/monitoring_keuangan_mobile.dart';
@@ -36,25 +38,15 @@ import 'package:tugas_akhir/page/mobile/riwayat_mobile.dart';
 import 'package:tugas_akhir/page/mobile/Kelolaproduk_mobile.dart';
 import 'package:tugas_akhir/page/mobile/transaction_detail_mobile.dart';
 
-
 import 'routes.dart';
 
 class AppPages {
   static final pages = [
     GetPage(name: AppRoutes.splash, page: () => const SplashPage()),
     // ── Login ──────────────────────────────────────────────────────────────
-    GetPage(
-      name: AppRoutes.login,
-      page: () => LoginPage(), 
-    ),
-    GetPage(
-      name: AppRoutes.logindesk,
-      page: () => DesktopLoginPage(),
-    ),
-    GetPage(
-      name: AppRoutes.mediaQuery,
-      page: () => DashboardWrapper(), 
-    ),
+    GetPage(name: AppRoutes.login, page: () => LoginPage()),
+    GetPage(name: AppRoutes.logindesk, page: () => DesktopLoginPage()),
+    GetPage(name: AppRoutes.mediaQuery, page: () => DashboardWrapper()),
 
     // ── Kasir Mobile ───────────────────────────────────────────────────────
     GetPage(
@@ -88,8 +80,6 @@ class AppPages {
     GetPage(name: AppRoutes.transactionDetail, page: () => DetailScreen()),
     GetPage(name: AppRoutes.lapordesk, page: () => LaporProdukDesk()),
 
-    
-
     // ── Admin Desktop ──────────────────────────────────────────────────────
     GetPage(name: AppRoutes.dashboarddesk, page: () => DashboardPage()),
     GetPage(
@@ -102,10 +92,8 @@ class AppPages {
       name: AppRoutes.monitoringuang,
       page: () => MonitoringKeuanganPage(),
     ),
-    GetPage(
-      name: AppRoutes.kelolaUserDesk,
-      page: () => KelolaUserDeskPage(),
-    ), // ← TAMBAHAN BARU
+    GetPage(name: AppRoutes.kelolaUserDesk, page: () => KelolaUserDeskPage()),
+    GetPage(name: AppRoutes.laporanDesk, page: () => LaporanDeskPage()),
     // ── Admin Mobile ───────────────────────────────────────────────────────
     GetPage(
       name: AppRoutes.dashboardMob,
@@ -121,11 +109,9 @@ class AppPages {
       name: AppRoutes.monitoringUangMob,
       page: () => MonitoringKeuanganMobilePage(),
     ),
-    GetPage(
-      name: AppRoutes.kelolaUserMob,
-      page: () => KelolaUserMobilePage(),
-    ),
+    GetPage(name: AppRoutes.kelolaUserMob, page: () => KelolaUserMobilePage()),
     GetPage(name: AppRoutes.qrisPayment, page: () => const QrisPaymentPage()),
+    GetPage(name: AppRoutes.laporanMob, page: () => LaporanMobilePage()),
     // ── Bakery ──────────────────────────────────────────────────────
     GetPage(name: AppRoutes.bakery, page: () => BakeryPage()),
     GetPage(
