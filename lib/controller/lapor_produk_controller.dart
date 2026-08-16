@@ -7,50 +7,37 @@ import 'package:tugas_akhir/models/product.dart';
 import 'package:tugas_akhir/models/stock_adjustment_request.dart';
 
 class LaporProdukController extends GetxController {
-  // ========================
-  // PRODUK
-  // ========================
+  // ================================================================
+  // PRODUCT
+  // ================================================================
 
-  var products = <Product>[].obs;
-  var filteredProducts = <Product>[].obs;
+  final products = <Product>[].obs;
+  final filteredProducts = <Product>[].obs;
 
-  var isLoading = false.obs;
-  var isSubmitting = false.obs;
+  final isLoading = false.obs;
+  final isSubmitting = false.obs;
 
-  var searchQuery = "".obs;
-  var currentPage = 1.obs;
+  final searchQuery = ''.obs;
+  final currentPage = 1.obs;
 
   static const int pageSize = 15;
 
-  // ========================
+  // ================================================================
   // RIWAYAT LAPORAN
-  // ========================
+  // ================================================================
 
-  var laporanList = <StockAdjustmentRequest>[].obs;
-  var isLoadingLaporan = false.obs;
+  final stockAdjustmentRequests = <StockAdjustmentRequest>[].obs;
 
-  var laporanSearchQuery = "".obs;
+  final isLoadingHistory = false.obs;
 
-  List<StockAdjustmentRequest> get filteredLaporan {
-    if (laporanSearchQuery.value.trim().isEmpty) {
-      return laporanList;
-    }
-
-    final query = laporanSearchQuery.value.toLowerCase().trim();
-
-    return laporanList.where((laporan) {
-      return laporan.productName.toLowerCase().contains(query) ||
-          laporan.reason.toLowerCase().contains(query) ||
-          laporan.status.toLowerCase().contains(query);
-    }).toList();
-  }
-
-  // ========================
-  // PAGINATION PRODUK
-  // ========================
+  // ================================================================
+  // PAGINATION PRODUCT
+  // ================================================================
 
   List<Product> get paginatedProducts {
-    if (filteredProducts.isEmpty) return [];
+    if (filteredProducts.isEmpty) {
+      return [];
+    }
 
     final start = (currentPage.value - 1) * pageSize;
 
@@ -65,7 +52,10 @@ class LaporProdukController extends GetxController {
   }
 
   int get totalPages {
-    if (filteredProducts.isEmpty) return 1;
+    if (filteredProducts.isEmpty) {
+      return 1;
+    }
+
     return (filteredProducts.length / pageSize).ceil();
   }
 
@@ -87,9 +77,9 @@ class LaporProdukController extends GetxController {
     }
   }
 
-  // ========================
+  // ================================================================
   // FORMATTER
-  // ========================
+  // ================================================================
 
   final currencyFormatter = NumberFormat.currency(
     locale: 'id_ID',
@@ -97,28 +87,41 @@ class LaporProdukController extends GetxController {
     decimalDigits: 0,
   );
 
-  // ========================
+  // ================================================================
   // FORM LAPOR
-  // ========================
+  // ================================================================
 
   final jumlahController = TextEditingController();
   final alasanController = TextEditingController();
 
-  final listKategori = const ['Rusak', 'Kadaluwarsa'];
+  // Observable jumlah untuk preview stok
+  final jumlahInput = 0.obs;
+
+  // Jenis request
+  final listJenisRequest = const ['Kurangi Stok', 'Tambah Stok'];
+
+  final selectedJenisRequest = 'Kurangi Stok'.obs;
+
+  // Kategori pengurangan
+  final listKategoriKurang = const ['Rusak', 'Kadaluwarsa'];
+
+  // Kategori penambahan
+  final listKategoriTambah = const ['Restock', 'Koreksi Stok'];
 
   final selectedKategori = 'Rusak'.obs;
+
   final selectedTanggal = DateTime.now().obs;
 
-  // ========================
+  // ================================================================
   // INIT
-  // ========================
+  // ================================================================
 
   @override
   void onInit() {
     super.onInit();
 
     fetchData();
-    fetchLaporan();
+    fetchHistory();
 
     debounce(
       searchQuery,
@@ -127,9 +130,9 @@ class LaporProdukController extends GetxController {
     );
   }
 
-  // ========================
-  // FETCH PRODUK
-  // ========================
+  // ================================================================
+  // FETCH PRODUCTS
+  // ================================================================
 
   Future<void> fetchData() async {
     try {
@@ -155,8 +158,8 @@ class LaporProdukController extends GetxController {
       }
     } catch (e) {
       Get.snackbar(
-        "Error",
-        "Gagal memuat produk: $e",
+        'Error',
+        'Gagal memuat produk: $e',
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
@@ -164,9 +167,9 @@ class LaporProdukController extends GetxController {
     }
   }
 
-  // ========================
-  // FILTER PRODUK
-  // ========================
+  // ================================================================
+  // FILTER PRODUCT
+  // ================================================================
 
   void runFilter() {
     if (searchQuery.value.isEmpty) {
@@ -182,39 +185,83 @@ class LaporProdukController extends GetxController {
     currentPage.value = 1;
   }
 
-  // ========================
-  // FETCH RIWAYAT LAPORAN
-  // ========================
+  void refreshData() {
+    fetchData();
+  }
 
-  Future<void> fetchLaporan() async {
+  // ================================================================
+  // FETCH RIWAYAT LAPORAN
+  // ================================================================
+
+  Future<void> fetchHistory() async {
     try {
-      isLoadingLaporan(true);
+      isLoadingHistory(true);
 
       final data = await ApiService.getMyStockAdjustmentRequests();
 
-      laporanList.assignAll(data);
+      stockAdjustmentRequests.assignAll(data);
     } catch (e) {
       Get.snackbar(
-        "Error",
-        "Gagal memuat riwayat laporan: $e",
+        'Error',
+        'Gagal memuat riwayat laporan: $e',
         snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
-      isLoadingLaporan(false);
+      isLoadingHistory(false);
     }
   }
 
-  // ========================
-  // REFRESH
-  // ========================
+  // ================================================================
+  // REFRESH RIWAYAT
+  // ================================================================
 
-  Future<void> refreshData() async {
-    await Future.wait([fetchData(), fetchLaporan()]);
+  Future<void> refreshHistory() async {
+    await fetchHistory();
   }
 
-  // ========================
+  // ================================================================
+  // KATEGORI
+  // ================================================================
+
+  List<String> get kategoriList {
+    if (selectedJenisRequest.value == 'Tambah Stok') {
+      return listKategoriTambah;
+    }
+
+    return listKategoriKurang;
+  }
+
+  // ================================================================
+  // GANTI JENIS REQUEST
+  // ================================================================
+
+  void changeJenisRequest(String value) {
+    selectedJenisRequest.value = value;
+
+    if (value == 'Tambah Stok') {
+      selectedKategori.value = 'Restock';
+    } else {
+      selectedKategori.value = 'Rusak';
+    }
+  }
+
+  // ================================================================
+  // HITUNG STOCK BARU
+  // ================================================================
+
+  int calculateNewStock(Product product) {
+    final jumlah = int.tryParse(jumlahController.text) ?? 0;
+
+    if (selectedJenisRequest.value == 'Tambah Stok') {
+      return product.stock + jumlah;
+    }
+
+    return product.stock - jumlah;
+  }
+
+  // ================================================================
   // STATUS
-  // ========================
+  // ================================================================
 
   String getStatusText(String status) {
     switch (status.toLowerCase()) {
@@ -225,10 +272,8 @@ class LaporProdukController extends GetxController {
         return 'Ditolak';
 
       case 'pending':
-        return 'Menunggu';
-
       default:
-        return status;
+        return 'Menunggu';
     }
   }
 
@@ -241,10 +286,8 @@ class LaporProdukController extends GetxController {
         return Colors.red;
 
       case 'pending':
-        return Colors.orange;
-
       default:
-        return Colors.grey;
+        return Colors.orange;
     }
   }
 
@@ -257,214 +300,73 @@ class LaporProdukController extends GetxController {
         return Icons.cancel;
 
       case 'pending':
-        return Icons.access_time;
-
       default:
-        return Icons.info;
+        return Icons.access_time;
     }
   }
 
-  // ========================
-  // DETAIL LAPORAN
-  // ========================
+  // ================================================================
+  // INFORMASI PERUBAHAN STOCK
+  // ================================================================
 
-  void showLaporanDetail(BuildContext context, StockAdjustmentRequest laporan) {
-    final status = laporan.status.toLowerCase();
+  String getStockChangeText(StockAdjustmentRequest laporan) {
+    switch (laporan.status.toLowerCase()) {
+      case 'approved':
+        if (laporan.newStock > laporan.oldStock) {
+          return 'Laporan diterima. Stock berhasil '
+              'ditambah dari ${laporan.oldStock} '
+              'menjadi ${laporan.newStock}.';
+        }
 
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: Row(
-          children: [
-            Icon(
-              getStatusIcon(laporan.status),
-              color: getStatusColor(laporan.status),
-            ),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text(
-                'Detail Laporan',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _detailRow('Produk', laporan.productName),
+        if (laporan.newStock < laporan.oldStock) {
+          return 'Laporan diterima. Stock berhasil '
+              'dikurangi dari ${laporan.oldStock} '
+              'menjadi ${laporan.newStock}.';
+        }
 
-              _detailRow('Stok Awal', '${laporan.oldStock}'),
+        return 'Laporan diterima. Stock tidak mengalami perubahan.';
 
-              _detailRow('Stok Setelah', '${laporan.newStock}'),
+      case 'rejected':
+        return 'Laporan ditolak oleh admin. '
+            'Stock tidak diubah.';
 
-              _detailRow(
-                'Status',
-                getStatusText(laporan.status),
-                valueColor: getStatusColor(laporan.status),
-              ),
+      case 'pending':
+      default:
+        if (laporan.newStock > laporan.oldStock) {
+          return 'Menunggu persetujuan admin. '
+              'Stock belum ditambah.';
+        }
 
-              if (laporan.approvedByName != null &&
-                  laporan.approvedByName!.isNotEmpty)
-                _detailRow(
-                  status == 'approved' ? 'Disetujui Oleh' : 'Diproses Oleh',
-                  laporan.approvedByName!,
-                ),
+        if (laporan.newStock < laporan.oldStock) {
+          return 'Menunggu persetujuan admin. '
+              'Stock belum dikurangi.';
+        }
 
-              if (laporan.createdAt != null)
-                _detailRow(
-                  'Tanggal Laporan',
-                  DateFormat(
-                    'dd MMM yyyy, HH:mm',
-                  ).format(laporan.createdAt!.toLocal()),
-                ),
-
-              if (laporan.updatedAt != null)
-                _detailRow(
-                  'Terakhir Diperbarui',
-                  DateFormat(
-                    'dd MMM yyyy, HH:mm',
-                  ).format(laporan.updatedAt!.toLocal()),
-                ),
-
-              const SizedBox(height: 12),
-
-              const Text(
-                'Alasan',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-
-              const SizedBox(height: 6),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  laporan.reason,
-                  style: const TextStyle(fontSize: 13),
-                ),
-              ),
-
-              if (status == 'approved') ...[
-                const SizedBox(height: 14),
-
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.green.withOpacity(0.25)),
-                  ),
-                  child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.inventory_2_outlined, color: Colors.green),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Laporan telah diterima. Stok produk sudah diperbarui sesuai laporan.',
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              if (status == 'rejected') ...[
-                const SizedBox(height: 14),
-
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.red.withOpacity(0.2)),
-                  ),
-                  child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.red),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Laporan ditolak. Stok produk tidak diubah.',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Tutup')),
-        ],
-      ),
-    );
+        return 'Menunggu persetujuan admin.';
+    }
   }
 
-  Widget _detailRow(String label, String value, {Color? valueColor}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 110,
-            child: Text(
-              label,
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-                color: valueColor ?? Colors.black87,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ========================
+  // ================================================================
   // FORM LAPOR
-  // ========================
+  // ================================================================
 
   void showLaporForm(BuildContext context, Product product) {
     jumlahController.clear();
     alasanController.clear();
 
+    jumlahInput.value = 0;
+
+    selectedJenisRequest.value = 'Kurangi Stok';
+
     selectedKategori.value = 'Rusak';
+
     selectedTanggal.value = DateTime.now();
 
     Get.dialog(
       AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: const Text(
-          "Lapor Produk",
+          'Lapor Produk',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         content: SingleChildScrollView(
@@ -472,6 +374,9 @@ class LaporProdukController extends GetxController {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ==================================================
+              // NAMA PRODUK
+              // ==================================================
               Text(
                 product.name,
                 style: const TextStyle(fontWeight: FontWeight.w600),
@@ -479,35 +384,24 @@ class LaporProdukController extends GetxController {
 
               const SizedBox(height: 4),
 
+              // TIDAK DIBUNGKUS OBX
+              // karena product.stock bukan Rx
               Text(
-                "Stock saat ini: ${product.stock}",
+                'Stock saat ini: ${product.stock}',
                 style: const TextStyle(color: Colors.grey, fontSize: 12),
               ),
 
               const SizedBox(height: 16),
 
-              TextField(
-                controller: jumlahController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: InputDecoration(
-                  labelText: "Jumlah",
-                  labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
+              // ==================================================
+              // JENIS LAPORAN
+              // ==================================================
               Obx(
                 () => DropdownButtonFormField<String>(
-                  value: selectedKategori.value,
+                  value: selectedJenisRequest.value,
+
                   decoration: InputDecoration(
-                    labelText: 'Kategori',
+                    labelText: 'Jenis Laporan',
                     labelStyle: const TextStyle(
                       color: Colors.grey,
                       fontSize: 12,
@@ -518,12 +412,33 @@ class LaporProdukController extends GetxController {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  items: listKategori
-                      .map((k) => DropdownMenuItem(value: k, child: Text(k)))
+
+                  items: listJenisRequest
+                      .map(
+                        (jenis) => DropdownMenuItem(
+                          value: jenis,
+                          child: Row(
+                            children: [
+                              Icon(
+                                jenis == 'Tambah Stok'
+                                    ? Icons.add_circle_outline
+                                    : Icons.remove_circle_outline,
+                                size: 18,
+                                color: jenis == 'Tambah Stok'
+                                    ? Colors.green
+                                    : Colors.redAccent,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(jenis),
+                            ],
+                          ),
+                        ),
+                      )
                       .toList(),
-                  onChanged: (val) {
-                    if (val != null) {
-                      selectedKategori.value = val;
+
+                  onChanged: (value) {
+                    if (value != null) {
+                      changeJenisRequest(value);
                     }
                   },
                 ),
@@ -531,9 +446,147 @@ class LaporProdukController extends GetxController {
 
               const SizedBox(height: 12),
 
+              // ==================================================
+              // JUMLAH
+              // ==================================================
+              TextField(
+                controller: jumlahController,
+
+                keyboardType: TextInputType.number,
+
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+
+                onChanged: (value) {
+                  jumlahInput.value = int.tryParse(value) ?? 0;
+                },
+
+                decoration: InputDecoration(
+                  labelText: 'Jumlah',
+                  labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // ==================================================
+              // PREVIEW STOCK
+              // ==================================================
+              Obx(() {
+                final jumlah = jumlahInput.value;
+
+                final bool isTambah =
+                    selectedJenisRequest.value == 'Tambah Stok';
+
+                final int newStock = isTambah
+                    ? product.stock + jumlah
+                    : product.stock - jumlah;
+
+                final bool invalid = !isTambah && jumlah > product.stock;
+
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: invalid
+                        ? Colors.red.withOpacity(0.08)
+                        : isTambah
+                        ? Colors.green.withOpacity(0.08)
+                        : Colors.orange.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isTambah ? Icons.add_circle : Icons.remove_circle,
+                        size: 18,
+                        color: invalid
+                            ? Colors.red
+                            : isTambah
+                            ? Colors.green
+                            : Colors.orange,
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      Expanded(
+                        child: Text(
+                          invalid
+                              ? 'Jumlah melebihi stock saat ini'
+                              : 'Stock setelah disetujui: $newStock',
+                          style: TextStyle(
+                            color: invalid
+                                ? Colors.red
+                                : isTambah
+                                ? Colors.green
+                                : Colors.orange,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+
+              const SizedBox(height: 12),
+
+              // ==================================================
+              // KATEGORI
+              // ==================================================
+              Obx(
+                () => DropdownButtonFormField<String>(
+                  value: selectedKategori.value,
+
+                  decoration: InputDecoration(
+                    labelText: selectedJenisRequest.value == 'Tambah Stok'
+                        ? 'Sumber'
+                        : 'Kategori',
+
+                    labelStyle: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
+                    ),
+
+                    filled: true,
+                    fillColor: Colors.white,
+
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+
+                  items: kategoriList
+                      .map(
+                        (kategori) => DropdownMenuItem(
+                          value: kategori,
+                          child: Text(kategori),
+                        ),
+                      )
+                      .toList(),
+
+                  onChanged: (value) {
+                    if (value != null) {
+                      selectedKategori.value = value;
+                    }
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ==================================================
+              // TANGGAL
+              // ==================================================
               Obx(
                 () => InkWell(
                   onTap: () => pickTanggal(context),
+
                   child: InputDecorator(
                     decoration: InputDecoration(
                       labelText: 'Tanggal Kejadian',
@@ -547,6 +600,7 @@ class LaporProdukController extends GetxController {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
+
                     child: Text(
                       DateFormat('dd MMM yyyy').format(selectedTanggal.value),
                     ),
@@ -556,11 +610,16 @@ class LaporProdukController extends GetxController {
 
               const SizedBox(height: 12),
 
+              // ==================================================
+              // ALASAN
+              // ==================================================
               TextField(
                 controller: alasanController,
+
                 maxLines: 3,
+
                 decoration: InputDecoration(
-                  labelText: "Alasan",
+                  labelText: 'Alasan',
                   labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
                   filled: true,
                   fillColor: Colors.white,
@@ -572,15 +631,21 @@ class LaporProdukController extends GetxController {
             ],
           ),
         ),
+
+        // ========================================================
+        // ACTION
+        // ========================================================
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
+          TextButton(onPressed: () => Get.back(), child: const Text('Batal')),
 
           Obx(
             () => ElevatedButton(
               onPressed: isSubmitting.value ? null : () => submitLapor(product),
+
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE89336),
               ),
+
               child: isSubmitting.value
                   ? const SizedBox(
                       width: 18,
@@ -590,7 +655,7 @@ class LaporProdukController extends GetxController {
                         strokeWidth: 2,
                       ),
                     )
-                  : const Text("Kirim", style: TextStyle(color: Colors.white)),
+                  : const Text('Kirim', style: TextStyle(color: Colors.white)),
             ),
           ),
         ],
@@ -599,9 +664,9 @@ class LaporProdukController extends GetxController {
     );
   }
 
-  // ========================
-  // PICK TANGGAL
-  // ========================
+  // ================================================================
+  // DATE PICKER
+  // ================================================================
 
   Future<void> pickTanggal(BuildContext context) async {
     final picked = await showDatePicker(
@@ -616,58 +681,97 @@ class LaporProdukController extends GetxController {
     }
   }
 
-  // ========================
+  // ================================================================
   // SUBMIT LAPOR
-  // ========================
+  // ================================================================
 
   Future<void> submitLapor(Product product) async {
     final jumlah = int.tryParse(jumlahController.text) ?? 0;
 
+    // ============================================================
+    // VALIDASI JUMLAH
+    // ============================================================
+
     if (jumlah <= 0) {
       Get.snackbar(
-        "Validasi",
-        "Jumlah harus lebih dari 0",
+        'Validasi',
+        'Jumlah harus lebih dari 0',
         backgroundColor: Colors.redAccent,
         colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
       );
+
       return;
     }
 
-    if (jumlah > product.stock) {
+    // ============================================================
+    // CEK JENIS REQUEST
+    // ============================================================
+
+    final bool isTambah = selectedJenisRequest.value == 'Tambah Stok';
+
+    // ============================================================
+    // VALIDASI KURANG STOK
+    // ============================================================
+
+    if (!isTambah && jumlah > product.stock) {
       Get.snackbar(
-        "Validasi",
-        "Jumlah melebihi stock saat ini (${product.stock})",
+        'Validasi',
+        'Jumlah melebihi stock saat ini (${product.stock})',
         backgroundColor: Colors.redAccent,
         colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
       );
+
       return;
     }
+
+    // ============================================================
+    // VALIDASI ALASAN
+    // ============================================================
 
     if (alasanController.text.trim().isEmpty) {
       Get.snackbar(
-        "Validasi",
-        "Alasan tidak boleh kosong",
+        'Validasi',
+        'Alasan tidak boleh kosong',
         backgroundColor: Colors.redAccent,
         colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
       );
+
       return;
     }
 
-    final newStock = product.stock - jumlah;
+    // ============================================================
+    // HITUNG STOCK BARU
+    // ============================================================
+
+    final int newStock = isTambah
+        ? product.stock + jumlah
+        : product.stock - jumlah;
+
+    // ============================================================
+    // FORMAT REASON
+    // ============================================================
 
     final tanggalFormatted = DateFormat(
       'dd MMM yyyy',
     ).format(selectedTanggal.value);
 
     final reasonText =
-        "[${selectedKategori.value}] "
-        "$tanggalFormatted - "
-        "${alasanController.text.trim()}";
+        '[${selectedJenisRequest.value}] '
+        '[${selectedKategori.value}] '
+        '$tanggalFormatted - '
+        '${alasanController.text.trim()}';
 
     try {
       Get.back();
 
       isSubmitting(true);
+
+      // ==========================================================
+      // API
+      // ==========================================================
 
       final success = await ApiService.createStockAdjustmentRequest(
         productId: product.id,
@@ -677,37 +781,45 @@ class LaporProdukController extends GetxController {
       );
 
       if (success) {
-        await fetchLaporan();
-
         Get.snackbar(
-          "Terkirim",
-          "Laporan berhasil dikirim, menunggu persetujuan admin",
+          'Terkirim',
+          isTambah
+              ? 'Request penambahan stock berhasil dikirim. '
+                    'Menunggu persetujuan admin.'
+              : 'Laporan pengurangan stock berhasil dikirim. '
+                    'Menunggu persetujuan admin.',
           backgroundColor: Colors.green,
           colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
         );
+
+        await fetchData();
+        await fetchHistory();
       } else {
         Get.snackbar(
-          "Gagal",
-          "Gagal mengirim laporan",
+          'Gagal',
+          'Gagal mengirim laporan',
           backgroundColor: Colors.red,
           colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
         );
       }
     } catch (e) {
       Get.snackbar(
-        "Error",
-        "Gagal mengirim laporan: $e",
+        'Error',
+        'Gagal mengirim laporan: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
       isSubmitting(false);
     }
   }
 
-  // ========================
-  // CLOSE
-  // ========================
+  // ================================================================
+  // DISPOSE
+  // ================================================================
 
   @override
   void onClose() {

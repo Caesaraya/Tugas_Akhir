@@ -49,12 +49,12 @@ class DesktopNavigationDrawer extends StatelessWidget {
             label: 'Kelola Produk',
             route: AppRoutes.kelolaprodukdashboard,
           ),
-          buildDrawerItem(
-            context,
-            icon: Icons.report_problem_outlined,
-            label: 'Lapor Produk',
-            route: AppRoutes.lapordesk,
-          ),
+          // buildDrawerItem(
+          //   context,
+          //   icon: Icons.report_problem_outlined,
+          //   label: 'Lapor Produk',
+          //   route: AppRoutes.lapordesk,
+          // ),
           buildDrawerItem(
             context,
             icon: Icons.history,

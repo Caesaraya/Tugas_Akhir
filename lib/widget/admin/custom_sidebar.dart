@@ -135,15 +135,14 @@ class AdminSidebar extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   // ← TAMBAHAN BARU: Laporan
-                  _buildSidebarItem(
-                    icon: Icons.report_gmailerrorred_outlined,
-                    title: 'Laporan',
-                    selected: navC.selectedIndex.value == 6,
-                    badgeCount: LaporanController.to.pendingCount,
-                    onTap: () => navC.changePage(6, AppRoutes.laporanDesk),
-                  ),
-                  const SizedBox(height: 8),
-
+                  // _buildSidebarItem(
+                  //   icon: Icons.report_gmailerrorred_outlined,
+                  //   title: 'Laporan',
+                  //   selected: navC.selectedIndex.value == 6,
+                  //   badgeCount: LaporanController.to.pendingCount,
+                  //   onTap: () => navC.changePage(6, AppRoutes.laporanDesk),
+                  // ),
+                  // const SizedBox(height: 8),
                   _buildSidebarItem(
                     icon: Icons
                         .monetization_on_outlined, // Ikon tetesan air untuk Kelola Bahan

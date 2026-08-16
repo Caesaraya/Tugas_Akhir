@@ -53,11 +53,11 @@ class KasirMobileDrawer extends StatelessWidget {
               title: 'Kelola Produk',
               route: AppRoutes.kelolaProduk,
             ),
-            DrawerItem(
-              icon: Icons.report_problem_outlined,
-              title: 'Lapor Produk',
-              route: AppRoutes.laporProduk,
-            ),
+            // DrawerItem(
+            //   icon: Icons.report_problem_outlined,
+            //   title: 'Lapor Produk',
+            //   route: AppRoutes.laporProduk,
+            // ),
             DrawerItem(
               icon: Icons.history,
               title: 'Riwayat',

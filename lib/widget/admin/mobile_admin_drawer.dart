@@ -63,32 +63,32 @@ class MobileAdminDrawer extends StatelessWidget {
             selected: currentRoute == AppRoutes.kelolaResepMob,
           ),
           // ← TAMBAHAN BARU: Laporan
-          _buildDrawerItem(
-            context,
-            icon: Icons.report_gmailerrorred_outlined,
-            title: 'Laporan',
-            routeName: AppRoutes.laporanMob,
-            selected: currentRoute == AppRoutes.laporanMob,
-            trailing: Obx(() {
-              final count = LaporanController.to.pendingCount;
-              if (count == 0) return const SizedBox.shrink();
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFC62828),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  count.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              );
-            }),
-          ),
+          // _buildDrawerItem(
+          //   context,
+          //   icon: Icons.report_gmailerrorred_outlined,
+          //   title: 'Laporan',
+          //   routeName: AppRoutes.laporanMob,
+          //   selected: currentRoute == AppRoutes.laporanMob,
+          //   trailing: Obx(() {
+          //     final count = LaporanController.to.pendingCount;
+          //     if (count == 0) return const SizedBox.shrink();
+          //     return Container(
+          //       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          //       decoration: BoxDecoration(
+          //         color: const Color(0xFFC62828),
+          //         borderRadius: BorderRadius.circular(20),
+          //       ),
+          //       child: Text(
+          //         count.toString(),
+          //         style: const TextStyle(
+          //           color: Colors.white,
+          //           fontWeight: FontWeight.bold,
+          //           fontSize: 12,
+          //         ),
+          //       ),
+          //     );
+          //   }),
+          // ),
           _buildDrawerItem(
             context,
             icon: Icons
