@@ -193,6 +193,89 @@ cron.schedule("0 0 * * *", async () => {
 });
 
 // ======================
+// AUTO UPDATE BEST SELLER (Every 6 hours)
+// ======================
+cron.schedule("0 */6 * * *", async () => {
+  try {
+    console.log("Running auto update best seller products...");
+
+    // Get top 10 best seller this month
+    const [bestSellers] = await db.query(`
+      SELECT 
+        p.id
+      FROM products p
+      LEFT JOIN transaction_details td ON p.id = td.product_id
+      LEFT JOIN transactions t ON td.transaction_id = t.id
+      WHERE t.tanggal >= DATE_FORMAT(NOW(), '%Y-%m-01')
+      GROUP BY p.id
+      ORDER BY SUM(td.quantity) DESC
+      LIMIT 10
+    `);
+
+    const bestSellerIds = bestSellers.map(p => p.id);
+
+    // Reset all products to 0
+    await db.query("UPDATE products SET daily_restock_amount = 0");
+
+    // Set top 10 to 20
+    if (bestSellerIds.length > 0) {
+      await db.query(
+        `UPDATE products SET daily_restock_amount = 20 WHERE id IN (${bestSellerIds.join(',')})`
+      );
+      console.log(`Auto update: Set ${bestSellerIds.length} best seller products to daily_restock_amount = 20`);
+    }
+
+    // Log to dashboard activities
+    await db.query(`
+      INSERT INTO dashboard_activities (jenis_aktivitas, deskripsi, icon, waktu)
+      VALUES ('best_seller_update', ?, 'trending-up', NOW())
+    `, [`Updated top ${bestSellerIds.length} best seller products for auto restocking`]);
+
+  } catch (error) {
+    console.error("Auto update best seller failed:", error.message);
+  }
+});
+
+// ======================
+// AUTO RESTOCK (Daily at 00:00)
+// ======================
+cron.schedule("0 0 * * *", async () => {
+  try {
+    console.log("Running auto restock products...");
+
+    // Restock products with daily_restock_amount > 0
+    const [productsToRestock] = await db.query(`
+      SELECT id, name, daily_restock_amount, stock
+      FROM products
+      WHERE daily_restock_amount > 0
+    `);
+
+    if (productsToRestock.length > 0) {
+      for (const product of productsToRestock) {
+        await db.query(
+          "UPDATE products SET stock = stock + ? WHERE id = ?",
+          [product.daily_restock_amount, product.id]
+        );
+        console.log(`  Restocked ${product.name}: +${product.daily_restock_amount} (old: ${product.stock})`);
+      }
+
+      // Log to dashboard activities
+      await db.query(`
+        INSERT INTO dashboard_activities (jenis_aktivitas, deskripsi, icon, waktu)
+        VALUES ('auto_restock', ?, 'package', NOW())
+      `, [`Auto restocked ${productsToRestock.length} products`]);
+
+      console.log(`Auto restock: Restocked ${productsToRestock.length} products`);
+    } else {
+      console.log("Auto restock: No products to restock");
+    }
+
+  } catch (error) {
+    console.error("Auto restock failed:", error.message);
+  }
+});
+
+// ======================
 // HEALTH CHECK
 // ======================
 app.get("/", (req, res) => {
