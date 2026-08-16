@@ -15,6 +15,25 @@ class EditBahanBakuDialog extends StatefulWidget {
 class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
   final ctrl = Get.find<BahanBakuTableController>();
   final List<String> _addedSatuan = [];
+  bool _submitted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ctrl.satuanC.addListener(_handleFieldChanged);
+    ctrl.stokC.addListener(_handleFieldChanged);
+  }
+
+  @override
+  void dispose() {
+    ctrl.satuanC.removeListener(_handleFieldChanged);
+    ctrl.stokC.removeListener(_handleFieldChanged);
+    super.dispose();
+  }
+
+  void _handleFieldChanged() {
+    if (_submitted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +86,13 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
                 label: 'Nama Bahan Baku',
                 icon: Icons.fastfood_outlined,
                 hint: 'Masukkan nama bahan baku',
+                hasError: _submitted && ctrl.namaC.text.trim().isEmpty,
+                errorText: _submitted && ctrl.namaC.text.trim().isEmpty
+                    ? 'Nama bahan baku wajib diisi'
+                    : null,
+                onChanged: (_) {
+                  if (_submitted) setState(() {});
+                },
               ),
               const SizedBox(height: 14),
               CustomTextField(
@@ -74,6 +100,13 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
                 label: 'Merk / Produsen',
                 icon: Icons.branding_watermark_outlined,
                 hint: 'Masukkan merk bahan baku',
+                hasError: _submitted && ctrl.merkC.text.trim().isEmpty,
+                errorText: _submitted && ctrl.merkC.text.trim().isEmpty
+                    ? 'Merk / produsen wajib diisi'
+                    : null,
+                onChanged: (_) {
+                  if (_submitted) setState(() {});
+                },
               ),
               const SizedBox(height: 14),
               CustomDropdownMenu(
@@ -81,12 +114,20 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
                 label: 'Satuan',
                 icon: Icons.scale_outlined,
                 items: dropdownSatuanItems,
+                hasError: _submitted && ctrl.satuanC.text.trim().isEmpty,
+                errorText: _submitted && ctrl.satuanC.text.trim().isEmpty
+                    ? 'Satuan wajib dipilih'
+                    : null,
               ),
               const SizedBox(height: 16),
               CustomStockStepper(
                 controller: ctrl.stokC,
                 label: 'Stok',
                 isDouble: true,
+                hasError: _submitted && ctrl.stokC.text.trim().isEmpty,
+                errorText: _submitted && ctrl.stokC.text.trim().isEmpty
+                    ? 'Stok wajib diisi'
+                    : null,
               ),
               const SizedBox(height: 14),
               CustomTextField(
@@ -96,6 +137,13 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
                 hint: '0',
                 prefixText: 'Rp ',
                 keyboardType: TextInputType.number,
+                hasError: _submitted && ctrl.hargaC.text.trim().isEmpty,
+                errorText: _submitted && ctrl.hargaC.text.trim().isEmpty
+                    ? 'Harga satuan wajib diisi'
+                    : null,
+                onChanged: (_) {
+                  if (_submitted) setState(() {});
+                },
               ),
             ],
           ),
@@ -129,15 +177,18 @@ class _EditBahanBakuDialogState extends State<EditBahanBakuDialog> {
 
   // Cari baris fungsi _onSave di dalam edit_bahan_baku_dialog.dart Anda
   void _onSave() {
-    if (ctrl.namaC.text.trim().isEmpty ||
-        ctrl.stokC.text.trim().isEmpty ||
-        ctrl.hargaC.text.trim().isEmpty) {
-      Get.snackbar(
-        'Peringatan',
-        'Form tidak boleh kosong',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
+    setState(() {
+      _submitted = true;
+    });
+
+    final isValid =
+        ctrl.namaC.text.trim().isNotEmpty &&
+        ctrl.merkC.text.trim().isNotEmpty &&
+        ctrl.satuanC.text.trim().isNotEmpty &&
+        ctrl.stokC.text.trim().isNotEmpty &&
+        ctrl.hargaC.text.trim().isNotEmpty;
+
+    if (!isValid) {
       return;
     }
 

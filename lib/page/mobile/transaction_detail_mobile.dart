@@ -31,7 +31,6 @@ class TransactionDetailMobile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('NO: ${detailController.transactionId}'),
             Text('Tanggal: ${detailController.tanggalFormatted}'),
             Text('Metode: ${detailController.methodLabel}'),
             const SizedBox(height: 20),

@@ -11,6 +11,7 @@ class AppRoutes {
   static const String kelolaresepdesk = '/kelolaresepdesk';
   static const String monitoringuang = '/monitoringKeuangan';
   static const String kelolaUserDesk = '/kelolaUserDesk';
+  static const String laporanDesk = '/laporanDesk';
   //mobile
   static const String dashboardMob = '/dashboardAdminMobile';
   static const String kelolaProdukMob = '/kelolaProdukmobile';
@@ -18,6 +19,7 @@ class AppRoutes {
   static const String kelolaResepMob = '/kelolaResepMobile';
   static const String kelolaUserMob = '/kelolaUserMobile';
   static const String monitoringUangMob = '/monitoringKeuanganMobile';
+  static const String laporanMob = '/laporanMobile';
 
   //===BAKERY===
   static const String bakery = '/bakery';

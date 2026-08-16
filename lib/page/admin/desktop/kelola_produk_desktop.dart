@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/navigation_controller.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
+import 'package:tugas_akhir/utils/app_color.dart';
 import 'package:tugas_akhir/widget/admin/custom_sidebar.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/product/insert_product_dialog.dart';
 import 'package:tugas_akhir/widget/admin/produk/product_table.dart';
@@ -132,7 +133,7 @@ class KelolaProdukDeskPage extends StatelessWidget {
                         ToolbarButton(
                           title: 'Insert Product',
                           icon: Icons.add_rounded,
-                          color: const Color(0xFF1E1E1E),
+                          color: AppColors.black,
                           onTap: () {
                             Get.dialog(InsertProductDialog());
                           },
@@ -141,7 +142,7 @@ class KelolaProdukDeskPage extends StatelessWidget {
                         ToolbarButton(
                           title: "Sortir Stok Habis",
                           icon: Icons.sort_rounded,
-                          color: Colors.grey.shade700,
+                          color: AppColors.black,
                           onTap: () {
                             ctrl.toggleFilterStockHabis();
                           },
@@ -150,7 +151,7 @@ class KelolaProdukDeskPage extends StatelessWidget {
                         ToolbarButton(
                           title: "",
                           icon: Icons.refresh_outlined,
-                          color: Colors.grey.shade400,
+                          color: AppColors.black,
                           onTap: () {
                             ctrl.fetchData();
                           },

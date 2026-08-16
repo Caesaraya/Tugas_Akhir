@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
+import '../../controller/admin/laporan_controller.dart';
 import '../../controller/admin/navigation_controller.dart';
 
 class AdminSidebar extends StatelessWidget {
@@ -132,6 +133,16 @@ class AdminSidebar extends StatelessWidget {
                     onTap: () => navC.changePage(3, AppRoutes.kelolaresepdesk),
                   ),
                   const SizedBox(height: 8),
+
+                  // ← TAMBAHAN BARU: Laporan
+                  // _buildSidebarItem(
+                  //   icon: Icons.report_gmailerrorred_outlined,
+                  //   title: 'Laporan',
+                  //   selected: navC.selectedIndex.value == 6,
+                  //   badgeCount: LaporanController.to.pendingCount,
+                  //   onTap: () => navC.changePage(6, AppRoutes.laporanDesk),
+                  // ),
+                  // const SizedBox(height: 8),
                   _buildSidebarItem(
                     icon: Icons
                         .monetization_on_outlined, // Ikon tetesan air untuk Kelola Bahan
@@ -209,6 +220,7 @@ class AdminSidebar extends StatelessWidget {
     required String title,
     required bool selected,
     required VoidCallback onTap,
+    int badgeCount = 0, // ← TAMBAHAN BARU: badge jumlah pending
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -234,6 +246,23 @@ class AdminSidebar extends StatelessWidget {
             fontSize: 15,
           ),
         ),
+        trailing: badgeCount > 0
+            ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: selected ? Colors.white : const Color(0xFFC62828),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  badgeCount.toString(),
+                  style: TextStyle(
+                    color: selected ? activeBgColor : Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              )
+            : null,
         onTap: onTap,
       ),
     );

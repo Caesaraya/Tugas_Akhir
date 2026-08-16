@@ -1,3 +1,5 @@
+// lib/page/desktop/transaction_detail_desktop.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
@@ -11,8 +13,10 @@ class DetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TransactionDetailController detailController =
-        Get.find<TransactionDetailController>();
+    // Inisialisasi controller agar aman digunakan secara langsung di Desktop
+    final TransactionDetailController detailController = Get.put(
+      TransactionDetailController(),
+    );
     final CartController cartController = Get.find<CartController>();
 
     return Scaffold(
@@ -29,13 +33,13 @@ class DetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('ID: ${detailController.transactionId}'),
+         
             Text('Tanggal: ${detailController.tanggalFormatted}'),
             Text('Metode: ${detailController.methodLabel}'),
             const SizedBox(height: 20),
             const Text(
-              'Daftar Produk:',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              'Detail Item:',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Expanded(

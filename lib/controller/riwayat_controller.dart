@@ -1,9 +1,11 @@
+// lib/controller/riwayat_controller.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tugas_akhir/api service/api_service.dart';
+import 'package:tugas_akhir/data/repository/transaction_repository.dart';
 
 class RiwayatController extends GetxController {
-  var transactions = [].obs;
+  var transactions = <Map<String, dynamic>>[].obs;
   var isLoading = true.obs;
   var isLoadingDetail = false.obs;
 
@@ -13,58 +15,44 @@ class RiwayatController extends GetxController {
     fetchHistory();
   }
 
+  /// Membaca riwayat transaksi dari SQLite lokal (Single Source of Truth)
   void fetchHistory() async {
     try {
       isLoading(true);
-      var data = await ApiService.getTransactions();
-      for (var trx in data) {
-        trx['items'] = [];
-      }
+
+      var data = await TransactionRepository.instance.getAllLocalWithDetails();
+
       transactions.assignAll(data);
     } catch (e) {
-      Get.snackbar("Error", "Gagal ambil riwayat: $e");
+      Get.snackbar("Error", "Gagal ambil riwayat lokal: $e");
     } finally {
       isLoading(false);
     }
   }
 
-
-Future<void> fetchDetail(int id) async {
-  try {
-    Get.dialog(
-      const Center(child: CircularProgressIndicator()),
-      barrierDismissible: false,
-    );
-
-    final detail = await ApiService.getTransactionDetail(id);
-    final index = transactions.indexWhere(
-      (t) => int.parse(t['id'].toString()) == id,
-    );
-    if (index != -1) {
-      transactions[index]['items'] = detail['items'] ?? [];
-      transactions.refresh();
-    }
-  } catch (e) {
-    Get.snackbar("Error", "Gagal ambil detail: $e");
-  } finally {
-    if (Get.isDialogOpen ?? false) Get.back();
+  /// Pertahankan fungsi agar tidak error jika ada widget yang memanggilnya
+  Future<void> fetchDetail(dynamic id) async {
+    return;
   }
-}
-Future<void> navigateToDetail(Map<String, dynamic> trx, String route) async {
-    final id = int.parse(trx['id'].toString());
-    await fetchDetail(id);
+
+  /// Navigasi ke halaman detail tanpa konversi int.parse() dan tanpa network request
+  Future<void> navigateToDetail(Map<String, dynamic> trx, String route) async {
     final updatedTrx = transactions.firstWhere(
-      (t) => int.parse(t['id'].toString()) == id,
+      (t) => t['id']?.toString() == trx['id']?.toString(),
       orElse: () => trx,
     );
-    Get.toNamed(route, arguments: {
-      'id': updatedTrx['id'],
-      'tanggal': updatedTrx['tanggal'],
-      'total_harga': updatedTrx['total_harga'],
-      'jumlah_bayar': updatedTrx['jumlah_bayar'],
-      'kembalian': updatedTrx['kembalian'],
-      'metode_pembayaran': updatedTrx['metode_pembayaran'],
-      'items': updatedTrx['items'],
-    });
+
+    Get.toNamed(
+      route,
+      arguments: {
+        'id': updatedTrx['id'] ?? updatedTrx['local_id'],
+        'tanggal': updatedTrx['tanggal'],
+        'total_harga': updatedTrx['total_harga'],
+        'jumlah_bayar': updatedTrx['jumlah_bayar'],
+        'kembalian': updatedTrx['kembalian'],
+        'metode_pembayaran': updatedTrx['metode_pembayaran'],
+        'items': updatedTrx['items'] ?? [],
+      },
+    );
   }
 }

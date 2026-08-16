@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/admin/keuangan_controller.dart';
 import 'package:tugas_akhir/models/expense_category.dart';
 import 'package:tugas_akhir/utils/app_color.dart';
+import 'package:tugas_akhir/utils/app_color.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/custom_form_fields.dart';
+import 'package:tugas_akhir/utils/currency.dart'; // ← IMPOR UTILS CURRENCY (Sesuaikan jalur impor ini jika lokasinya berbeda)
 
 class DialogTambahPengeluaran extends StatefulWidget {
   const DialogTambahPengeluaran({super.key});
@@ -61,7 +63,6 @@ class _DialogTambahPengeluaranState extends State<DialogTambahPengeluaran> {
       title: const DialogCommonTitle(
         title: 'Tambah Pengeluaran',
         icon: Icons.add_card_rounded,
-        
       ),
       content: SizedBox(
         width: 440,
@@ -84,7 +85,7 @@ class _DialogTambahPengeluaranState extends State<DialogTambahPengeluaran> {
                   ),
                   trailing: const Icon(
                     Icons.calendar_month,
-                    color: AppColors  .black,
+                    color: AppColors.black,
                   ),
                   onTap: () async {
                     DateTime? picked = await showDatePicker(
@@ -148,13 +149,27 @@ class _DialogTambahPengeluaranState extends State<DialogTambahPengeluaran> {
                 ),
                 const SizedBox(height: 16),
 
-                // Custom Input Nominal
+                // Custom Input Nominal (Menggunakan Formatter Rupiah)
                 CustomTextField(
                   controller: _nominalController,
-                  label: 'Nominal Pengeluaran (Rp)',
+                  label: 'Nominal Pengeluaran',
                   icon: Icons.payments_outlined,
-                  hint: 'Masukkan nominal tanpa titik/koma',
+                  hint: 'Masukkan nominal pengeluaran',
                   keyboardType: TextInputType.number,
+                  onChanged: (val) {
+                    if (val.isNotEmpty) {
+                      // Hapus format lama, dapatkan angka murninya, lalu format ulang ke Rupiah
+                      int rawValue = parseRupiah(val);
+                      String formatted = formatRupiah(rawValue);
+
+                      _nominalController.value = TextEditingValue(
+                        text: formatted,
+                        selection: TextSelection.collapsed(
+                          offset: formatted.length,
+                        ),
+                      );
+                    }
+                  },
                 ),
                 const SizedBox(height: 16),
 
@@ -208,9 +223,10 @@ class _DialogTambahPengeluaranState extends State<DialogTambahPengeluaran> {
                 return;
               }
 
-              // 3. Simpan Transaksi Pengeluarannya
-              double nominalVal =
-                  double.tryParse(_nominalController.text) ?? 0.0;
+              // 3. Simpan Transaksi Pengeluarannya (Menggunakan parseRupiah agar nominal yang dikirim bersih dari teks "Rp" dan titik)
+              double nominalVal = parseRupiah(
+                _nominalController.text,
+              ).toDouble();
               String formattedDate = DateFormat(
                 'yyyy-MM-dd',
               ).format(_selectedDate);

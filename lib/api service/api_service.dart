@@ -168,13 +168,13 @@ class ApiService {
       request.fields['jenis'] = jenis;
       request.fields['satuan'] = satuan;
 
-     if (resepId != null) {
-  request.fields['resep_id'] = resepId.toString();
-}
+      if (resepId != null) {
+        request.fields['resep_id'] = resepId.toString();
+      }
 
-if (alasanStock != null && alasanStock.isNotEmpty) {
-  request.fields['alasan_stock'] = alasanStock;
-}
+      if (alasanStock != null && alasanStock.isNotEmpty) {
+        request.fields['alasan_stock'] = alasanStock;
+      }
 
       // Add image file if provided
       if (imageFile != null) {
@@ -1899,126 +1899,125 @@ if (alasanStock != null && alasanStock.isNotEmpty) {
     }
   }
 
+  // ========================
+  // STOCK ADJUSTMENT REQUEST APIS
+  // (lapor produk rusak/kadaluwarsa oleh kasir, approve/reject oleh admin)
+  // ========================
 
-// ========================
-// STOCK ADJUSTMENT REQUEST APIS
-// (lapor produk rusak/kadaluwarsa oleh kasir, approve/reject oleh admin)
-// ========================
+  // POST /api/stock-adjustment-requests - Buat request (kasir)
+  static Future<bool> createStockAdjustmentRequest({
+    required int productId,
+    required int oldStock,
+    required int newStock,
+    required String reason,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse("$baseUrl/api/stock-adjustment-requests"),
+            headers: headers,
+            body: jsonEncode({
+              "product_id": productId,
+              "old_stock": oldStock,
+              "new_stock": newStock,
+              "reason": reason,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
 
-// POST /api/stock-adjustment-requests - Buat request (kasir)
-static Future<bool> createStockAdjustmentRequest({
-  required int productId,
-  required int oldStock,
-  required int newStock,
-  required String reason,
-}) async {
-  try {
-    final response = await http
-        .post(
-          Uri.parse("$baseUrl/api/stock-adjustment-requests"),
-          headers: headers,
-          body: jsonEncode({
-            "product_id": productId,
-            "old_stock": oldStock,
-            "new_stock": newStock,
-            "reason": reason,
-          }),
-        )
-        .timeout(const Duration(seconds: 10));
-
-    return response.statusCode == 200 || response.statusCode == 201;
-  } catch (e) {
-    throw Exception("Gagal membuat laporan stock: $e");
-  }
-}
-
-// GET /api/stock-adjustment-requests - Get request milik user (kasir)
-static Future<List<StockAdjustmentRequest>>
-    getMyStockAdjustmentRequests() async {
-  try {
-    final response = await http
-        .get(
-          Uri.parse("$baseUrl/api/stock-adjustment-requests"),
-          headers: {"Connection": "close"},
-        )
-        .timeout(const Duration(seconds: 10));
-
-    if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
-      final list = (decoded is Map && decoded['data'] != null)
-          ? decoded['data']
-          : decoded;
-      return (list as List)
-          .map((e) => StockAdjustmentRequest.fromJson(e))
-          .toList();
-    } else {
-      throw Exception("Failed to load stock adjustment requests");
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      throw Exception("Gagal membuat laporan stock: $e");
     }
-  } catch (e) {
-    throw Exception("Gagal memuat laporan stock: $e");
   }
-}
 
-// GET /api/stock-adjustment-requests/all - Get semua request (admin)
-static Future<List<StockAdjustmentRequest>>
-    getAllStockAdjustmentRequests() async {
-  try {
-    final response = await http
-        .get(
-          Uri.parse("$baseUrl/api/stock-adjustment-requests/all"),
-          headers: {"Connection": "close"},
-        )
-        .timeout(const Duration(seconds: 10));
+  // GET /api/stock-adjustment-requests - Get request milik user (kasir)
+  static Future<List<StockAdjustmentRequest>>
+  getMyStockAdjustmentRequests() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/stock-adjustment-requests"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
 
-    if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
-      final list = (decoded is Map && decoded['data'] != null)
-          ? decoded['data']
-          : decoded;
-      return (list as List)
-          .map((e) => StockAdjustmentRequest.fromJson(e))
-          .toList();
-    } else {
-      throw Exception("Failed to load stock adjustment requests");
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final list = (decoded is Map && decoded['data'] != null)
+            ? decoded['data']
+            : decoded;
+        return (list as List)
+            .map((e) => StockAdjustmentRequest.fromJson(e))
+            .toList();
+      } else {
+        throw Exception("Failed to load stock adjustment requests");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat laporan stock: $e");
     }
-  } catch (e) {
-    throw Exception("Gagal memuat semua laporan stock: $e");
   }
-}
 
-// PUT /api/stock-adjustment-requests/:id/approve - Approve (admin)
-static Future<bool> approveStockAdjustmentRequest(int id) async {
-  try {
-    final response = await http
-        .put(
-          Uri.parse("$baseUrl/api/stock-adjustment-requests/$id/approve"),
-          headers: headers,
-        )
-        .timeout(const Duration(seconds: 10));
+  // GET /api/stock-adjustment-requests/all - Get semua request (admin)
+  static Future<List<StockAdjustmentRequest>>
+  getAllStockAdjustmentRequests() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse("$baseUrl/api/stock-adjustment-requests/all"),
+            headers: {"Connection": "close"},
+          )
+          .timeout(const Duration(seconds: 10));
 
-    return response.statusCode == 200;
-  } catch (e) {
-    throw Exception("Gagal approve laporan stock: $e");
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final list = (decoded is Map && decoded['data'] != null)
+            ? decoded['data']
+            : decoded;
+        return (list as List)
+            .map((e) => StockAdjustmentRequest.fromJson(e))
+            .toList();
+      } else {
+        throw Exception("Failed to load stock adjustment requests");
+      }
+    } catch (e) {
+      throw Exception("Gagal memuat semua laporan stock: $e");
+    }
   }
-}
 
-// PUT /api/stock-adjustment-requests/:id/reject - Reject (admin)
-static Future<bool> rejectStockAdjustmentRequest(
-  int id, {
-  String? reason,
-}) async {
-  try {
-    final response = await http
-        .put(
-          Uri.parse("$baseUrl/api/stock-adjustment-requests/$id/reject"),
-          headers: headers,
-          body: jsonEncode({if (reason != null) "reason": reason}),
-        )
-        .timeout(const Duration(seconds: 10));
+  // PUT /api/stock-adjustment-requests/:id/approve - Approve (admin)
+  static Future<bool> approveStockAdjustmentRequest(int id) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse("$baseUrl/api/stock-adjustment-requests/$id/approve"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
 
-    return response.statusCode == 200;
-  } catch (e) {
-    throw Exception("Gagal reject laporan stock: $e");
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal approve laporan stock: $e");
+    }
   }
-}
+
+  // PUT /api/stock-adjustment-requests/:id/reject - Reject (admin)
+  static Future<bool> rejectStockAdjustmentRequest(
+    int id, {
+    String? reason,
+  }) async {
+    try {
+      final response = await http
+          .put(
+            Uri.parse("$baseUrl/api/stock-adjustment-requests/$id/reject"),
+            headers: headers,
+            body: jsonEncode({if (reason != null) "reason": reason}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      throw Exception("Gagal reject laporan stock: $e");
+    }
+  }
 }

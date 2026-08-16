@@ -40,7 +40,7 @@ class ProductListPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          ProductListHeader(controller: controller),
+          // ProductListHeader(controller: controller),
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) {

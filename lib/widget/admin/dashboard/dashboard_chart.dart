@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -28,9 +30,77 @@ class DashboardChart extends StatelessWidget {
     const secondaryTextColor = Color(0xFF6B7280);
     const borderColor = Color(0xFFE5E7EB);
 
-    // Konfigurasi Batas Sesuai Instruksi
-    double minY = 100000; // Minimal 100 Ribu
-    double maxY = 9000000; // Maksimal 9 Juta
+    // Konfigurasi Batas Minimal Sesuai Instruksi
+    double minY = 100000;
+
+    // 1. Ambil nilai tertinggi mutlak dari pemasukan maupun pengeluaran
+    double rawMax = 0;
+    for (final r in reports) {
+      if (r.pemasukan > rawMax) rawMax = r.pemasukan;
+      if (r.pengeluaran > rawMax) rawMax = r.pengeluaran;
+    }
+
+    double maxY;
+    double yInterval;
+
+    // 2. Kalkulasi Dynamic MaxY dan Interval Proporsional
+    if (rawMax <= 0) {
+      // Fallback jika data kosong / 0
+      maxY = 1000000;
+      yInterval = 200000;
+    } else {
+      // Tentukan ordo besaran (misal: jika rawMax 12 juta -> magnitude = 10 juta)
+      double magnitude = math
+          .pow(10, (math.log(rawMax) / math.ln10).floor())
+          .toDouble();
+
+      // Hitung rasio murni (selalu menghasilkan angka 1.0 s/d 9.99...)
+      double val = rawMax / magnitude;
+
+      double maxMultiplier;
+      double intervalMultiplier;
+
+      // Pemetaan ke skala "Rapi" terdekat yang memberi sedikit ruang kosong di atas grafik
+      if (val <= 1.1) {
+        maxMultiplier = 1.2;
+        intervalMultiplier = 0.3;
+      } else if (val <= 1.49) {
+        maxMultiplier = 1.5;
+        intervalMultiplier = 0.5;
+      } else if (val <= 1.9) {
+        maxMultiplier = 2.0;
+        intervalMultiplier = 0.5;
+      } else if (val <= 2.4) {
+        maxMultiplier = 2.5;
+        intervalMultiplier = 0.5;
+      } else if (val <= 2.9) {
+        maxMultiplier = 3.0;
+        intervalMultiplier = 1.0;
+      } else if (val <= 3.9) {
+        maxMultiplier = 4.0;
+        intervalMultiplier = 1.0;
+      } else if (val <= 4.9) {
+        maxMultiplier = 5.0;
+        intervalMultiplier = 1.0;
+      } else if (val <= 5.9) {
+        maxMultiplier = 6.0;
+        intervalMultiplier = 2.0;
+      } else if (val <= 7.9) {
+        maxMultiplier = 8.0;
+        intervalMultiplier = 2.0;
+      } else {
+        maxMultiplier = 10.0;
+        intervalMultiplier = 2.0;
+      }
+
+      maxY = maxMultiplier * magnitude;
+      yInterval = intervalMultiplier * magnitude;
+    }
+
+    // Pengaman terakhir agar maxY tidak pernah <= minY.
+    if (maxY <= minY) {
+      maxY = minY + yInterval;
+    }
 
     return BarChart(
       BarChartData(
@@ -88,20 +158,13 @@ class DashboardChart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 55,
-              // Menggunakan checkToShowHorizontalLine untuk kebebasan posisi garis
-              interval: 1000000,
+              interval: yInterval,
               getTitlesWidget: (value, meta) {
                 if (value < minY || value > maxY) {
                   return const SizedBox.shrink();
                 }
 
-                String labelText = '';
-                if (value == 100000) {
-                  labelText = '100K';
-                } else {
-                  final juta = value / 1000000;
-                  labelText = '${juta.toStringAsFixed(0)}M';
-                }
+                final String labelText = _formatYLabel(value);
 
                 return SideTitleWidget(
                   axisSide: meta.axisSide,
@@ -128,9 +191,11 @@ class DashboardChart extends StatelessWidget {
         borderData: FlBorderData(show: false),
         gridData: FlGridData(
           show: true,
-          // Menampilkan garis grid tepat pada nilai minimal (100rb) dan setiap kelipatan 1 juta
-          checkToShowHorizontalLine: (value) =>
-              value == 100000 || value % 1000000 == 0,
+          checkToShowHorizontalLine: (value) {
+            // Toleransi perbedaan floating point pembagian decimal di Dart
+            final isIntervalLine = (value % yInterval).abs() < 1.0;
+            return value == minY || isIntervalLine || value == maxY;
+          },
           getDrawingHorizontalLine: (value) =>
               FlLine(color: borderColor, strokeWidth: 1, dashArray: [4, 4]),
           drawVerticalLine: false,
@@ -154,14 +219,14 @@ class DashboardChart extends StatelessWidget {
           return BarChartGroupData(
             x: index,
             barRods: [
-              // Pemasukan
+              // Pemasukan (Dipertahankan warnanya)
               BarChartRodData(
                 toY: pem,
                 color: AppColors.black,
                 width: 10,
                 borderRadius: BorderRadius.circular(4),
               ),
-              // Pengeluaran
+              // Pengeluaran (Dipertahankan warnanya)
               BarChartRodData(
                 toY: peng,
                 color: const Color(0xFF9CA3AF),
@@ -174,4 +239,17 @@ class DashboardChart extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Format label sumbu Y: nilai di bawah 1 juta ditampilkan dalam "K",
+/// nilai 1 juta ke atas ditampilkan dalam "M".
+String _formatYLabel(double value) {
+  if (value < 1000000) {
+    return '${(value / 1000).toStringAsFixed(0)}K';
+  }
+  final juta = value / 1000000;
+  final isWhole = juta == juta.roundToDouble();
+  return isWhole
+      ? '${juta.toStringAsFixed(0)}M'
+      : '${juta.toStringAsFixed(1)}M';
 }

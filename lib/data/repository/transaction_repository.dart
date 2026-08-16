@@ -1,13 +1,4 @@
 // lib/data/repository/transaction_repository.dart
-//
-// Ini satu-satunya tempat yang tahu format payload yang dibutuhkan backend
-// untuk endpoint transaksi. Checkout() menulis ke SQLite dulu (localId,
-// status 'pending'), lalu enqueueSync() — TIDAK PERNAH memanggil ApiService
-// langsung dari sini secara sinkron saat checkout. Pengiriman ke server
-// selalu lewat SyncManager, kapan pun koneksi tersedia.
-//
-// syncOne() adalah handler yang didaftarkan ke SyncManager
-// (lihat bootstrap.dart) — inilah yang benar-benar memanggil ApiService.
 
 import 'package:uuid/uuid.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
@@ -27,8 +18,6 @@ class TransactionRepository extends BaseRepository {
   static const String entityType = 'transaction';
   static const _uuid = Uuid();
 
-  /// Dipanggil dari CartController saat kasir menekan "Selesai".
-  /// Mengembalikan localId transaksi yang baru dibuat.
   Future<String> checkout({
     required List<CartItem> cart,
     required double total,
@@ -41,7 +30,6 @@ class TransactionRepository extends BaseRepository {
     final database = await db;
 
     await database.transaction((txn) async {
-      // 1. Simpan header transaksi, status pending.
       await txn.insert(TransactionTable.tableName, {
         'local_id': localId,
         'server_id': null,
@@ -54,7 +42,6 @@ class TransactionRepository extends BaseRepository {
         'created_at': now.toIso8601String(),
       });
 
-      // 2. Simpan detail item, ikut transaction_local_id yang sama.
       final batch = txn.batch();
       for (final item in cart) {
         batch.insert(TransactionDetailTable.tableName, {
@@ -70,8 +57,6 @@ class TransactionRepository extends BaseRepository {
       await batch.commit(noResult: true);
     });
 
-    // 3. Kurangi stok lokal secara optimis (di luar transaction block agar
-    //    ProductRepository bebas mengelola koneksinya sendiri).
     for (final item in cart) {
       await ProductRepository.instance.decrementStockLocally(
         item.productId,
@@ -79,9 +64,6 @@ class TransactionRepository extends BaseRepository {
       );
     }
 
-    // 4. Daftarkan ke sync_queue — SATU baris untuk transaction + details
-    //    sekaligus (sesuai kontrak createTransaction yang sudah menerima
-    //    `items` dalam satu body). Tidak ada baris terpisah untuk detail.
     await enqueueSync(
       entityType: entityType,
       entityId: localId,
@@ -107,10 +89,6 @@ class TransactionRepository extends BaseRepository {
     return localId;
   }
 
-  /// Handler yang dipanggil SyncManager untuk tiap baris sync_queue
-  /// dengan entity_type == 'transaction'. Mengembalikan SyncResult, tidak
-  /// pernah men-throw ke pemanggil (SyncManager sudah wrap try/catch juga,
-  /// tapi di sini kita tangani biar error message lebih jelas).
   Future<SyncResult> syncOne(SyncQueueRow row) async {
     try {
       final payload = row.payload;
@@ -126,7 +104,6 @@ class TransactionRepository extends BaseRepository {
         return SyncResult.failure('Backend menolak transaksi (lihat log)');
       }
 
-      // Simpan server_id balik ke baris transaksi lokal.
       final database = await db;
       await database.update(
         TransactionTable.tableName,
@@ -135,8 +112,6 @@ class TransactionRepository extends BaseRepository {
         whereArgs: [row.entityId],
       );
 
-      // Setelah transaksi ini sukses tersinkron, refresh master data produk
-      // supaya stok lokal kembali mengikuti angka asli di server (keputusan #2).
       await ProductRepository.instance.refreshFromServer();
 
       return SyncResult.success({'server_id': createdId});
@@ -145,14 +120,55 @@ class TransactionRepository extends BaseRepository {
     }
   }
 
-  /// Dibaca oleh Riwayat/Dashboard. Sengaja tidak ada tabel/queue terpisah
-  /// untuk "riwayat" atau "dashboard activity" — keduanya cukup query dari
-  /// tabel ini, karena datanya memang sama (lihat penjelasan di chat).
   Future<List<Map<String, dynamic>>> getAllLocal() async {
     final database = await db;
     return database.query(
       TransactionTable.tableName,
       orderBy: 'created_at DESC',
     );
+  }
+
+  /// Mengambil semua transaksi beserta rincian produk dan tipe data aman untuk UI
+  Future<List<Map<String, dynamic>>> getAllLocalWithDetails() async {
+    final database = await db;
+
+    final List<Map<String, dynamic>> headers = await database.query(
+      TransactionTable.tableName,
+      orderBy: 'created_at DESC',
+    );
+
+    List<Map<String, dynamic>> result = [];
+
+    for (var header in headers) {
+      final String localId = header['local_id'] as String;
+
+      final List<Map<String, dynamic>> details = await database.query(
+        TransactionDetailTable.tableName,
+        where: 'transaction_local_id = ?',
+        whereArgs: [localId],
+      );
+
+      Map<String, dynamic> trxData = Map<String, dynamic>.from(header);
+
+      trxData['id'] = (header['server_id'] ?? header['local_id']).toString();
+
+      trxData['items'] = details.map((item) {
+        return {
+          'id': item['id'],
+          'product_id': item['product_id'],
+          'name': item['name'],
+          'nama_produk': item['name'],
+          'qty': item['qty'],
+          'quantity': item['qty'],
+          'price': item['price'],
+          'subtotal': item['subtotal'],
+          'discount': item['discount'],
+        };
+      }).toList();
+
+      result.add(trxData);
+    }
+
+    return result;
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/login_controller.dart';
-import 'package:tugas_akhir/utils/app_color.dart';
+// IMPORT FILE WARNA KAMU (Sesuaikan dengan path projectmu)
+import '../../utils/app_color.dart';
 import 'package:tugas_akhir/widget/login/login_button.dart';
 import 'package:tugas_akhir/widget/login/login_divider.dart';
 import 'package:tugas_akhir/widget/login/login_email.dart';
@@ -21,11 +22,7 @@ class LoginPage extends StatelessWidget {
         children: [
           Column(
             children: [
-              Container(
-                height:
-                    screenHeight * 0.4,
-                color: AppColors.ba,
-              ),
+              Container(height: screenHeight * 0.4, color: AppColors.ba),
               Expanded(child: Container(color: AppColors.ba)),
             ],
           ),
@@ -51,9 +48,7 @@ class LoginPage extends StatelessWidget {
                     padding: const EdgeInsets.all(28.0),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(
-                        36,
-                      ),
+                      borderRadius: BorderRadius.circular(36),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black26, // Soft shadow

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:tugas_akhir/routes/routes.dart';
+import '../../controller/admin/laporan_controller.dart';
 
 class MobileAdminDrawer extends StatelessWidget {
   const MobileAdminDrawer({super.key});
@@ -61,6 +62,33 @@ class MobileAdminDrawer extends StatelessWidget {
             routeName: AppRoutes.kelolaResepMob,
             selected: currentRoute == AppRoutes.kelolaResepMob,
           ),
+          // ← TAMBAHAN BARU: Laporan
+          // _buildDrawerItem(
+          //   context,
+          //   icon: Icons.report_gmailerrorred_outlined,
+          //   title: 'Laporan',
+          //   routeName: AppRoutes.laporanMob,
+          //   selected: currentRoute == AppRoutes.laporanMob,
+          //   trailing: Obx(() {
+          //     final count = LaporanController.to.pendingCount;
+          //     if (count == 0) return const SizedBox.shrink();
+          //     return Container(
+          //       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          //       decoration: BoxDecoration(
+          //         color: const Color(0xFFC62828),
+          //         borderRadius: BorderRadius.circular(20),
+          //       ),
+          //       child: Text(
+          //         count.toString(),
+          //         style: const TextStyle(
+          //           color: Colors.white,
+          //           fontWeight: FontWeight.bold,
+          //           fontSize: 12,
+          //         ),
+          //       ),
+          //     );
+          //   }),
+          // ),
           _buildDrawerItem(
             context,
             icon: Icons
@@ -96,10 +124,12 @@ class MobileAdminDrawer extends StatelessWidget {
     required String title,
     required String routeName,
     required bool selected,
+    Widget? trailing, // ← TAMBAHAN BARU: untuk badge
   }) {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
+      trailing: trailing,
       selected: selected,
       onTap: () {
         Navigator.pop(context);

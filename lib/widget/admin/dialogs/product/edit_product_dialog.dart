@@ -17,8 +17,29 @@ class _EditProductDialogState extends State<EditProductDialog> {
   final _ctrl = Get.find<ProductTableController>();
   final List<String> _addedJenis = [];
   final List<String> _addedSatuan = [];
+  bool _submitted = false;
 
   static const Color _themeColor = Color(0xFF1E1E1E);
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl.jenisC.addListener(_handleFieldChanged);
+    _ctrl.satuanC.addListener(_handleFieldChanged);
+    _ctrl.stockC.addListener(_handleFieldChanged);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.jenisC.removeListener(_handleFieldChanged);
+    _ctrl.satuanC.removeListener(_handleFieldChanged);
+    _ctrl.stockC.removeListener(_handleFieldChanged);
+    super.dispose();
+  }
+
+  void _handleFieldChanged() {
+    if (_submitted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +81,7 @@ class _EditProductDialogState extends State<EditProductDialog> {
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Column(
             children: [
-              _buildImageSection(),
+              _buildImageSection(submitted: _submitted),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 child: Divider(thickness: 1, color: Color(0xFFEEEEEE)),
@@ -70,6 +91,13 @@ class _EditProductDialogState extends State<EditProductDialog> {
                 label: 'Nama Produk',
                 icon: Icons.cake_outlined,
                 hint: 'Masukkan nama produk',
+                hasError: _submitted && _ctrl.nameC.text.trim().isEmpty,
+                errorText: _submitted && _ctrl.nameC.text.trim().isEmpty
+                    ? 'Nama produk wajib diisi'
+                    : null,
+                onChanged: (_) {
+                  if (_submitted) setState(() {});
+                },
               ),
               const SizedBox(height: 14),
               CustomTextField(
@@ -79,6 +107,13 @@ class _EditProductDialogState extends State<EditProductDialog> {
                 hint: '0',
                 prefixText: 'Rp ',
                 keyboardType: TextInputType.number,
+                hasError: _submitted && _ctrl.priceC.text.trim().isEmpty,
+                errorText: _submitted && _ctrl.priceC.text.trim().isEmpty
+                    ? 'Harga jual wajib diisi'
+                    : null,
+                onChanged: (_) {
+                  if (_submitted) setState(() {});
+                },
               ),
               const SizedBox(height: 14),
               CustomTextField(
@@ -107,6 +142,10 @@ class _EditProductDialogState extends State<EditProductDialog> {
                 controller: _ctrl.stockC,
                 label: 'Stok Jual Kue',
                 isDouble: false,
+                hasError: _submitted && _ctrl.stockC.text.trim().isEmpty,
+                errorText: _submitted && _ctrl.stockC.text.trim().isEmpty
+                    ? 'Stok wajib diisi'
+                    : null,
               ),
               const SizedBox(height: 14),
               CustomDropdownMenu(
@@ -114,6 +153,10 @@ class _EditProductDialogState extends State<EditProductDialog> {
                 label: 'Kategori / Jenis',
                 icon: Icons.category_outlined,
                 items: [...baseJenis, ..._addedJenis],
+                hasError: _submitted && _ctrl.jenisC.text.trim().isEmpty,
+                errorText: _submitted && _ctrl.jenisC.text.trim().isEmpty
+                    ? 'Kategori / jenis wajib diisi'
+                    : null,
               ),
               const SizedBox(height: 14),
               CustomDropdownMenu(
@@ -121,6 +164,10 @@ class _EditProductDialogState extends State<EditProductDialog> {
                 label: 'Satuan Jual',
                 icon: Icons.layers_outlined,
                 items: [...baseSatuan, ..._addedSatuan],
+                hasError: _submitted && _ctrl.satuanC.text.trim().isEmpty,
+                errorText: _submitted && _ctrl.satuanC.text.trim().isEmpty
+                    ? 'Satuan jual wajib diisi'
+                    : null,
               ),
             ],
           ),
@@ -164,18 +211,19 @@ class _EditProductDialogState extends State<EditProductDialog> {
   }
 
   void _onSave(Product product) {
-    if (_ctrl.nameC.text.trim().isEmpty ||
-        _ctrl.priceC.text.trim().isEmpty ||
-        _ctrl.stockC.text.trim().isEmpty ||
-        _ctrl.jenisC.text.trim().isEmpty ||
-        _ctrl.satuanC.text.trim().isEmpty ||
-        (_ctrl.selectedImage.value == null && product.image.isEmpty)) {
-      Get.snackbar(
-        "Peringatan",
-        "Semua field wajib diisi dan gambar harus tersedia (kecuali diskon)",
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-      );
+    setState(() {
+      _submitted = true;
+    });
+
+    final isValid =
+        _ctrl.nameC.text.trim().isNotEmpty &&
+        _ctrl.priceC.text.trim().isNotEmpty &&
+        _ctrl.stockC.text.trim().isNotEmpty &&
+        _ctrl.jenisC.text.trim().isNotEmpty &&
+        _ctrl.satuanC.text.trim().isNotEmpty &&
+        !(_ctrl.selectedImage.value == null && product.image.isEmpty);
+
+    if (!isValid) {
       return;
     }
 
@@ -216,39 +264,46 @@ class _EditProductDialogState extends State<EditProductDialog> {
     );
   }
 
-  Widget _buildImageSection() {
+  Widget _buildImageSection({bool submitted = false}) {
     return Center(
       child: Column(
         children: [
-          Obx(
-            () => Container(
+          Obx(() {
+            final selectedImage = _ctrl.selectedImage.value;
+            final bool hasImageError =
+                submitted &&
+                selectedImage == null &&
+                widget.product.image.isEmpty;
+            return Container(
               height: 140,
               width: 140,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: _themeColor.withOpacity(0.4),
+                  color: hasImageError
+                      ? Colors.red
+                      : _themeColor.withOpacity(0.4),
                   width: 2,
                 ),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(18),
-                child: _ctrl.selectedImage.value != null
-                    ? Image.file(_ctrl.selectedImage.value!, fit: BoxFit.cover)
+                child: selectedImage != null
+                    ? Image.file(selectedImage, fit: BoxFit.cover)
                     : (widget.product.image.isNotEmpty
                           ? Image.network(
                               widget.product.image,
                               fit: BoxFit.cover,
                             )
-                          : const Icon(
+                          : Icon(
                               Icons.fastfood_rounded,
                               size: 48,
-                              color: _themeColor,
+                              color: hasImageError ? Colors.red : _themeColor,
                             )),
               ),
-            ),
-          ),
+            );
+          }),
           const SizedBox(height: 8),
           TextButton.icon(
             onPressed: _ctrl.pickImage,
@@ -256,6 +311,21 @@ class _EditProductDialogState extends State<EditProductDialog> {
             label: const Text('Ganti Gambar'),
             style: TextButton.styleFrom(foregroundColor: _themeColor),
           ),
+          Obx(() {
+            final selectedImage = _ctrl.selectedImage.value;
+            final bool hasImageError =
+                submitted &&
+                selectedImage == null &&
+                widget.product.image.isEmpty;
+            if (!hasImageError) return const SizedBox.shrink();
+            return const Padding(
+              padding: EdgeInsets.only(top: 4),
+              child: Text(
+                'Gambar produk wajib diunggah',
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
+            );
+          }),
         ],
       ),
     );

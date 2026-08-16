@@ -64,7 +64,7 @@ class BakeryProductionPreviewPage extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const Divider(height: 24),
                           Text(
                             'Jumlah Kelipatan Resep: ${ctrl.jumlahProduksi.value}x',
                             style: const TextStyle(
@@ -73,27 +73,26 @@ class BakeryProductionPreviewPage extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const Divider(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Estimasi Nilai Bahan Baku:',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              Text(
-                                ctrl.totalBiayaFormatted,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                ),
-                              ),
-                            ],
-                          ),
+                          // Row(
+                          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //   children: [
+                          //     const Text(
+                          //       'Estimasi Nilai Bahan Baku:',
+                          //       style: TextStyle(
+                          //         fontSize: 13,
+                          //         color: Colors.grey,
+                          //       ),
+                          //     ),
+                          //     Text(
+                          //       ctrl.totalBiayaFormatted,
+                          //       style: const TextStyle(
+                          //         fontSize: 16,
+                          //         fontWeight: FontWeight.bold,
+                          //         color: Colors.green,
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
                         ],
                       ),
                     ),

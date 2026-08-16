@@ -120,7 +120,7 @@ class KasirSelesaiDesktop extends StatelessWidget {
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () => cart.generateAndPrintPdf(),
+                            onPressed: () => cart.generateAndPrintReceipt(),
                             icon: const Icon(
                               Icons.print_outlined,
                               color: Colors.white,

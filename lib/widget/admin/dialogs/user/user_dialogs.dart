@@ -19,6 +19,7 @@ class _InsertUserDialogState extends State<InsertUserDialog> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _roleController = TextEditingController();
+  bool _isPasswordObscured = true; // ← State untuk toggle mata password
 
   @override
   void dispose() {
@@ -61,18 +62,33 @@ class _InsertUserDialogState extends State<InsertUserDialog> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 20),
+              // Password Field dengan Obscure Text & Icon Mata
               CustomTextField(
                 controller: _passwordController,
                 label: 'Password',
                 icon: Icons.lock_outline_rounded,
                 hint: 'Masukkan password akun',
+                obscureText: _isPasswordObscured, // ← Diaktifkan di sini
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordObscured
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: Colors.black54,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordObscured = !_isPasswordObscured;
+                    });
+                  },
+                ),
               ),
               const SizedBox(height: 20),
               CustomDropdownMenu(
                 controller: _roleController,
                 label: 'Pilih Role / Hak Akses',
                 icon: Icons.admin_panel_settings_outlined,
-                items: const ['ADMIN', 'KASIR', 'BAKERY'], // Diubah ke BAKERY
+                items: const ['ADMIN', 'KASIR', 'BAKERY'],
               ),
               const SizedBox(height: 28),
               DialogActionButtons(
@@ -89,7 +105,6 @@ class _InsertUserDialogState extends State<InsertUserDialog> {
                       _roleController.text.toUpperCase(),
                       _passwordController.text.trim(),
                     );
-                    // Navigator.pop dihapus dari sini karena ditangani oleh Get.back() di controller
                   }
                 },
               ),
@@ -244,6 +259,8 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmController = TextEditingController();
   String? _errorText;
+  bool _obscurePassword = true; // ← State penutup password baru
+  bool _obscureConfirm = true; // ← State penutup konfirmasi password
 
   @override
   void dispose() {
@@ -275,7 +292,6 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
 
     setState(() => _errorText = null);
     widget.onSave(widget.userId, password);
-    // Navigator.pop dihapus agar ditangani Get.back() di controller
   }
 
   @override
@@ -305,6 +321,18 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                 label: 'Password Baru',
                 icon: Icons.lock_outline_rounded,
                 hint: 'Minimal 6 karakter',
+                obscureText: _obscurePassword, // ← Diaktifkan di sini
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: Colors.black54,
+                  ),
+                  onPressed: () {
+                    setState(() => _obscurePassword = !_obscurePassword);
+                  },
+                ),
               ),
               const SizedBox(height: 20),
               CustomTextField(
@@ -312,6 +340,18 @@ class _ResetPasswordDialogState extends State<ResetPasswordDialog> {
                 label: 'Konfirmasi Password',
                 icon: Icons.lock_outline_rounded,
                 hint: 'Ulangi password baru',
+                obscureText: _obscureConfirm, // ← Diaktifkan di sini
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureConfirm
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: Colors.black54,
+                  ),
+                  onPressed: () {
+                    setState(() => _obscureConfirm = !_obscureConfirm);
+                  },
+                ),
               ),
               if (_errorText != null) ...[
                 const SizedBox(height: 12),

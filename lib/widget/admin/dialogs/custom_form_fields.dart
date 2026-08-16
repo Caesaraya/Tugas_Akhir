@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // ← TAMBAHAN
+import 'package:flutter/services.dart';
 
 class RumahLezaatTheme {
   static const Color primaryColor = Color(0xFFE65100);
@@ -15,7 +15,13 @@ class CustomTextField extends StatelessWidget {
   final double width;
   final TextInputType keyboardType;
   final String? prefixText;
-  final List<TextInputFormatter>? inputFormatters; // ← TAMBAHAN
+  final List<TextInputFormatter>? inputFormatters;
+  final bool obscureText; // ← Ditambahkan
+  final Widget? suffixIcon; // ← Ditambahkan
+  final ValueChanged<String>?
+  onChanged; // ← Ditambahkan untuk mendeteksi perubahan input rupiah
+  final bool hasError; // ← Ditambahkan untuk state error validasi
+  final String? errorText; // ← Ditambahkan untuk pesan error validasi
 
   const CustomTextField({
     super.key,
@@ -26,12 +32,17 @@ class CustomTextField extends StatelessWidget {
     this.width = 440,
     this.keyboardType = TextInputType.text,
     this.prefixText,
-    this.inputFormatters, // ← TAMBAHAN
+    this.inputFormatters,
+    this.obscureText = false, // ← Ditambahkan (default false)
+    this.suffixIcon, // ← Ditambahkan
+    this.onChanged, // ← Ditambahkan
+    this.hasError = false, // ← Ditambahkan (default false)
+    this.errorText, // ← Ditambahkan (default null)
   });
 
   @override
   Widget build(BuildContext context) {
-    // ← TAMBAHAN: Auto-apply filter angka jika keyboardType adalah number
+    // Auto-apply filter angka jika keyboardType adalah number
     final List<TextInputFormatter> effectiveFormatters =
         inputFormatters ??
         (keyboardType == TextInputType.number ||
@@ -50,7 +61,9 @@ class CustomTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      inputFormatters: effectiveFormatters, // ← TAMBAHAN
+      inputFormatters: effectiveFormatters,
+      obscureText: obscureText, // ← Ditambahkan ke TextField
+      onChanged: onChanged, // ← Ditambahkan ke TextField
       style: const TextStyle(
         color: Colors.black,
         fontWeight: FontWeight.w600,
@@ -60,23 +73,40 @@ class CustomTextField extends StatelessWidget {
         labelText: label,
         hintText: hint,
         prefixText: prefixText,
-        prefixIcon: Icon(icon, size: 22, color: Colors.black),
-        labelStyle: const TextStyle(
-          color: Colors.black87,
+        prefixIcon: Icon(
+          icon,
+          size: 22,
+          color: hasError ? Colors.red : Colors.black,
+        ),
+        suffixIcon: suffixIcon, // ← Ditambahkan ke TextField
+        errorText: errorText, // ← Ditambahkan untuk pesan error di bawah field
+        labelStyle: TextStyle(
+          color: hasError ? Colors.red : Colors.black87,
           fontWeight: FontWeight.bold,
           fontSize: 15,
         ),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: RumahLezaatTheme.borderColor,
+          borderSide: BorderSide(
+            color: hasError ? Colors.red : RumahLezaatTheme.borderColor,
             width: 2.0,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.black, width: 2.5),
+          borderSide: BorderSide(
+            color: hasError ? Colors.red : Colors.black,
+            width: 2.5,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red, width: 2.0),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Colors.red, width: 2.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -94,6 +124,8 @@ class CustomDropdownMenu extends StatelessWidget {
   final IconData icon;
   final List<String> items;
   final double width;
+  final bool hasError; // ← Ditambahkan untuk state error validasi
+  final String? errorText; // ← Ditambahkan untuk pesan error validasi
 
   const CustomDropdownMenu({
     super.key,
@@ -102,46 +134,68 @@ class CustomDropdownMenu extends StatelessWidget {
     required this.icon,
     required this.items,
     this.width = 440,
+    this.hasError = false, // ← Ditambahkan (default false)
+    this.errorText, // ← Ditambahkan (default null)
   });
 
   @override
   Widget build(BuildContext context) {
-    return DropdownMenu<String>(
-      controller: controller,
-      width: width,
-      menuHeight: 200,
-      label: Text(label),
-      leadingIcon: Icon(icon, size: 22, color: Colors.black),
-      requestFocusOnTap: true,
-      enableFilter: true,
-      textStyle: const TextStyle(
-        color: Colors.black,
-        fontWeight: FontWeight.w600,
-        fontSize: 16,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        labelStyle: const TextStyle(
-          color: Colors.black87,
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: RumahLezaatTheme.borderColor,
-            width: 2.0,
+    final Color normalBorderColor = hasError
+        ? Colors.red
+        : RumahLezaatTheme.borderColor;
+    final Color focusedBorderColor = hasError ? Colors.red : Colors.black;
+    final Color labelColor = hasError ? Colors.red : Colors.black87;
+    final Color iconColor = hasError ? Colors.red : Colors.black;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownMenu<String>(
+          controller: controller,
+          width: width,
+          menuHeight: 200,
+          label: Text(label, style: TextStyle(color: labelColor)),
+          leadingIcon: Icon(icon, size: 22, color: iconColor),
+          requestFocusOnTap: true,
+          enableFilter: true,
+          textStyle: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
           ),
+          inputDecorationTheme: InputDecorationTheme(
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            labelStyle: TextStyle(
+              color: labelColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: normalBorderColor, width: 2.0),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: focusedBorderColor, width: 2.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+          ),
+          dropdownMenuEntries: items
+              .map((val) => DropdownMenuEntry<String>(value: val, label: val))
+              .toList(),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.black, width: 2.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      ),
-      dropdownMenuEntries: items
-          .map((val) => DropdownMenuEntry<String>(value: val, label: val))
-          .toList(),
+        if (hasError && errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 4),
+            child: Text(
+              errorText!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -151,25 +205,35 @@ class CustomStockStepper extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final bool isDouble;
+  final bool hasError; // ← Ditambahkan untuk state error validasi
+  final String? errorText; // ← Ditambahkan untuk pesan error validasi
 
   const CustomStockStepper({
     super.key,
     required this.controller,
     this.label = 'Stok Produk',
     this.isDouble = false,
+    this.hasError = false, // ← Ditambahkan (default false)
+    this.errorText, // ← Ditambahkan (default null)
   });
 
   @override
   Widget build(BuildContext context) {
+    final Color borderColor = hasError
+        ? Colors.red
+        : RumahLezaatTheme.borderColor;
+    final Color labelColor = hasError ? Colors.red : Colors.black87;
+    final Color iconColor = hasError ? Colors.red : Colors.black;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           '  $label',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: labelColor,
           ),
         ),
         const SizedBox(height: 6),
@@ -178,15 +242,11 @@ class CustomStockStepper extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.grey.shade50,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: RumahLezaatTheme.borderColor, width: 2.0),
+            border: Border.all(color: borderColor, width: 2.0),
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.inventory_2_rounded,
-                color: Colors.black,
-                size: 22,
-              ),
+              Icon(Icons.inventory_2_rounded, color: iconColor, size: 22),
               const SizedBox(width: 14),
               Expanded(
                 child: TextField(
@@ -194,7 +254,6 @@ class CustomStockStepper extends StatelessWidget {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  // ← TAMBAHAN: Filter sesuai tipe (int atau double)
                   inputFormatters: isDouble
                       ? [
                           FilteringTextInputFormatter.allow(
@@ -277,6 +336,14 @@ class CustomStockStepper extends StatelessWidget {
             ],
           ),
         ),
+        if (hasError && errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 4, top: 4),
+            child: Text(
+              errorText!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
       ],
     );
   }
@@ -339,7 +406,7 @@ class DialogActionButtons extends StatelessWidget {
   }
 }
 
-/// 5. Komponen Header Dialog Judul + Icon
+/// 5. Komponen Header Dialog Judul + Icon (Responsible / Auto-wrap agar tidak overflow)
 class DialogCommonTitle extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -349,15 +416,22 @@ class DialogCommonTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: Colors.black, size: 28),
         const SizedBox(width: 12),
-        Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 21,
-            color: Colors.black,
+        Expanded(
+          // ← Membungkus judul dalam Expanded agar membungkus baris baru saat di mobile
+          child: Text(
+            title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize:
+                  20, // Menyesuaikan ukuran agar pas di layar handphone kecil
+              color: Colors.black,
+            ),
           ),
         ),
       ],

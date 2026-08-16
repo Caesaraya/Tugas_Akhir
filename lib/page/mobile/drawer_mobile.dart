@@ -30,7 +30,7 @@ class KasirMobileDrawer extends StatelessWidget {
                     'Rumah Lezzaaa',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 20,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -53,11 +53,11 @@ class KasirMobileDrawer extends StatelessWidget {
               title: 'Kelola Produk',
               route: AppRoutes.kelolaProduk,
             ),
-            DrawerItem(
-              icon: Icons.report_problem_outlined,
-              title: 'Lapor Produk',
-              route: AppRoutes.laporProduk,
-            ),
+            // DrawerItem(
+            //   icon: Icons.report_problem_outlined,
+            //   title: 'Lapor Produk',
+            //   route: AppRoutes.laporProduk,
+            // ),
             DrawerItem(
               icon: Icons.history,
               title: 'Riwayat',
