@@ -147,8 +147,9 @@ class LaporProdukList extends StatelessWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.chevron_left),
-                  onPressed:
-                      ctrl.currentPage.value > 1 ? () => ctrl.prevPage() : null,
+                  onPressed: ctrl.currentPage.value > 1
+                      ? () => ctrl.prevPage()
+                      : null,
                 ),
                 Text(
                   'Halaman ${ctrl.currentPage.value} dari ${ctrl.totalPages}',

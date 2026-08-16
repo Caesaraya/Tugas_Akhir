@@ -30,7 +30,7 @@ class DetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('ID: ${detailController.transactionId}'),
-            Text('Tanggal: ${detailController.tanggal}'),
+            Text('Tanggal: ${detailController.tanggalFormatted}'),
             Text('Metode: ${detailController.methodLabel}'),
             const SizedBox(height: 20),
             const Text(

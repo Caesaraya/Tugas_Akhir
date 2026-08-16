@@ -72,7 +72,7 @@ class KelolaProdukController extends GetxController {
   final satuanController = TextEditingController();
   final alasanStockController = TextEditingController(); // BARU
 
-  int _oldStock = 0; // BARU - simpan stock sebelum diubah, buat dibandingkan
+  int oldStock = 0; // BARU - simpan stock sebelum diubah, buat dibandingkan
 
   final listJenis = [
     'BREAD',
@@ -181,7 +181,7 @@ class KelolaProdukController extends GetxController {
     jenisController.text = product.jenis;
     satuanController.text = product.satuan;
     alasanStockController.clear(); // BARU
-    _oldStock = product.stock; // BARU
+    oldStock = product.stock; // BARU
     selectedJenis.value = listJenis.contains(product.jenis)
         ? product.jenis
         : listJenis.first;

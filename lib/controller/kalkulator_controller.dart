@@ -20,7 +20,6 @@ class KalkulatorController extends GetxController {
 
   final NumberFormat plainNumberFormat = NumberFormat.decimalPattern('id_ID');
   static const double maxInput = 99999999;
-  static const double confirmationThreshold = 1000000; 
   String lastValidDigits = '';
 
   void onInputChanged(String value) {
@@ -66,46 +65,13 @@ class KalkulatorController extends GetxController {
           textController.text.replaceAll(RegExp(r'[^0-9]'), ''),
         ) ??
         0;
-    if (inputNominal > confirmationThreshold) {
-      final confirmed = await confirmLargeCash(inputNominal);
-      if (!confirmed) return;
-    }
+    
 
     cartController.selectedPayment.value = 'cash';
     cartController.inputUang.value = inputNominal;
     Get.offAllNamed(AppRoutes.sukses);
   }
 
-  Future<bool> confirmLargeCash(double nominal) async {
-    final formatted = cartController.currencyFormatter.format(nominal);
-    final result = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('Konfirmasi Nominal'),
-        content: Text(
-          'Uang diterima sebesar $formatted. Pastikan nominal sudah '
-          'benar sebelum melanjutkan.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Batal, Cek Lagi'),
-          ),
-          ElevatedButton(
-            onPressed: () => Get.back(result: true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE89336),
-            ),
-            child: const Text(
-              'Ya, Sudah Benar',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-      barrierDismissible: false,
-    );
-    return result ?? false;
-  }
 
   void showError(String title, String message) {
     Get.snackbar(

@@ -41,6 +41,18 @@ class TransactionDetailController extends GetxController {
         return raw;
     }
   }
+  
+String get tanggalFormatted {
+  try {
+    final dt = DateTime.parse(tanggal).toLocal();
+    final hari = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+    final bulan = ['Jan','Feb','Mar','Apr','Mei','Jun',
+                   'Jul','Agu','Sep','Okt','Nov','Des'];
+    return '${hari[dt.weekday - 1]}, ${dt.day} ${bulan[dt.month - 1]} ${dt.year} • ${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}';
+  } catch (_) {
+    return tanggal;
+  }
+}
  
 
   List<Map<String, dynamic>> get items =>
