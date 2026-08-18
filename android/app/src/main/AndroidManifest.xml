@@ -8,7 +8,7 @@
     
     <application
         android:usesCleartextTraffic="true"
-        android:label="tugas_akhir"
+        android:label="Rumah POS"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

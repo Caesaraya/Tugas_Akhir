@@ -109,10 +109,7 @@ class AppPages {
       name: AppRoutes.monitoringUangMob,
       page: () => MonitoringKeuanganMobilePage(),
     ),
-    GetPage(
-      name: AppRoutes.kelolaUserMob,
-      page: () => KelolaUserMobilePage(),
-    ),
+    GetPage(name: AppRoutes.kelolaUserMob, page: () => KelolaUserMobilePage()),
     // GetPage(name: AppRoutes.qrisPayment, page: () => const QrisPaymentPage()),
     // ── Bakery ──────────────────────────────────────────────────────
     GetPage(name: AppRoutes.bakery, page: () => BakeryPage()),

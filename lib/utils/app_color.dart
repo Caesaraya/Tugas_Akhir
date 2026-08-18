@@ -24,4 +24,5 @@ class AppColors {
   static final Color iconMutedLight = Colors.white30;
   // Warna Lainnya (Opsional, bisa ditambahkan sesuai kebutuhan)
   static const Color buttonlogin = Color(0xFFC86A37);
+  static const Color eror = Color.fromARGB(255, 211, 47, 47);
 }

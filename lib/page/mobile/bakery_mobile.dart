@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/bakery_controller.dart';
+import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:tugas_akhir/page/mobile/drawer_bakery.dart';
 import 'package:tugas_akhir/widget/widget mobile/dashboard_bakery/grid.dart';
 import 'package:tugas_akhir/widget/widget mobile/dashboard_bakery/search_bar.dart';
@@ -11,6 +12,7 @@ class BakeryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.put(BakeryController());
+    final loginController = Get.find<LoginController>();
 
     return Scaffold(
       drawer: const DrawerBakery(),
@@ -31,10 +33,17 @@ class BakeryPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Halo, Bakery! 🍞',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
+                Obx(() {
+                  final userName =
+                      loginController.currentUser.value?.name ?? 'Bakery';
+                  return Text(
+                    'Halo, $userName',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                }),
                 const Text(
                   'Pilih resep untuk mulai produksi',
                   style: TextStyle(color: Colors.grey, fontSize: 14),

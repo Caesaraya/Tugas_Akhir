@@ -32,7 +32,10 @@ class KasirDashboardMobile extends StatelessWidget {
             iconTheme: const IconThemeData(color: Colors.black87),
           ),
           floatingActionButton: Obx(() {
-           final jumlahItem = cartCtrl.cartItems.fold<int>(0, (sum, item) => sum + item.qty);
+            final jumlahItem = cartCtrl.cartItems.fold<int>(
+              0,
+              (sum, item) => sum + item.qty,
+            );
             return FloatingActionButton(
               onPressed: () => Get.to(() => const KeranjangMobilePage()),
               backgroundColor: const Color(0xFFE8A045),
@@ -84,7 +87,9 @@ class KasirDashboardMobile extends StatelessWidget {
                     const SizedBox(height: 15),
                     SectionHeader(title: 'Daftar Menu'),
                     const SizedBox(height: 15),
-                    DashboardProductGrid(dashboardController: dashboardController),
+                    DashboardProductGrid(
+                      dashboardController: dashboardController,
+                    ),
                     const SizedBox(height: 30),
                   ],
                 ),

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:tugas_akhir/api service/api_service.dart';
 import 'package:tugas_akhir/controller/dashboard_controller.dart';
 import 'package:tugas_akhir/models/product.dart';
+import 'package:tugas_akhir/widget/admin/dialogs/custom_form_fields.dart';
 
 class KelolaProdukController extends GetxController {
   var products = <Product>[].obs;
@@ -190,85 +191,194 @@ class KelolaProdukController extends GetxController {
         : listSatuan.first;
 
     Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Text(
-          "Edit Produk",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Obx(
-                () => GestureDetector(
-                  onTap: pickImage,
-                  child: Container(
-                    height: 120,
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 15),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey[400]!),
+      StatefulBuilder(
+        builder: (context, setState) {
+          // Listen to stock controller changes
+          stockController.addListener(() => setState(() {}));
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            title: const Text(
+              "Edit Produk",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Obx(
+                    () => GestureDetector(
+                      onTap: pickImage,
+                      child: Container(
+                        height: 120,
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 15),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey[400]!),
+                        ),
+                        child: selectedImage.value != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.file(
+                                  selectedImage.value!,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : (product.image.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.network(
+                                        product.image,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (c, e, s) =>
+                                            const Icon(Icons.image, size: 50),
+                                      ),
+                                    )
+                                  : const Icon(Icons.add_a_photo, size: 50)),
+                      ),
                     ),
-                    child: selectedImage.value != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.file(
-                              selectedImage.value!,
-                              fit: BoxFit.cover,
+                  ),
+                  buildTextField(nameController, "Nama Produk"),
+                  const SizedBox(height: 12),
+                  CustomStockStepper(
+                    controller: stockController,
+                    label: 'Stock Produk',
+                    isDouble: false,
+                  ),
+                  const SizedBox(height: 12),
+                  // Display stock change indicator
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _getStockChangeColor(
+                        int.tryParse(stockController.text) ?? 0,
+                        oldStock,
+                      ).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: _getStockChangeColor(
+                          int.tryParse(stockController.text) ?? 0,
+                          oldStock,
+                        ).withOpacity(0.5),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          _getStockChangeIcon(
+                            int.tryParse(stockController.text) ?? 0,
+                            oldStock,
+                          ),
+                          color: _getStockChangeColor(
+                            int.tryParse(stockController.text) ?? 0,
+                            oldStock,
+                          ),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Stock: $oldStock → ${stockController.text}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          )
-                        : (product.image.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    product.image,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (c, e, s) =>
-                                        const Icon(Icons.image, size: 50),
-                                  ),
-                                )
-                              : const Icon(Icons.add_a_photo, size: 50)),
+                            Text(
+                              _getStockChangeText(
+                                int.tryParse(stockController.text) ?? 0,
+                                oldStock,
+                              ),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: _getStockChangeColor(
+                                  int.tryParse(stockController.text) ?? 0,
+                                  oldStock,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  // BARU - field alasan perubahan stock
+                  TextField(
+                    controller: alasanStockController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: "Alasan Perubahan Stock",
+                      hintText: "Wajib diisi kalau stock diubah",
+                      labelStyle: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              buildTextField(nameController, "Nama Produk"),
-              const SizedBox(height: 12),
-              buildTextField(stockController, "Stock", isNumber: true),
-              const SizedBox(height: 12),
-              // BARU - field alasan perubahan stock
-              TextField(
-                controller: alasanStockController,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  labelText: "Alasan Perubahan Stock",
-                  hintText: "Wajib diisi kalau stock diubah",
-                  labelStyle: const TextStyle(color: Colors.grey, fontSize: 12),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(),
+                child: const Text("Batal"),
+              ),
+              ElevatedButton(
+                onPressed: () => updateProduct(product),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE89336),
+                ),
+                child: const Text(
+                  "Simpan",
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
-          ElevatedButton(
-            onPressed: () => updateProduct(product),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE89336),
-            ),
-            child: const Text("Simpan", style: TextStyle(color: Colors.white)),
-          ),
-        ],
+          );
+        },
       ),
       barrierDismissible: false,
     );
+  }
+
+  String _getStockChangeText(int newStock, int oldStock) {
+    int difference = newStock - oldStock;
+    return difference > 0
+        ? '+$difference (Tambah)'
+        : difference < 0
+        ? '${difference.toString()} (Kurang)'
+        : 'Tidak ada perubahan';
+  }
+
+  Color _getStockChangeColor(int newStock, int oldStock) {
+    int difference = newStock - oldStock;
+    return difference > 0
+        ? Colors.green
+        : difference < 0
+        ? Colors.red
+        : Colors.grey;
+  }
+
+  IconData _getStockChangeIcon(int newStock, int oldStock) {
+    int difference = newStock - oldStock;
+    return difference > 0
+        ? Icons.add_circle
+        : difference < 0
+        ? Icons.remove_circle
+        : Icons.info;
   }
 
   Widget buildTextField(
@@ -318,115 +428,113 @@ class KelolaProdukController extends GetxController {
   }
 
   Future<void> updateProduct(Product oldProduct) async {
-  if (nameController.text.isEmpty || priceController.text.isEmpty) {
-    Get.snackbar(
-      "Validasi",
-      "Nama dan Harga tidak boleh kosong",
-      backgroundColor: Colors.redAccent,
-      colorText: Colors.white,
-    );
-    return;
-  }
-
-  String cleanPriceText =
-      priceController.text.replaceAll(RegExp(r'[^0-9]'), '');
-  int numericPrice =
-      int.parse(cleanPriceText.isEmpty ? "0" : cleanPriceText);
-
-  int newStock = int.tryParse(stockController.text) ?? 0;
-
-  String cleanDiscountText =
-      discountPercentController.text.isEmpty
-          ? "0"
-          : discountPercentController.text;
-
-  int discountPercent =
-      (int.tryParse(cleanDiscountText) ?? 0).clamp(0, 100);
-
-  // ============================
-  // BARU - cek apakah ada perubahan
-  // ============================
-  final bool hasChanged =
-      nameController.text.trim() != oldProduct.name ||
-      numericPrice != oldProduct.price ||
-      discountPercent != oldProduct.discount ||
-      newStock != oldProduct.stock ||
-      jenisController.text != oldProduct.jenis ||
-      satuanController.text != oldProduct.satuan ||
-      selectedImage.value != null;
-
-  if (!hasChanged) {
-    Get.back();
-
-
-    return;
-  }
-
-  // ============================
-  // wajib isi alasan jika stock berubah
-  // ============================
-  if (newStock != oldProduct.stock &&
-      alasanStockController.text.trim().isEmpty) {
-    Get.snackbar(
-      "Validasi",
-      "Alasan perubahan stock wajib diisi",
-      backgroundColor: Colors.redAccent,
-      colorText: Colors.white,
-    );
-    return;
-  }
-
-  try {
-    Get.back();
-    isLoading(true);
-
-    final success = await ApiService.updateProductWithImage(
-      id: oldProduct.id,
-      name: nameController.text.trim(),
-      price: numericPrice,
-      discount: discountPercent,
-      stock: newStock,
-      jenis: jenisController.text,
-      satuan: satuanController.text,
-      resepId: oldProduct.resepId,
-      imageFile: selectedImage.value,
-      alasanStock: newStock != oldProduct.stock
-          ? alasanStockController.text.trim()
-          : null,
-    );
-
-    if (success) {
+    if (nameController.text.isEmpty || priceController.text.isEmpty) {
       Get.snackbar(
-        "Sukses",
-        "Produk berhasil diperbarui",
-        backgroundColor: Colors.green,
+        "Validasi",
+        "Nama dan Harga tidak boleh kosong",
+        backgroundColor: Colors.redAccent,
         colorText: Colors.white,
       );
+      return;
+    }
 
-      if (Get.isRegistered<DashboardController>()) {
-        Get.find<DashboardController>().fetchProducts();
-      }
+    String cleanPriceText = priceController.text.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
+    int numericPrice = int.parse(cleanPriceText.isEmpty ? "0" : cleanPriceText);
 
-      fetchData();
-    } else {
+    int newStock = int.tryParse(stockController.text) ?? 0;
+
+    String cleanDiscountText = discountPercentController.text.isEmpty
+        ? "0"
+        : discountPercentController.text;
+
+    int discountPercent = (int.tryParse(cleanDiscountText) ?? 0).clamp(0, 100);
+
+    // ============================
+    // BARU - cek apakah ada perubahan
+    // ============================
+    final bool hasChanged =
+        nameController.text.trim() != oldProduct.name ||
+        numericPrice != oldProduct.price ||
+        discountPercent != oldProduct.discount ||
+        newStock != oldProduct.stock ||
+        jenisController.text != oldProduct.jenis ||
+        satuanController.text != oldProduct.satuan ||
+        selectedImage.value != null;
+
+    if (!hasChanged) {
+      Get.back();
+
+      return;
+    }
+
+    // ============================
+    // wajib isi alasan jika stock berubah
+    // ============================
+    if (newStock != oldProduct.stock &&
+        alasanStockController.text.trim().isEmpty) {
       Get.snackbar(
-        "Gagal",
-        "Gagal memperbarui produk",
+        "Validasi",
+        "Alasan perubahan stock wajib diisi",
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    try {
+      Get.back();
+      isLoading(true);
+
+      final success = await ApiService.updateProductWithImage(
+        id: oldProduct.id,
+        name: nameController.text.trim(),
+        price: numericPrice,
+        discount: discountPercent,
+        stock: newStock,
+        jenis: jenisController.text,
+        satuan: satuanController.text,
+        resepId: oldProduct.resepId,
+        imageFile: selectedImage.value,
+        alasanStock: newStock != oldProduct.stock
+            ? alasanStockController.text.trim()
+            : null,
+      );
+
+      if (success) {
+        Get.snackbar(
+          "Sukses",
+          "Produk berhasil diperbarui",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+
+        if (Get.isRegistered<DashboardController>()) {
+          Get.find<DashboardController>().fetchProducts();
+        }
+
+        fetchData();
+      } else {
+        Get.snackbar(
+          "Gagal",
+          "Gagal memperbarui produk",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Gagal memperbarui: $e",
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    } finally {
+      isLoading(false);
     }
-  } catch (e) {
-    Get.snackbar(
-      "Error",
-      "Gagal memperbarui: $e",
-      backgroundColor: Colors.red,
-      colorText: Colors.white,
-    );
-  } finally {
-    isLoading(false);
   }
-}
 
   void runFilter() {
     if (searchQuery.value.isEmpty) {

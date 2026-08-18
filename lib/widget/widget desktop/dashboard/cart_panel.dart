@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:tugas_akhir/routes/routes.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
 import 'package:tugas_akhir/controller/payment_controller.dart';
+import 'package:tugas_akhir/controller/login_controller.dart';
 import 'package:tugas_akhir/widget/widget mobile/keranjang/item_card.dart';
 import 'package:intl/intl.dart';
 
@@ -13,6 +14,7 @@ class CartPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final CartController cartController = Get.find<CartController>();
     final PaymentController paymentController = Get.find<PaymentController>();
+    final LoginController loginController = Get.find<LoginController>();
     final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
@@ -28,13 +30,17 @@ class CartPanel extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            child: const Row(
-              children: [
-                Icon(Icons.account_circle),
-                SizedBox(width: 8),
-                Text("Kasir"),
-              ],
-            ),
+            child: Obx(() {
+              final userName =
+                  loginController.currentUser.value?.name ?? 'Kasir';
+              return Row(
+                children: [
+                  const Icon(Icons.account_circle),
+                  const SizedBox(width: 8),
+                  Text(userName),
+                ],
+              );
+            }),
           ),
           const Divider(),
           Expanded(

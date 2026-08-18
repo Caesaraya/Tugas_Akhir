@@ -61,7 +61,7 @@ class ReceiptBuilder {
     final String divider = '-' * width;
 
     // --- HEADER ---
-    buffer.writeln(center('TOKO LEZAAA'));
+    buffer.writeln(center('RUMAH LEZZAAA...'));
     buffer.writeln(center('Kudus, Jl Dr Lukmono Hadi No.50'));
     buffer.writeln(divider);
 
@@ -117,7 +117,7 @@ class ReceiptBuilder {
     // --- FOOTER ---
     buffer.writeln(center('Terima Kasih'));
     buffer.writeln(center('Powered by'));
-    buffer.writeln(center('Rumah Lezaa POS'));
+    buffer.writeln(center('Rumah Lezzaaa POS'));
 
     return buffer.toString();
   }

@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'printer_service.dart';
 
 class BluetoothPrinterService implements PrinterService {
@@ -29,6 +31,14 @@ class BluetoothPrinterService implements PrinterService {
         print(
           '❌ [BluetoothPrinterService] Batalkan: Bluetooth smartphone Anda tidak aktif.',
         );
+        Get.snackbar(
+          'Bluetooth Tidak Aktif',
+          'Aktifkan Bluetooth di pengaturan perangkat Anda',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color.fromARGB(255, 211, 47, 47),
+          colorText: const Color.fromARGB(255, 255, 255, 255),
+          duration: const Duration(seconds: 3),
+        );
         return false;
       }
 
@@ -57,10 +67,26 @@ class BluetoothPrinterService implements PrinterService {
       print(
         '❌ [BluetoothPrinterService] Device dengan nama "$targetPrinterName" tidak ditemukan di daftar paired.',
       );
+      Get.snackbar(
+        'Printer Tidak Ditemukan',
+        'Printer "$targetPrinterName" tidak ditemukan. Pastikan printer sudah di-pair di pengaturan Bluetooth',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color.fromARGB(255, 211, 47, 47),
+        colorText: const Color.fromARGB(255, 255, 255, 255),
+        duration: const Duration(seconds: 3),
+      );
       return false;
     } catch (e) {
       print(
         '❌ [BluetoothPrinterService] Gagal menghubungkan socket hardware: $e',
+      );
+      Get.snackbar(
+        'Koneksi Printer Gagal',
+        'Terjadi kesalahan saat menghubungkan ke printer: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color.fromARGB(255, 211, 47, 47),
+        colorText: const Color.fromARGB(255, 255, 255, 255),
+        duration: const Duration(seconds: 3),
       );
       _isConnected = false;
       return false;
@@ -79,6 +105,14 @@ class BluetoothPrinterService implements PrinterService {
       print(
         '❌ [BluetoothPrinterService] Cetak dibatalkan: Koneksi Bluetooth gagal disiapkan.',
       );
+      Get.snackbar(
+        'Printer Tidak Terkoneksi',
+        'Gagal menghubungkan ke printer $targetPrinterName',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color.fromARGB(255, 211, 47, 47),
+        colorText: const Color.fromARGB(255, 255, 255, 255),
+        duration: const Duration(seconds: 3),
+      );
       return false;
     }
 
@@ -92,6 +126,14 @@ class BluetoothPrinterService implements PrinterService {
       return true;
     } catch (e) {
       print('❌ [BluetoothPrinterService] Error saat transmisi data stream: $e');
+      Get.snackbar(
+        'Gagal Mengirim Data',
+        'Printer terputus saat mengirim data: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color.fromARGB(255, 211, 47, 47),
+        colorText: const Color.fromARGB(255, 255, 255, 255),
+        duration: const Duration(seconds: 3),
+      );
       _isConnected = false; // Reset status jika transmisi putus di tengah jalan
       return false;
     }

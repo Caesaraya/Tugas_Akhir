@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/bakery_controller.dart';
 import 'package:tugas_akhir/models/bahan_baku.dart';
+import 'package:tugas_akhir/page/mobile/drawer_bakery.dart';
 
 class ManualBahanPage extends StatelessWidget {
   const ManualBahanPage({super.key});
@@ -237,6 +238,8 @@ class ManualBahanPage extends StatelessWidget {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
+      drawer: const DrawerBakery(),
+
       body: Obx(() {
         if (ctrl.isLoading.value && ctrl.bahanBakuList.isEmpty) {
           return const Center(child: CircularProgressIndicator());
@@ -333,8 +336,7 @@ class ManualBahanPage extends StatelessWidget {
         );
       }),
       floatingActionButton: Obx(() {
-        if (ctrl.manualCart.isEmpty)
-          return const SizedBox.shrink();
+        if (ctrl.manualCart.isEmpty) return const SizedBox.shrink();
 
         return FloatingActionButton.extended(
           onPressed: () => tampilkanBottomSheetKeranjang(context, ctrl),
