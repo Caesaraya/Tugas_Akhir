@@ -58,8 +58,20 @@ class LoginController extends GetxController {
   }
 
   Future<void> logout() async {
-    await clearSession();
-    Get.offAllNamed(AppRoutes.mediaQuery);
+    Get.defaultDialog(
+      title: 'Konfirmasi Logout',
+      middleText: 'Apakah kamu yakin ingin keluar dari akun?',
+      textCancel: 'Batal',
+      textConfirm: 'Logout',
+      buttonColor: Colors.red,
+      onCancel: () {},
+      onConfirm: () async {
+        Get.back(); // Tutup dialog
+
+        await clearSession();
+        Get.offAllNamed(AppRoutes.mediaQuery);
+      },
+    );
   }
 
   Future<void> login({required bool isDesktop}) async {

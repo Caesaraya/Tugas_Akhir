@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/navigation_controller.dart';
 import 'package:tugas_akhir/controller/admin/resep_table_controller.dart';
+import 'package:tugas_akhir/utils/app_color.dart';
 import 'package:tugas_akhir/widget/admin/custom_sidebar.dart';
 import 'package:tugas_akhir/widget/admin/dialogs/resep/insert_resep_dialogs.dart';
 import 'package:tugas_akhir/widget/admin/resep/resep_table.dart';
@@ -79,7 +80,7 @@ class KelolaResepDeskPage extends StatelessWidget {
                         ToolbarButton(
                           title: "Refresh",
                           icon: Icons.refresh_outlined,
-                          color: Colors.grey.shade400,
+                          color: AppColors.black,
                           onTap: () {
                             ctrl.fetchData();
                           },

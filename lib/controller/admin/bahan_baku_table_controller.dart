@@ -82,11 +82,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
     fetchData();
   }
 
-  void toggleFilterStockHabis() {
-    filterStokMenipis.value = !filterStokMenipis.value;
-    fetchData();
-  }
-
   void search(String query) {
     if (query.isEmpty) {
       filteredList.assignAll(originalList);

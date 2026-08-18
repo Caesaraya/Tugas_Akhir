@@ -111,7 +111,7 @@ class BahanBakuScreen extends StatelessWidget {
                             icon: Icons.warning_amber_rounded,
                             // Warna tombol akan berubah jadi oranye gelap saat filter aktif
                             color: ctrl.filterStokMenipis.value
-                                ? AppColors.iconMutedLight
+                                ? AppColors.black
                                 : AppColors.black,
                             onTap: () {
                               ctrl.toggleFilterStokMenipis();
