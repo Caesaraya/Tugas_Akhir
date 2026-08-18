@@ -32,7 +32,7 @@ class CartPanel extends StatelessWidget {
               children: [
                 Icon(Icons.account_circle),
                 SizedBox(width: 8),
-                Text("Somar - Kasir 1"),
+                Text("Kasir"),
               ],
             ),
           ),

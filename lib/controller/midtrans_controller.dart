@@ -14,6 +14,7 @@ class BuyController extends GetxController {
   Future<void> checkout({
     required String title,
     required int amount,
+     bool isDesktop = false,
   }) async {
     try {
       isPaying.value = true;
