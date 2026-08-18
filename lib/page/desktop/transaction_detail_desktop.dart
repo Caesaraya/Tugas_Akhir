@@ -33,10 +33,10 @@ class DetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('ID: ${detailController.transactionId}'),
-            Text('Tanggal: ${detailController.tanggal}'),
-            Text('Metode Pembayaran: ${detailController.methodLabel}'),
-            const SizedBox(height: 16),
+         
+            Text('Tanggal: ${detailController.tanggalFormatted}'),
+            Text('Metode: ${detailController.methodLabel}'),
+            const SizedBox(height: 20),
             const Text(
               'Detail Item:',
               style: TextStyle(fontWeight: FontWeight.bold),

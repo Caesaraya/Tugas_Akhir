@@ -373,7 +373,7 @@ class CartController extends GetxController {
         double.tryParse(val?.toString() ?? '0') ?? 0;
 
     final String text = _receiptBuilder.buildText(
-      notaId: ctrl.transactionId,
+   
       methodLabel: ctrl.methodLabel,
       items: structuredItems,
       subtotal: parseRaw(ctrl.data['total_harga']),

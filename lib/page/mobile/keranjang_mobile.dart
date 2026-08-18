@@ -12,7 +12,7 @@ class KeranjangMobilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final CartController cartController = Get.find<CartController>();
-    final PaymentController paymentController = Get.put(PaymentController());
+   final PaymentController paymentController = Get.find<PaymentController>();
  
     return Scaffold(
       backgroundColor: Colors.white,

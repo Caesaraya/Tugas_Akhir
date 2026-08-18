@@ -31,8 +31,7 @@ class TransactionDetailMobile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('NO: ${detailController.transactionId}'),
-            Text('Tanggal: ${detailController.tanggal}'),
+            Text('Tanggal: ${detailController.tanggalFormatted}'),
             Text('Metode: ${detailController.methodLabel}'),
             const SizedBox(height: 20),
             const Text(
@@ -61,7 +60,7 @@ class TransactionDetailMobile extends StatelessWidget {
               value: detailController.totalFormatted,
               isBold: true,
             ),
-            SummaryRow(label: 'Bayar:', value: detailController.bayarFormatted),  
+            SummaryRow(label: 'Bayar:', value: detailController.bayarFormatted),
             SummaryRow(
               label: 'Kembalian:',
               value: detailController.kembalianFormatted,

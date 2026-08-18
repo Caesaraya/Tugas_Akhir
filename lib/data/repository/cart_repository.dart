@@ -1,8 +1,4 @@
-// lib/data/repository/cart_repository.dart
-//
-// Cart di sini murni untuk durability (survive app restart/crash), BUKAN
-// untuk sinkronisasi. Tidak ada method sync/enqueue di file ini sama sekali —
-// itu sengaja, sesuai keputusan #4.
+
 
 import 'package:sqflite/sqflite.dart';
 import 'package:tugas_akhir/models/cart_item.dart';

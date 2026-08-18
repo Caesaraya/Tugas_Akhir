@@ -18,12 +18,6 @@ class TransactionDetailController extends GetxController {
     data = Get.arguments as Map<String, dynamic>? ?? {};
   }
 
-  String get transactionId =>
-      data['id']?.toString() ??
-      data['local_id']?.toString() ??
-      data['id_transaksi']?.toString() ??
-      '-';
-
   String get tanggal => data['tanggal']?.toString() ?? '-';
 
   String get methodLabel {
@@ -37,6 +31,38 @@ class TransactionDetailController extends GetxController {
         return 'Virtual Account';
       default:
         return data['metode_pembayaran']?.toString() ?? '-';
+    }
+  }
+
+  String get tanggalFormatted {
+    try {
+      final dt = DateTime.parse(tanggal).toLocal();
+      final hari = [
+        'Senin',
+        'Selasa',
+        'Rabu',
+        'Kamis',
+        'Jumat',
+        'Sabtu',
+        'Minggu',
+      ];
+      final bulan = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Agu',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Des',
+      ];
+      return '${hari[dt.weekday - 1]}, ${dt.day} ${bulan[dt.month - 1]} ${dt.year} • ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return tanggal;
     }
   }
 
