@@ -5,6 +5,7 @@ import 'package:tugas_akhir/controller/detail_transaction_controller.dart';
 import 'package:tugas_akhir/widget/widget desktop/detail_transaction/product_tile.dart';
 import 'package:tugas_akhir/widget/widget desktop/detail_transaction/row.dart';
 import 'package:tugas_akhir/widget/widget desktop/dashboard/komponen_nota.dart';
+import 'package:tugas_akhir/routes/routes.dart';
 
 class TransactionDetailMobile extends StatelessWidget {
   const TransactionDetailMobile({super.key});
@@ -19,6 +20,10 @@ class TransactionDetailMobile extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Get.offAllNamed(AppRoutes.riwayat),
+        ),
         title: const Text(
           'Detail Transaksi',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -69,15 +74,25 @@ class TransactionDetailMobile extends StatelessWidget {
             const SizedBox(height: 20),
 
             SafeArea(
-              child: Center(
-                child: SizedBox(
-                  width: 200,
-                  child: ReceiptActionButton(
-                    label: 'Print Nota',
-                    onPressed: () =>
-                        cartController.printFromDetail(detailController),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ReceiptActionButton(
+                      label: 'Print Nota',
+                      onPressed: () =>
+                          cartController.printFromDetail(detailController),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ReceiptActionButton(
+                      label: 'Pesan Lagi',
+                      backgroundColor: Colors.orange,
+                      onPressed: () =>
+                          Get.offAllNamed(AppRoutes.dashboardMobile),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

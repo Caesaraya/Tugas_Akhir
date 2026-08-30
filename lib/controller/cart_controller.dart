@@ -221,40 +221,66 @@ class CartController extends GetxController {
       };
     }
   }
+  Map<String, dynamic> buildTransactionDetailArgs() {
+  final double bayarValue =
+      selectedPayment.value == "cash" ? inputUang.value : totalPrice;
+  final double kembalianValue =
+      selectedPayment.value == "cash" ? kembalian : 0.0;
 
-  void handleSelesaiActionMobile(bool isFromHistory) async {
-    if (isFromHistory) {
-      Get.back();
-    } else {
-      try {
-        await prosesKeApi();
-      } catch (e) {
-        debugPrint('prosesKeApi mobile error: $e');
-      }
-      clearCart();
-      if (Get.isRegistered<DashboardController>()) {
-        Get.find<DashboardController>().fetchProducts();
-      }
-      Get.offAllNamed(AppRoutes.dashboardMobile);
-    }
-  }
+  return {
+    'tanggal': DateTime.now().toIso8601String(),
+    'metode_pembayaran': selectedPayment.value,
+    'total_harga': totalPrice,
+    'jumlah_bayar': bayarValue,
+    'kembalian': kembalianValue,
+    'items': cartItems.map((item) {
+      return {
+        'name': item.name,
+        'nama_produk': item.name,
+        'price': item.price,
+        'discount': item.discount ?? 0,
+        'qty': item.qty,
+        'quantity': item.qty,
+      };
+    }).toList(),
+  };
+}
 
-  void handleSelesaiActionDashboard(bool isFromHistory) async {
-    if (isFromHistory) {
-      Get.back();
-    } else {
-      try {
-        await prosesKeApi();
-      } catch (e) {
-        debugPrint('prosesKeApi desktop error: $e');
-      }
-      clearCart();
-      if (Get.isRegistered<DashboardController>()) {
-        Get.find<DashboardController>().fetchProducts();
-      }
-      Get.offAllNamed(AppRoutes.kasirboarddesk);
+void handleSelesaiActionMobile(bool isFromHistory) async {
+  if (isFromHistory) {
+    Get.back();
+  } else {
+    final args = buildTransactionDetailArgs();
+    try {
+      await prosesKeApi();
+    } catch (e) {
+      debugPrint('prosesKeApi mobile error: $e');
     }
+    clearCart();
+    if (Get.isRegistered<DashboardController>()) {
+      Get.find<DashboardController>().fetchProducts();
+    }
+    Get.offAllNamed(AppRoutes.transactionDetailMobile, arguments: args);
   }
+}
+
+void handleSelesaiActionDashboard(bool isFromHistory) async {
+  if (isFromHistory) {
+    Get.back();
+  } else {
+    final args = buildTransactionDetailArgs(); // ambil data SEBELUM clearCart
+    try {
+      await prosesKeApi();
+    } catch (e) {
+      debugPrint('prosesKeApi desktop error: $e');
+    }
+    clearCart();
+    if (Get.isRegistered<DashboardController>()) {
+      Get.find<DashboardController>().fetchProducts();
+    }
+    Get.offAllNamed(AppRoutes.transactionDetail, arguments: args);
+  }
+}
 
   Future<void> prosesKeApi() async {
     if (cartItems.isEmpty) return;
@@ -322,29 +348,28 @@ class CartController extends GetxController {
     await _printerService.sendBytes(bytes);
   }
 
-  // ✅ 3. Mengganti generateAndPrintPdf() menjadi generateAndPrintReceipt() dengan mempertahankan business logic
-  Future<void> generateAndPrintReceipt() async {
-    final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
+ Future<void> generateAndPrintReceipt() async {
+  final isDesktop = MediaQuery.of(Get.context!).size.width >= 600;
 
-    // Alur Cetak Terpisah
-    final String text = buildReceiptText();
-    final List<int> bytes = _escPosEncoder.compileReceipt(text);
-    await _printerService.sendBytes(bytes);
+  final String text = buildReceiptText();
+  final List<int> bytes = _escPosEncoder.compileReceipt(text);
+  await _printerService.sendBytes(bytes);
 
-    // Alur penyimpanan transaksi data offline & sync api tetap aman terlindungi
-    await prosesKeApi();
-    clearCart();
+  final args = buildTransactionDetailArgs(); // ambil data sebelum clearCart
 
-    if (Get.isRegistered<DashboardController>()) {
-      Get.find<DashboardController>().fetchProducts();
-    }
+  await prosesKeApi();
+  clearCart();
 
-    if (isDesktop) {
-      Get.offAllNamed(AppRoutes.kasirboarddesk);
-    } else {
-      Get.offAllNamed(AppRoutes.dashboardMobile);
-    }
+  if (Get.isRegistered<DashboardController>()) {
+    Get.find<DashboardController>().fetchProducts();
   }
+
+  if (isDesktop) {
+    Get.offAllNamed(AppRoutes.transactionDetail, arguments: args);
+  } else {
+    Get.offAllNamed(AppRoutes.transactionDetailMobile, arguments: args);
+  }
+}
 
   // ✅ 4. Mengubah printFromDetail() menggunakan ReceiptBuilder baru yang aman dari bad layout wrapping
   Future<void> printFromDetail(TransactionDetailController ctrl) async {
@@ -373,7 +398,6 @@ class CartController extends GetxController {
         double.tryParse(val?.toString() ?? '0') ?? 0;
 
     final String text = _receiptBuilder.buildText(
-   
       methodLabel: ctrl.methodLabel,
       items: structuredItems,
       subtotal: parseRaw(ctrl.data['total_harga']),
