@@ -28,19 +28,24 @@ class _DialogTambahPengeluaranState extends State<DialogTambahPengeluaran> {
   DateTime _selectedDate = DateTime.now();
   ExpenseCategory? _selectedCategory;
 
+  // LOCAL STATE untuk dropdown categories
+  // Ini TIDAK akan berubah ketika kategori baru ditambahkan
+  // Hanya diperbarui saat dialog dibuka/ditutup
+  late List<ExpenseCategory> _dropdownCategories;
+
   @override
   void initState() {
     super.initState();
-    if (_controller.listCategories.isNotEmpty) {
-      // Hilangkan kategori Bahan Baku dari dropdown input manual agar tidak ganda
-      final manualCats = _controller.listCategories
-          .where((c) => c.name != 'Bahan Baku')
-          .toList();
-      if (manualCats.isNotEmpty) {
-        _selectedCategory = manualCats.first;
-        _categoryController.text =
-            _selectedCategory!.name; // Set text awal dropdown
-      }
+    // Inisialisasi dropdown categories dari controller
+    // Dengan mengecualikan "Bahan Baku"
+    _dropdownCategories = _controller.listCategories
+        .where((c) => c.name != 'Bahan Baku')
+        .toList();
+
+    if (_dropdownCategories.isNotEmpty) {
+      _selectedCategory = _dropdownCategories.first;
+      _categoryController.text =
+          _selectedCategory!.name; // Set text awal dropdown
     }
   }
 
@@ -54,10 +59,8 @@ class _DialogTambahPengeluaranState extends State<DialogTambahPengeluaran> {
 
   @override
   Widget build(BuildContext context) {
-    final manualCategories = _controller.listCategories
-        .where((c) => c.name != 'Bahan Baku')
-        .toList();
-
+    // Gunakan _dropdownCategories (local state) bukan _controller.listCategories
+    // Ini memastikan dropdown tidak berubah ketika kategori baru ditambahkan
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       title: const DialogCommonTitle(
@@ -135,7 +138,7 @@ class _DialogTambahPengeluaranState extends State<DialogTambahPengeluaran> {
                           }
                         });
                       },
-                      dropdownMenuEntries: manualCategories.map((cat) {
+                      dropdownMenuEntries: _dropdownCategories.map((cat) {
                         return DropdownMenuEntry<ExpenseCategory>(
                           value: cat,
                           label: cat.name,

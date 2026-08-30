@@ -6,8 +6,22 @@ import '../../../widget/admin/table/table_row_cell.dart';
 import '../../../widget/admin/table/table_header_cell.dart';
 import '../../../widget/admin/table/table_pagination.dart';
 
-class TabelDetailPengeluaran extends StatelessWidget {
+class TabelDetailPengeluaran extends StatefulWidget {
   const TabelDetailPengeluaran({super.key});
+
+  @override
+  State<TabelDetailPengeluaran> createState() => _TabelDetailPengeluaranState();
+}
+
+class _TabelDetailPengeluaranState extends State<TabelDetailPengeluaran> {
+  late int currentPage;
+  static const int itemsPerPage = 6;
+
+  @override
+  void initState() {
+    super.initState();
+    currentPage = 1;
+  }
 
   String _formatRupiah(double value) {
     String result = value
@@ -23,13 +37,6 @@ class TabelDetailPengeluaran extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<KeuanganController>();
-
-    // State reaktif pagination lokal (6 item per halaman)
-    final RxInt currentPage = 1.obs;
-    const int itemsPerPage = 6;
-
-    // Reset halaman jika sumber data bulan diperbarui
-    ever(controller.listExpensesBulanIni, (_) => currentPage.value = 1);
 
     return Container(
       decoration: BoxDecoration(
@@ -56,9 +63,10 @@ class TabelDetailPengeluaran extends StatelessWidget {
           ),
 
           Obx(() {
+            final listCategories = controller.listCategories;
             final listExpenses = controller.listExpensesBulanIni;
 
-            if (controller.isLoading.value && listExpenses.isEmpty) {
+            if (controller.isLoading.value && listCategories.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.all(40.0),
                 child: Center(
@@ -67,12 +75,12 @@ class TabelDetailPengeluaran extends StatelessWidget {
               );
             }
 
-            if (listExpenses.isEmpty) {
+            if (listCategories.isEmpty) {
               return const Padding(
                 padding: EdgeInsets.all(40.0),
                 child: Center(
                   child: Text(
-                    "Belum ada data pengeluaran.",
+                    "Belum ada kategori pengeluaran.",
                     style: TextStyle(color: Colors.grey, fontSize: 13),
                   ),
                 ),
@@ -80,7 +88,15 @@ class TabelDetailPengeluaran extends StatelessWidget {
             }
 
             // --- PROSES AGREGASI PENGELOMPOKAN KATEGORI ---
+            // Gunakan listCategories sebagai daftar utama kategori
             final Map<String, double> categoryTotals = {};
+
+            // Inisialisasi semua kategori dengan nilai 0
+            for (var cat in listCategories) {
+              categoryTotals[cat.name] = 0.0;
+            }
+
+            // Hitung total dari listExpensesBulanIni
             for (var exp in listExpenses) {
               final catName = exp.categoryName;
               categoryTotals[catName] =
@@ -98,11 +114,12 @@ class TabelDetailPengeluaran extends StatelessWidget {
                 .clamp(1, double.infinity)
                 .toInt();
 
-            if (currentPage.value > totalPages) {
-              currentPage.value = totalPages;
+            // Reset ke halaman 1 jika data berubah
+            if (currentPage > totalPages) {
+              currentPage = totalPages;
             }
 
-            final int startIndex = (currentPage.value - 1) * itemsPerPage;
+            final int startIndex = (currentPage - 1) * itemsPerPage;
             final int endIndex = (startIndex + itemsPerPage) > totalItems
                 ? totalItems
                 : (startIndex + itemsPerPage);
@@ -166,11 +183,27 @@ class TabelDetailPengeluaran extends StatelessWidget {
 
                     // --- PAGINATION KONTROL ---
                     TablePagination(
-                      currentPage: currentPage.value,
+                      currentPage: currentPage,
                       totalPages: totalPages,
-                      onNext: () => currentPage.value++,
-                      onPrevious: () => currentPage.value--,
-                      onPageSelected: (page) => currentPage.value = page,
+                      onNext: () {
+                        if (currentPage < totalPages) {
+                          setState(() {
+                            currentPage++;
+                          });
+                        }
+                      },
+                      onPrevious: () {
+                        if (currentPage > 1) {
+                          setState(() {
+                            currentPage--;
+                          });
+                        }
+                      },
+                      onPageSelected: (page) {
+                        setState(() {
+                          currentPage = page;
+                        });
+                      },
                     ),
                   ],
                 );

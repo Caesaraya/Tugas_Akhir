@@ -1,4 +1,3 @@
-// lib/page/admin/uang/monitoring_keuangan_desktop.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/navigation_controller.dart';
@@ -20,21 +19,25 @@ class MonitoringKeuanganPage extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Get.find<NavigationController>().selectedIndex.value = 4;
     });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start, // Sejajar di bagian atas dengan Sidebar
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AdminSidebar(),
+
           const VerticalDivider(width: 1),
+
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- HEADER HALAMAN UTAMA ---
+                  // =========================
+                  // HEADER
+                  // =========================
                   const Padding(
                     padding: EdgeInsets.only(left: 24, top: 24),
                     child: Text(
@@ -46,6 +49,7 @@ class MonitoringKeuanganPage extends StatelessWidget {
                       ),
                     ),
                   ),
+
                   const Padding(
                     padding: EdgeInsets.only(left: 24, bottom: 20),
                     child: Text(
@@ -54,13 +58,22 @@ class MonitoringKeuanganPage extends StatelessWidget {
                     ),
                   ),
 
-                  // --- SUMMARY CARDS ---
+                  // =========================
+                  // SUMMARY CARDS
+                  // =========================
                   Obx(() {
                     final data = controller.keuangan.value;
+
+                    // Profit minus?
+                    final isProfitMinus = data.profit < 0;
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Row(
                         children: [
+                          // =====================
+                          // PEMASUKAN
+                          // =====================
                           Expanded(
                             child: CardKeuangan(
                               judul: 'Pemasukan',
@@ -70,6 +83,10 @@ class MonitoringKeuanganPage extends StatelessWidget {
                               warnaAksen: Colors.blue,
                             ),
                           ),
+
+                          // =====================
+                          // PENGELUARAN
+                          // =====================
                           Expanded(
                             child: CardKeuangan(
                               judul: 'Pengeluaran',
@@ -79,13 +96,23 @@ class MonitoringKeuanganPage extends StatelessWidget {
                               warnaAksen: Colors.orange,
                             ),
                           ),
+
+                          // =====================
+                          // PROFIT
+                          // =====================
                           Expanded(
                             child: CardKeuangan(
                               judul: 'Profit Bersih',
                               nominal: data.profit,
-                              subJudul: 'Keuntungan setelah dipotong',
-                              icon: Icons.trending_up,
-                              warnaAksen: Colors.green,
+                              subJudul: isProfitMinus
+                                  ? 'Kerugian bulan ini'
+                                  : 'Keuntungan setelah dipotong',
+                              icon: isProfitMinus
+                                  ? Icons.trending_down
+                                  : Icons.trending_up,
+                              warnaAksen: isProfitMinus
+                                  ? Colors.red
+                                  : Colors.green,
                             ),
                           ),
                         ],
@@ -95,53 +122,65 @@ class MonitoringKeuanganPage extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // --- GRID AREA RESPONSIF & FLEXIBLE ---
+                  // =========================
+                  // GRID AREA RESPONSIF
+                  // =========================
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        // ================= LAYOUT MOBILE (< 900px) =================
+                        // =====================
+                        // MOBILE
+                        // =====================
                         if (constraints.maxWidth < 900) {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const TabelRekapKeuangan(), // Auto-height penuh
+                              const TabelRekapKeuangan(),
+
                               const SizedBox(height: 20),
-                              const TabelDetailPengeluaran(), // Auto-height rekap kategori
+
+                              const TabelDetailPengeluaran(),
+
                               const SizedBox(height: 20),
+
                               const SizedBox(
                                 height: 360,
                                 child: KomposisiPengeluaran(),
                               ),
+
                               const SizedBox(height: 16),
+
                               _buildActionAddButton(context),
+
                               const SizedBox(height: 24),
                             ],
                           );
                         }
 
-                        // ================= LAYOUT DESKTOP PROFESIONAL =================
+                        // =====================
+                        // DESKTOP
+                        // =====================
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // BARIS ATAS: Tabel Rekap Keuangan Bulanan (Full Width & Auto-Height)
+                            // Tabel rekap keuangan
                             const TabelRekapKeuangan(),
 
                             const SizedBox(height: 24),
 
-                            // BARIS BAWAH: Detail Pengeluaran (70%) vs Komposisi Chart (30%)
-                            // Menggunakan CrossAxisAlignment.start agar tinggi mengikuti anak paling tinggi secara alami
+                            // Detail pengeluaran
+                            // vs komposisi
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // KIRI: Tabel Rekap Kategori (70% Lebar & Auto-Height Tanpa Terpotong)
                                 const Expanded(
                                   flex: 7,
                                   child: TabelDetailPengeluaran(),
                                 ),
+
                                 const SizedBox(width: 24),
 
-                                // KANAN: Komposisi Chart & Tombol Tambah (30% Lebar)
                                 Expanded(
                                   flex: 3,
                                   child: Column(
@@ -149,21 +188,20 @@ class MonitoringKeuanganPage extends StatelessWidget {
                                         CrossAxisAlignment.stretch,
                                     children: [
                                       const SizedBox(
-                                        height:
-                                            360, // Mengunci tinggi Donut Chart agar proporsional di dalam Card-nya
+                                        height: 360,
                                         child: KomposisiPengeluaran(),
                                       ),
+
                                       const SizedBox(height: 16),
-                                      // Tombol Tambah Pengeluaran yang menempel di bawah chart
+
                                       _buildActionAddButton(context),
                                     ],
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(
-                              height: 40,
-                            ), // Spacing akhir dasar halaman
+
+                            const SizedBox(height: 40),
                           ],
                         );
                       },
