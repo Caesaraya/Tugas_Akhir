@@ -83,20 +83,20 @@ class SuksesMobilePage extends StatelessWidget {
               const SizedBox(height: 24),
               Row(
                 children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => cart.printNotaSaja(),
-                      icon: const Icon(Icons.print_outlined, color: Colors.white),
-                      label: const Text('Print Nota',
-                          style: TextStyle(color: Colors.white)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE89336),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
+                 Expanded(
+  child: ElevatedButton.icon(
+    onPressed: () => cart.generateAndPrintReceipt(), // diganti dari printNotaSaja()
+    icon: const Icon(Icons.print_outlined, color: Colors.white),
+    label: const Text('Print Nota',
+        style: TextStyle(color: Colors.white)),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFFE89336),
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10)),
+    ),
+  ),
+),
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(

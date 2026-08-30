@@ -65,13 +65,11 @@ class KalkulatorController extends GetxController {
           textController.text.replaceAll(RegExp(r'[^0-9]'), ''),
         ) ??
         0;
-    
 
     cartController.selectedPayment.value = 'cash';
     cartController.inputUang.value = inputNominal;
     Get.offAllNamed(AppRoutes.sukses);
   }
-
 
   void showError(String title, String message) {
     Get.snackbar(

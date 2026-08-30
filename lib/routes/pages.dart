@@ -77,7 +77,7 @@ class AppPages {
       name: AppRoutes.kelolaprodukdashboard,
       page: () => KasirKelolaDashboard(),
     ),
-    GetPage(name: AppRoutes.transactionDetail, page: () => DetailScreen()),
+    GetPage(name: AppRoutes.transactionDetail, page: () => TransactionDetailDesktop()),
     GetPage(name: AppRoutes.lapordesk, page: () => LaporProdukDesk()),
 
     // ── Admin Desktop ──────────────────────────────────────────────────────

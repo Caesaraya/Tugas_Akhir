@@ -1,5 +1,3 @@
-// lib/page/desktop/transaction_detail_desktop.dart
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/cart_controller.dart';
@@ -7,13 +5,13 @@ import 'package:tugas_akhir/controller/detail_transaction_controller.dart';
 import 'package:tugas_akhir/widget/widget desktop/detail_transaction/product_tile.dart';
 import 'package:tugas_akhir/widget/widget desktop/detail_transaction/row.dart';
 import 'package:tugas_akhir/widget/widget desktop/dashboard/komponen_nota.dart';
+import 'package:tugas_akhir/routes/routes.dart';
 
-class DetailScreen extends StatelessWidget {
-  const DetailScreen({super.key});
+class TransactionDetailDesktop extends StatelessWidget {
+  const TransactionDetailDesktop({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Inisialisasi controller agar aman digunakan secara langsung di Desktop
     final TransactionDetailController detailController = Get.put(
       TransactionDetailController(),
     );
@@ -21,6 +19,10 @@ class DetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Get.offAllNamed(AppRoutes.riwayatdesk),
+        ),
         title: const Text(
           'Detail Transaksi',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -33,7 +35,6 @@ class DetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-         
             Text('Tanggal: ${detailController.tanggalFormatted}'),
             Text('Metode: ${detailController.methodLabel}'),
             const SizedBox(height: 20),
@@ -70,13 +71,25 @@ class DetailScreen extends StatelessWidget {
               color: Colors.green,
             ),
             const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ReceiptActionButton(
-                label: 'Print Nota',
-                onPressed: () =>
-                    cartController.printFromDetail(detailController),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: ReceiptActionButton(
+                    label: 'Print Nota',
+                    backgroundColor: Colors.orange,
+                    onPressed: () =>
+                        cartController.printFromDetail(detailController),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ReceiptActionButton(
+                    label: 'Pesan Lagi',
+                    backgroundColor: Colors.orange,
+                    onPressed: () => Get.offAllNamed(AppRoutes.kasirboarddesk),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
