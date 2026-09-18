@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:tugas_akhir/widget/admin/dialogs/bahan/edit_bahan_baku_dialog.dart';
 import '../../../controller/admin/bahan_baku_table_controller.dart';
+import '../../../utils/soft_delete_retention.dart';
 import '../../admin/table/table_action_button.dart';
 import '../../admin/table/table_pagination.dart';
 
@@ -143,26 +143,26 @@ class BahanBakuTable extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        height: 48,
+                        constraints: const BoxConstraints(minHeight: 48),
                         alignment: Alignment.center,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: item.deletedAt != null
-                              ? [
+                        child: item.deletedAt != null
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
                                   TableActionButton(
                                     icon: Icons.restore_rounded,
                                     color: Colors.green.shade700,
                                     onTap: () => ctrl.restoreBahan(item.id!),
                                   ),
-                                  const SizedBox(width: 8),
-                                  TableActionButton(
-                                    icon: Icons.delete_forever_rounded,
-                                    color: Colors.red.shade900,
-                                    onTap: () =>
-                                        ctrl.forceDeleteBahan(item.id!),
+                                  const SizedBox(width: 4),
+                                  SoftDeleteRetentionInfo(
+                                    deletedAt: item.deletedAt,
                                   ),
-                                ]
-                              : [
+                                ],
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
                                   TableActionButton(
                                     icon: Icons.edit_outlined,
                                     color: Colors.blue.shade700,
@@ -177,7 +177,7 @@ class BahanBakuTable extends StatelessWidget {
                                     onTap: () => ctrl.softDeleteBahan(item.id!),
                                   ),
                                 ],
-                        ),
+                              ),
                       ),
                     ],
                   );

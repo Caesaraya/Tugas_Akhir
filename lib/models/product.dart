@@ -13,7 +13,6 @@ class Product {
   // NEW
   final String? deletedAt;
 
-
   Product({
     required this.id,
     required this.name,
@@ -43,7 +42,7 @@ class Product {
       resepId: int.tryParse(json['resep_id'].toString()),
 
       // NEW
-      deletedAt: json['deleted_at'],
+      deletedAt: json['deleted_at']?.toString(),
     );
   }
 
@@ -65,8 +64,7 @@ class Product {
       name: name ?? this.name,
       price: price ?? this.price,
       discount: discount ?? this.discount,
-      priceAfterDiscount:
-          priceAfterDiscount ?? this.priceAfterDiscount,
+      priceAfterDiscount: priceAfterDiscount ?? this.priceAfterDiscount,
       stock: stock ?? this.stock,
       jenis: jenis ?? this.jenis,
       satuan: satuan ?? this.satuan,

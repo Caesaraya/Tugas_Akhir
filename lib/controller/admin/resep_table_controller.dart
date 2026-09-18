@@ -324,35 +324,6 @@ class ResepTableController extends BaseTableController<Resep> {
     );
   }
 
-  Future<void> forceDeleteData(int id) async {
-    Get.defaultDialog(
-      title: "Konfirmasi Hapus Permanen",
-      middleText:
-          "Hapus resep ini secara permanen? Data bahan di dalamnya juga akan terhapus selamanya.",
-      textConfirm: "Ya, Hapus Permanen",
-      textCancel: "Batal",
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red,
-      onConfirm: () async {
-        Get.back();
-        try {
-          bool success = await ApiService.forceDeleteResep(id);
-          if (success) {
-            Get.snackbar(
-              "Berhasil",
-              "Resep berhasil dihapus permanen",
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-            );
-            fetchData();
-          }
-        } catch (e) {
-          Get.snackbar("Error", e.toString(), backgroundColor: Colors.red);
-        }
-      },
-    );
-  }
-
   void goToDetailDesktop(Resep resep) async {
     try {
       Get.dialog(

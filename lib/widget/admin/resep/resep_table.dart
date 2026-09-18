@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../controller/admin/resep_table_controller.dart';
+import '../../../utils/soft_delete_retention.dart';
 import '../../admin/table/table_action_button.dart';
 import '../../admin/table/table_pagination.dart';
 
@@ -110,36 +111,26 @@ class ResepTable extends StatelessWidget {
 
                       // Kolom Aksi
                       Container(
-                        height: 48,
+                        constraints: const BoxConstraints(minHeight: 48),
                         alignment: Alignment.center,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: isDeleted
-                              ? [
-                                  // State Terhapus: Detail, Restore & Force Delete
-                                  TableActionButton(
-                                    icon: Icons.list_alt_rounded,
-                                    color: Colors.green.shade700,
-                                    onTap: () => ctrl.goToDetailDesktop(item),
-                                  ),
-                                  const SizedBox(width: 6),
+                        child: isDeleted
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
                                   TableActionButton(
                                     icon: Icons.restore,
                                     color: Colors.green.shade700,
                                     onTap: () => ctrl.restoreData(item.id!),
                                   ),
-                                  const SizedBox(width: 6),
-                                  TableActionButton(
-                                    icon: Icons.delete_forever,
-                                    color: Colors.red.shade600,
-                                    onTap: () {
-                                      if (item.id != null) {
-                                        ctrl.forceDeleteData(item.id!);
-                                      }
-                                    },
+                                  const SizedBox(width: 4),
+                                  SoftDeleteRetentionInfo(
+                                    deletedAt: item.deletedAt,
                                   ),
-                                ]
-                              : [
+                                ],
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
                                   // State Aktif: Detail, Edit, Soft Delete
                                   TableActionButton(
                                     icon: Icons.list_alt_rounded,
@@ -163,7 +154,7 @@ class ResepTable extends StatelessWidget {
                                     },
                                   ),
                                 ],
-                        ),
+                              ),
                       ),
                     ],
                   );

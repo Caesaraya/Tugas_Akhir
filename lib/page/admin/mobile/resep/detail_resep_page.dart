@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:tugas_akhir/utils/soft_delete_retention.dart';
 import 'package:tugas_akhir/utils/currency.dart';
 import 'package:tugas_akhir/controller/admin/resep_table_controller.dart';
 import 'package:tugas_akhir/models/resep.dart';
-import 'resep_form_mobile_page.dart';
 
 class DetailResepMobilePage extends StatelessWidget {
   final Resep resep;
@@ -244,23 +244,8 @@ class DetailResepMobilePage extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red.shade900,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            elevation: 0,
-                          ),
-                          icon: const Icon(Icons.delete_forever, size: 20),
-                          label: const Text(
-                            'Hapus Permanen',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          onPressed: () =>
-                              controller.forceDeleteData(latestResep.id!),
+                        child: SoftDeleteRetentionInfo(
+                          deletedAt: latestResep.deletedAt,
                         ),
                       ),
                     ],

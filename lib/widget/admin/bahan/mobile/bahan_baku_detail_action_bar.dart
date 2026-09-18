@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
 import 'package:tugas_akhir/models/bahan_baku.dart';
+import 'package:tugas_akhir/utils/soft_delete_retention.dart';
 
 class BahanBakuDetailActionBar extends StatelessWidget {
   final BahanBakuTableController controller;
@@ -45,25 +46,8 @@ class BahanBakuDetailActionBar extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      // Berlaku hal yang sama untuk Force Delete demi keamanan navigasi
-                      final idBahan = bahanBaku.id!;
-                      Get.back();
-                      controller.forceDeleteBahan(idBahan);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade900,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                    ),
-                    icon: const Icon(
-                      Icons.delete_forever_outlined,
-                      color: Colors.white,
-                    ),
-                    label: const Text(
-                      'Hapus Permanen',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                  child: SoftDeleteRetentionInfo(
+                    deletedAt: bahanBaku.deletedAt,
                   ),
                 ),
               ]

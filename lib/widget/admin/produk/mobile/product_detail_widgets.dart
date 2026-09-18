@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
 import 'package:tugas_akhir/models/product.dart';
+import 'package:tugas_akhir/utils/soft_delete_retention.dart';
 import 'package:tugas_akhir/widget/admin/table/table_toolbar.dart';
 
 class ProductDetailBody extends StatelessWidget {
@@ -209,7 +210,6 @@ class ProductDetailActions extends StatelessWidget {
       child: Row(
         children: product.isDeleted
             ? [
-                // JIKA PRODUK SUDAH DIHAPUS (SOFT DELETED): Sediakan Opsi Pulihkan & Hapus Permanen
                 Expanded(
                   child: ToolbarButton(
                     title: 'Pulihkan',
@@ -223,15 +223,7 @@ class ProductDetailActions extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ToolbarButton(
-                    title: 'Hapus Permanen',
-                    icon: Icons.delete_forever_rounded,
-                    color: Colors.red.shade900,
-                    onTap: () async {
-                      await controller.forceDeleteProduct(product.id);
-                      Get.back(); // Otomatis kembali ke list setelah berhasil dihapus permanen
-                    },
-                  ),
+                  child: SoftDeleteRetentionInfo(deletedAt: product.deletedAt),
                 ),
               ]
             : [

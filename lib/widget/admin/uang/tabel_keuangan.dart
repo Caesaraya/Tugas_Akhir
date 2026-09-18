@@ -6,8 +6,31 @@ import '../../../widget/admin/table/table_header_cell.dart';
 import '../../../controller/admin/keuangan_controller.dart';
 import '../../../widget/admin/table/table_pagination.dart';
 
-class TabelRekapKeuangan extends StatelessWidget {
+class TabelRekapKeuangan extends StatefulWidget {
   const TabelRekapKeuangan({super.key});
+
+  @override
+  State<TabelRekapKeuangan> createState() => _TabelRekapKeuanganState();
+}
+
+class _TabelRekapKeuanganState extends State<TabelRekapKeuangan> {
+  final RxInt currentPage = 1.obs;
+  static const int itemsPerPage = 6;
+  late Worker _yearWorker;
+
+  @override
+  void initState() {
+    super.initState();
+    final controller = Get.find<KeuanganController>();
+    _yearWorker = ever(controller.selectedYear, (_) => currentPage.value = 1);
+  }
+
+  @override
+  void dispose() {
+    _yearWorker.dispose();
+    currentPage.close();
+    super.dispose();
+  }
 
   String _formatRupiah(double value) {
     String result = value
@@ -23,13 +46,6 @@ class TabelRekapKeuangan extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<KeuanganController>();
-
-    // State reaktif pagination lokal (6 item per halaman)
-    final RxInt currentPage = 1.obs;
-    const int itemsPerPage = 6;
-
-    // Reset halaman ke 1 jika tahun filter diubah
-    ever(controller.selectedYear, (_) => currentPage.value = 1);
 
     return Container(
       decoration: BoxDecoration(

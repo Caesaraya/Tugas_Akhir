@@ -151,15 +151,16 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
         final tanggalHariIni = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
         // Simpan transaksi pengeluaran langsung ke database online melalui ApiService
-        await ApiService.createExpense(
+        final expenseCreated = await ApiService.createExpense(
           tanggal: tanggalHariIni,
           categoryId: categoryId,
           nominal: totalBiaya,
           keterangan: keterangan,
         );
 
-        // Trigerred refresh state keuangan (Summary, Komposisi Chart, & Laporan Tahunan)
-        await keuanganCtrl.loadDataKeuangan();
+        if (expenseCreated) {
+          await keuanganCtrl.refreshMonitoringKeuangan();
+        }
       }
     } catch (e) {
       print("Gagal otomatis mencatat pengeluaran keuangan: $e");
@@ -346,54 +347,6 @@ class BahanBakuTableController extends BaseTableController<BahanBaku> {
             },
             child: const Text(
               "Pulihkan",
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> forceDeleteBahan(int id) async {
-    Get.dialog(
-      AlertDialog(
-        title: const Text("Hapus Permanen"),
-        content: const Text(
-          "Tindakan ini tidak dapat dibatalkan. Hapus permanen bahan baku ini?",
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text("Batal")),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade900,
-            ),
-            onPressed: () async {
-              Get.back();
-              try {
-                final res = await ApiService.forceDeleteBahanBaku(id);
-                if (res) {
-                  fetchData();
-                  if (Get.currentRoute.contains('DetailPage')) {
-                    Get.back();
-                  }
-                  Get.snackbar(
-                    "Sukses",
-                    "Bahan baku berhasil dihapus secara permanen",
-                    backgroundColor: Colors.green,
-                    colorText: Colors.white,
-                  );
-                }
-              } catch (e) {
-                Get.snackbar(
-                  "Error",
-                  e.toString(),
-                  backgroundColor: Colors.red,
-                  colorText: Colors.white,
-                );
-              }
-            },
-            child: const Text(
-              "Hapus Permanen",
               style: TextStyle(color: Colors.white),
             ),
           ),

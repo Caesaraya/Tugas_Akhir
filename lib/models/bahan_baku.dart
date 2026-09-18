@@ -44,7 +44,7 @@ class BahanBaku {
           ? DateTime.parse(json['created_at'])
           : null,
       deletedAt: json['deleted_at'] != null
-          ? DateTime.parse(json['deleted_at'])
+          ? DateTime.tryParse(json['deleted_at'].toString())
           : null,
     );
   }

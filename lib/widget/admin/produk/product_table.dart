@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../controller/admin/product_table_controller.dart';
+import '../../../utils/soft_delete_retention.dart';
 import '../../admin/table/table_action_button.dart';
 import '../../admin/table/table_pagination.dart';
 
@@ -189,26 +190,26 @@ class ProductTable extends StatelessWidget {
 
                       // Cell Tombol Aksi Dinamis
                       Container(
-                        height: 48,
+                        constraints: const BoxConstraints(minHeight: 48),
                         alignment: Alignment.center,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: item.isDeleted
-                              ? [
+                        child: item.isDeleted
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
                                   TableActionButton(
                                     icon: Icons.restore_rounded,
                                     color: Colors.green.shade700,
                                     onTap: () => ctrl.restoreProduct(item.id),
                                   ),
-                                  const SizedBox(width: 8),
-                                  TableActionButton(
-                                    icon: Icons.delete_forever_rounded,
-                                    color: Colors.red.shade900,
-                                    onTap: () =>
-                                        ctrl.forceDeleteProduct(item.id),
+                                  const SizedBox(width: 4),
+                                  SoftDeleteRetentionInfo(
+                                    deletedAt: item.deletedAt,
                                   ),
-                                ]
-                              : [
+                                ],
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
                                   TableActionButton(
                                     icon: Icons.edit_outlined,
                                     color: Colors.blue.shade700,
@@ -222,7 +223,7 @@ class ProductTable extends StatelessWidget {
                                         ctrl.softDeleteProduct(item.id),
                                   ),
                                 ],
-                        ),
+                              ),
                       ),
                     ],
                   );

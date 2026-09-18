@@ -70,6 +70,17 @@ class MonitoringKeuanganMobilePage extends StatelessWidget {
           ),
         ),
         centerTitle: false,
+        actions: [
+          Obx(
+            () => IconButton(
+              tooltip: 'Refresh data keuangan',
+              onPressed: controller.isLoading.value
+                  ? null
+                  : controller.refreshMonitoringKeuangan,
+              icon: const Icon(Icons.refresh_rounded),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

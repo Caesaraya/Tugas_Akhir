@@ -32,6 +32,7 @@ class KeuanganController extends GetxController {
   // --- KOMPOSISI PENGELUARAN BULAN BERJALAN ---
   final komposisiBulanIni = <String, double>{}.obs;
   final keuangan = old_summary.KeuanganSummary.kosong().obs;
+  Future<void>? _refreshMonitoringFuture;
 
   @override
   void onInit() {
@@ -40,8 +41,7 @@ class KeuanganController extends GetxController {
   }
 
   Future<void> initialFetch() async {
-    await fetchCategories();
-    await loadDataKeuangan();
+    await refreshMonitoringKeuangan();
     await loadDashboardData();
   }
 
@@ -78,18 +78,10 @@ class KeuanganController extends GetxController {
 
   Future<int?> tambahKategoriBaru(String name) async {
     try {
-      isLoading(true);
-
       bool success = await ApiService.createExpenseCategory(name: name);
 
       if (success) {
-        // Ambil kategori terbaru dari server
-        await fetchCategories();
-
-        // Refresh seluruh data keuangan
-        // agar data tabel, komposisi, profit,
-        // dan laporan ikut diperbarui
-        await loadDataKeuangan();
+        await refreshMonitoringKeuangan();
 
         final newCat = listCategories.firstWhereOrNull(
           (c) => c.name.toLowerCase() == name.toLowerCase(),
@@ -102,61 +94,89 @@ class KeuanganController extends GetxController {
     } catch (e) {
       print("Gagal menambah kategori baru di controller: $e");
       return null;
-    } finally {
-      isLoading(false);
     }
   }
 
-  Future<void> loadDataKeuangan() async {
+  Future<bool> ubahKategori({
+    required int id,
+    required String name,
+    String? description,
+  }) async {
+    try {
+      final success = await ApiService.updateExpenseCategory(
+        id: id,
+        name: name,
+        description: description,
+      );
+      if (success) await refreshMonitoringKeuangan();
+      return success;
+    } catch (e) {
+      print("Gagal mengubah kategori: $e");
+      return false;
+    }
+  }
+
+  Future<bool> hapusKategori(int id) async {
+    try {
+      final success = await ApiService.deleteExpenseCategory(id);
+      if (success) await refreshMonitoringKeuangan();
+      return success;
+    } catch (e) {
+      print("Gagal menghapus kategori: $e");
+      return false;
+    }
+  }
+
+  Future<void> refreshMonitoringKeuangan() {
+    final runningRefresh = _refreshMonitoringFuture;
+    if (runningRefresh != null) return runningRefresh;
+
+    final refresh = _fetchMonitoringKeuangan();
+    _refreshMonitoringFuture = refresh;
+    refresh.whenComplete(() => _refreshMonitoringFuture = null);
+    return refresh;
+  }
+
+  Future<void> _fetchMonitoringKeuangan() async {
     try {
       isLoading(true);
 
       final sekarang = DateTime.now();
 
-      // =========================
-      // TRANSAKSI
-      // =========================
-      final rawListData = await ApiService.getTransactions();
+      final results = await Future.wait([
+        ApiService.getAllExpenseCategories(),
+        ApiService.getTransactions(),
+        ApiService.getAllPembelian(),
+        ApiService.getAllExpenses(),
+      ]);
 
-      allTransactions.value = rawListData
+      listCategories.value = results[0] as List<ExpenseCategory>;
+        allTransactions.value = results[1]
           .map<TransactionModel>((e) => TransactionModel.fromJson(e))
           .toList();
-
-      // =========================
-      // PEMBELIAN BAHAN BAKU
-      // =========================
-      try {
-        final rawPembelian = await ApiService.getAllPembelian();
-
-        allHistoriStok.value = rawPembelian.map<HistoriStokModel>((p) {
-          return HistoriStokModel(
-            tanggal: p.tanggal,
-            bahanBakuId: 0,
-            namaBahan: p.namaSupplier ?? '',
-            stokSebelum: 0.0,
-            stokSesudah: 0.0,
-            jumlahPenambahan: 0.0,
-            hargaSatuan: 0.0,
-            totalPengeluaran: p.total,
-          );
-        }).toList();
-      } catch (e) {
-        allHistoriStok.value = [];
-      }
+        allHistoriStok.value = results[2].map<HistoriStokModel>((p) {
+        return HistoriStokModel(
+          tanggal: p.tanggal,
+          bahanBakuId: 0,
+          namaBahan: p.namaSupplier ?? '',
+          stokSebelum: 0.0,
+          stokSesudah: 0.0,
+          jumlahPenambahan: 0.0,
+          hargaSatuan: 0.0,
+          totalPengeluaran: p.total,
+        );
+      }).toList();
 
       // =========================
       // PENGELUARAN BULAN INI
       // =========================
-      final firstDayBulanIni = DateTime(sekarang.year, sekarang.month, 1);
-
-      final lastDayBulanIni = DateTime(sekarang.year, sekarang.month + 1, 0);
-
-      final expenses = await ApiService.getAllExpenses(
-        startDate: _formatDate(firstDayBulanIni),
-        endDate: _formatDate(lastDayBulanIni),
-      );
-
-      listExpensesBulanIni.value = expenses;
+      final allExpenses = results[3] as List<Expense>;
+      listExpensesBulanIni.value = allExpenses.where((expense) {
+        final date = DateTime.tryParse(expense.tanggal);
+        return date != null &&
+        date.year == sekarang.year &&
+        date.month == sekarang.month;
+      }).toList();
 
       // =========================
       // AVAILABLE YEARS
@@ -251,13 +271,15 @@ class KeuanganController extends GetxController {
       // =========================
       // LAPORAN TAHUNAN
       // =========================
-      await hitungUlangLaporanTahunan(selectedYear.value);
+      _hitungLaporanTahunanDariExpenses(selectedYear.value, allExpenses);
     } catch (e) {
-      print("Error pada loadDataKeuangan: $e");
+      print("Error pada refreshMonitoringKeuangan: $e");
     } finally {
       isLoading(false);
     }
   }
+
+  Future<void> loadDataKeuangan() => refreshMonitoringKeuangan();
 
   int ceramicsYear(int year) => year;
 
@@ -267,6 +289,17 @@ class KeuanganController extends GetxController {
   }
 
   Future<void> hitungUlangLaporanTahunan(int year) async {
+    final yearlyExpenses = await ApiService.getAllExpenses(
+      startDate: _formatDate(DateTime(year, 1, 1)),
+      endDate: _formatDate(DateTime(year, 12, 31)),
+    );
+    _hitungLaporanTahunanDariExpenses(year, yearlyExpenses);
+  }
+
+  void _hitungLaporanTahunanDariExpenses(
+    int year,
+    List<Expense> yearlyExpenses,
+  ) {
     Map<int, double> mapPemasukan = {};
     Map<int, double> mapPengeluaran = {};
     Map<int, int> mapTransaksi = {};
@@ -298,26 +331,13 @@ class KeuanganController extends GetxController {
     // =========================
     // PENGELUARAN MANUAL
     // =========================
-    try {
-      final firstDayOfYear = DateTime(year, 1, 1);
+    for (var exp in yearlyExpenses) {
+      final date = DateTime.tryParse(exp.tanggal);
 
-      final lastDayOfYear = DateTime(year, 12, 31);
-
-      final yearlyExpenses = await ApiService.getAllExpenses(
-        startDate: _formatDate(firstDayOfYear),
-        endDate: _formatDate(lastDayOfYear),
-      );
-
-      for (var exp in yearlyExpenses) {
-        final date = DateTime.tryParse(exp.tanggal);
-
-        if (date != null && date.year == year) {
-          mapPengeluaran[date.month] =
-              (mapPengeluaran[date.month] ?? 0) + exp.nominal;
-        }
+      if (date != null && date.year == year) {
+        mapPengeluaran[date.month] =
+            (mapPengeluaran[date.month] ?? 0) + exp.nominal;
       }
-    } catch (e) {
-      print("Gagal memuat pengeluaran manual tahunan: $e");
     }
 
     // =========================
@@ -357,8 +377,6 @@ class KeuanganController extends GetxController {
     required String keterangan,
   }) async {
     try {
-      isLoading(true);
-
       bool success = await ApiService.createExpense(
         tanggal: tanggal,
         categoryId: categoryId,
@@ -367,9 +385,7 @@ class KeuanganController extends GetxController {
       );
 
       if (success) {
-        // Refresh seluruh data setelah
-        // pengeluaran berhasil ditambahkan
-        await loadDataKeuangan();
+        await refreshMonitoringKeuangan();
 
         return true;
       }
@@ -378,8 +394,40 @@ class KeuanganController extends GetxController {
     } catch (e) {
       print("Gagal menyimpan pengeluaran: $e");
       return false;
-    } finally {
-      isLoading(false);
+    }
+  }
+
+  Future<bool> ubahPengeluaranManual({
+    required int id,
+    required String tanggal,
+    required int categoryId,
+    required double nominal,
+    required String keterangan,
+  }) async {
+    try {
+      final success = await ApiService.updateExpense(
+        id: id,
+        tanggal: tanggal,
+        categoryId: categoryId,
+        nominal: nominal,
+        keterangan: keterangan,
+      );
+      if (success) await refreshMonitoringKeuangan();
+      return success;
+    } catch (e) {
+      print("Gagal mengubah pengeluaran: $e");
+      return false;
+    }
+  }
+
+  Future<bool> hapusPengeluaranManual(int id) async {
+    try {
+      final success = await ApiService.deleteExpense(id);
+      if (success) await refreshMonitoringKeuangan();
+      return success;
+    } catch (e) {
+      print("Gagal menghapus pengeluaran: $e");
+      return false;
     }
   }
 

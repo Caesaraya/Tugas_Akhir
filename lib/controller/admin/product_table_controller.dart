@@ -419,40 +419,4 @@ class ProductTableController extends BaseTableController<Product> {
       },
     );
   }
-
-  Future<void> forceDeleteProduct(int id) async {
-    Get.defaultDialog(
-      title: "Hapus Permanen",
-      middleText:
-          "Data akan dihapus permanen dan tidak dapat dipulihkan.\nLanjutkan?",
-      textConfirm: "Hapus Permanen",
-      textCancel: "Batal",
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red.shade900,
-      onConfirm: () async {
-        Get.back();
-        try {
-          bool success = await ApiService.forceDeleteProduct(id);
-          if (success) {
-            Get.snackbar(
-              "Berhasil",
-              "Produk dihapus secara permanen",
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: Colors.green,
-              colorText: Colors.white,
-            );
-            fetchData();
-          }
-        } catch (e) {
-          Get.snackbar(
-            "Error",
-            "Gagal menghapus data permanen: $e",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-        }
-      },
-    );
-  }
 }

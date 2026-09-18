@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/admin/product_table_controller.dart';
 import 'package:tugas_akhir/models/product.dart';
 import 'package:tugas_akhir/page/admin/mobile/produk/product_detail_page.dart';
+import 'package:tugas_akhir/utils/soft_delete_retention.dart';
 
 class ProductItemCard extends StatelessWidget {
   final Product product;
@@ -126,10 +127,10 @@ class ProductItemCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  children: product.isDeleted
-                      ? [
-                          // DIUBAH: Tombol dinamis
+                product.isDeleted
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                           IconButton(
                             visualDensity: VisualDensity.compact,
                             icon: const Icon(
@@ -140,18 +141,13 @@ class ProductItemCard extends StatelessWidget {
                             onPressed: () =>
                                 controller.restoreProduct(product.id),
                           ),
-                          IconButton(
-                            visualDensity: VisualDensity.compact,
-                            icon: Icon(
-                              Icons.delete_forever_rounded,
-                              color: Colors.red.shade900,
-                              size: 20,
-                            ),
-                            onPressed: () =>
-                                controller.forceDeleteProduct(product.id),
-                          ),
-                        ]
-                      : [
+                          const SizedBox(width: 4),
+                          SoftDeleteRetentionInfo(deletedAt: product.deletedAt),
+                        ],
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                           IconButton(
                             visualDensity: VisualDensity.compact,
                             icon: const Icon(
@@ -172,7 +168,7 @@ class ProductItemCard extends StatelessWidget {
                                 controller.softDeleteProduct(product.id),
                           ),
                         ],
-                ),
+                      ),
               ],
             ),
           ],

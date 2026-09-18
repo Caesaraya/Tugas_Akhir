@@ -332,24 +332,6 @@ class ApiService {
   }
 
   // ========================
-  // FORCE DELETE PRODUCT
-  // ========================
-  static Future<bool> forceDeleteProduct(int id) async {
-    try {
-      final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/products/$id/force"),
-            headers: headers,
-          )
-          .timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal force delete produk: $e");
-    }
-  }
-
-  // ========================
   // CREATE TRANSACTION
   // ========================
   static Future<bool> createTransaction({
@@ -632,24 +614,6 @@ class ApiService {
       return response.statusCode == 200;
     } catch (e) {
       throw Exception("Gagal restore bahan baku: $e");
-    }
-  }
-
-  // ========================
-  // FORCE DELETE BAHAN BAKU
-  // ========================
-  static Future<bool> forceDeleteBahanBaku(int id) async {
-    try {
-      final response = await http
-          .delete(
-            Uri.parse("$baseUrl/api/bahan-baku/$id/force"),
-            headers: headers,
-          )
-          .timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal force delete bahan baku: $e");
     }
   }
 
@@ -1148,21 +1112,6 @@ class ApiService {
       return response.statusCode == 200;
     } catch (e) {
       throw Exception("Gagal restore resep: $e");
-    }
-  }
-
-  // ========================
-  // FORCE DELETE RESEP
-  // ========================
-  static Future<bool> forceDeleteResep(int id) async {
-    try {
-      final response = await http
-          .delete(Uri.parse("$baseUrl/api/resep/$id/force"), headers: headers)
-          .timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception("Gagal force delete resep: $e");
     }
   }
 

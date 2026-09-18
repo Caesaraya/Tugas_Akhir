@@ -1,8 +1,10 @@
 // lib/data/repository/transaction_repository.dart
 
 import 'package:uuid/uuid.dart';
+import 'package:get/get.dart';
 import 'package:tugas_akhir/models/cart_item.dart';
 import 'package:tugas_akhir/api%20service/api_service.dart';
+import 'package:tugas_akhir/controller/admin/keuangan_controller.dart';
 import '../local/tables/transaction_table.dart';
 import '../local/tables/transaction_detail_table.dart';
 import 'base_repository.dart';
@@ -113,6 +115,10 @@ class TransactionRepository extends BaseRepository {
       );
 
       await ProductRepository.instance.refreshFromServer();
+
+      if (Get.isRegistered<KeuanganController>()) {
+        await Get.find<KeuanganController>().refreshMonitoringKeuangan();
+      }
 
       return SyncResult.success({'server_id': createdId});
     } catch (e) {

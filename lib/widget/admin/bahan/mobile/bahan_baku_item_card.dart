@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:tugas_akhir/controller/admin/bahan_baku_table_controller.dart';
 import 'package:tugas_akhir/models/bahan_baku.dart';
 import 'package:tugas_akhir/page/admin/mobile/bahanbaku/bahan_baku_detail_page.dart';
+import 'package:tugas_akhir/utils/soft_delete_retention.dart';
 
 class BahanBakuItemCard extends StatelessWidget {
   final BahanBaku item;
@@ -145,7 +146,6 @@ class BahanBakuItemCard extends StatelessWidget {
                       Row(
                         children: isDeleted
                             ? [
-                                // JIKA DELETED = TRUE (Menampilkan Restore & Hapus Permanen)
                                 _buildActionIconButton(
                                   icon: Icons.restore_outlined,
                                   color:
@@ -154,13 +154,8 @@ class BahanBakuItemCard extends StatelessWidget {
                                       controller.restoreBahan(item.id!),
                                 ),
                                 const SizedBox(width: 6),
-                                _buildActionIconButton(
-                                  icon: Icons.delete_forever_outlined,
-                                  color: Colors
-                                      .red
-                                      .shade900, // Merah tua untuk hapus permanen
-                                  onTap: () =>
-                                      controller.forceDeleteBahan(item.id!),
+                                SoftDeleteRetentionInfo(
+                                  deletedAt: item.deletedAt,
                                 ),
                               ]
                             : [

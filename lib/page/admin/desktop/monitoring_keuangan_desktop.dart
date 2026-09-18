@@ -38,15 +38,34 @@ class MonitoringKeuanganPage extends StatelessWidget {
                   // =========================
                   // HEADER
                   // =========================
-                  const Padding(
-                    padding: EdgeInsets.only(left: 24, top: 24),
-                    child: Text(
-                      "Monitoring Keuangan",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 24,
+                      top: 24,
+                      right: 24,
+                    ),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            "Monitoring Keuangan",
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        Obx(
+                          () => IconButton(
+                            tooltip: 'Refresh data keuangan',
+                            onPressed: controller.isLoading.value
+                                ? null
+                                : controller.refreshMonitoringKeuangan,
+                            icon: const Icon(Icons.refresh_rounded),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
